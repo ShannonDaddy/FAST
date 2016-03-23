@@ -25,6 +25,7 @@ script.sh
 todo
 test*
 big*
+.idea*
 
 # OSX files
 .DS_Store
