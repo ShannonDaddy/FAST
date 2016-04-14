@@ -4,6 +4,8 @@
 // write the results to files.
 
 #include "lastdb.hh"
+#include "utilities.hh"
+
 using namespace std;
 
 // Set up an alphabet (e.g. DNA or protein), based on the user options
@@ -200,81 +202,6 @@ appendFromFasta( MultiSequence& multi,
 	return in;
 }
 
-void incrementalFormatWithLatest(
-		const LastdbArguments &args,
-		const Alphabet &alph,
-		MultiSequence &multi,
-		SubsetSuffixArray indexes[maxNumOfIndexes],
-		const unsigned numOfIndexes,
-		char** inputBegin,
-		char* defaultInput[]){
-
-	unsigned volumeNumber = 0;
-	countT sequenceCount = 0;
-	std::vector<countT> letterCounts( alph.size );
-	std::vector<countT> letterTotals( alph.size );
-
-	// Read in the old Prj file
-
-	// Create a new set of volumes for the novel sequences
-	for( char** i = *inputBegin ? inputBegin : defaultInput; *i; ++i ){
-		std::ifstream inFileStream;
-		std::istream& in = openIn( *i, inFileStream );
-		LOG( "reading " << *i << "..." );
-
-		while(in){
-			try {
-				appendFromFasta( multi, indexes, numOfIndexes, args, alph, in );
-				if( !args.isProtein &&
-				    args.userAlphabet.empty() &&
-				    sequenceCount == 0 &&
-				    isDubiousDna( alph, multi ) ){
-					std::cerr << "lastdb: that's some funny-lookin DNA\n";
-				}
-
-				if( multi.isFinished() ){
-					++sequenceCount;
-					indexT lastSeq = multi.finishedSequences() - 1;
-					alph.count( multi.seqReader() + multi.seqBeg(lastSeq),
-					            multi.seqReader() + multi.seqEnd(lastSeq),
-					            &letterCounts[0] );
-					// memory-saving, which seems to be important on 32-bit systems:
-					if( args.isCountsOnly ) multi.reinitForAppending();
-				}else{
-					std::string baseName = args.lastdbName + stringify(volumeNumber++);
-					makeVolume( indexes, numOfIndexes,
-					            multi, args, alph, letterCounts, baseName );
-					for( unsigned c = 0; c < alph.size; ++c )
-						letterTotals[c] += letterCounts[c];
-					letterCounts.assign( alph.size, 0 );
-					multi.reinitForAppending();
-				}
-			} catch (const std::exception &ex){
-				std::cerr << ex.what() << std::endl;
-				std::cerr << "Encountered a malformed sequence. Ignoring sequence and continuing" << std::endl;
-				multi.removeLatest();
-			}
-		}
-	}
-
-	if( multi.finishedSequences() > 0 ){
-		if( volumeNumber == 0 ){
-			makeVolume( indexes, numOfIndexes,
-			            multi, args, alph, letterCounts, args.lastdbName );
-			return;
-		}
-		std::string baseName = args.lastdbName + stringify(volumeNumber++);
-		makeVolume( indexes, numOfIndexes,
-		            multi, args, alph, letterCounts, baseName );
-	}
-
-	for( unsigned c = 0; c < alph.size; ++c ) letterTotals[c] += letterCounts[c];
-
-	// Write out the updated Prj file
-	writePrjFile( args.lastdbName + ".prj", args, alph,
-	              sequenceCount, letterTotals, volumeNumber, numOfIndexes );
-}
-
 void readPrjFile(const std::string &prjname,
                  const LastdbArguments &args,
                  const Alphabet &alph,
@@ -309,8 +236,7 @@ void incrementalFormatWithNovel(const LastdbArguments &args,
                                 MultiSequence &multi,
                                 SubsetSuffixArray indexes[maxNumOfIndexes],
                                 const unsigned numOfIndexes,
-                                char** inputBegin,
-                                char* defaultInput[]){
+                                const std::string &inputName){
 
 	unsigned volumeNumber = 0;
 	countT sequenceCount = 0;
@@ -319,45 +245,43 @@ void incrementalFormatWithNovel(const LastdbArguments &args,
 
 	// Read in the old Prj file
 	readPrjFile( args.lastdbName + ".prj", args, alph,
-	              sequenceCount, letterTotals, volumeNumber);
+	             sequenceCount, letterTotals, volumeNumber);
 
 	// Create a new set of volumes for the novel sequences
-	for( char** i = *inputBegin ? inputBegin : defaultInput; *i; ++i ){
-		std::ifstream inFileStream;
-		std::istream& in = openIn( *i, inFileStream );
-		LOG( "reading " << *i << "..." );
+	std::ifstream inFileStream;
+	std::istream& in = openIn( inputName, inFileStream );
+	LOG( "reading " << inputName << "..." );
 
-		while(in){
-			try {
-				appendFromFasta( multi, indexes, numOfIndexes, args, alph, in );
-				if( !args.isProtein &&
-				    args.userAlphabet.empty() &&
-				    sequenceCount == 0 &&
-				    isDubiousDna( alph, multi ) ){
-					std::cerr << "lastdb: that's some funny-lookin DNA\n";
-				}
-
-				if( multi.isFinished() ){
-					++sequenceCount;
-					indexT lastSeq = multi.finishedSequences() - 1;
-					alph.count( multi.seqReader() + multi.seqBeg(lastSeq),
-					            multi.seqReader() + multi.seqEnd(lastSeq),
-					            &letterCounts[0] );
-					// memory-saving, which seems to be important on 32-bit systems:
-					if( args.isCountsOnly ) multi.reinitForAppending();
-				} else {
-					const std::string baseName = args.lastdbName + stringify(volumeNumber++);
-					makeVolume( indexes, numOfIndexes,
-					            multi, args, alph, letterCounts, baseName );
-					for( unsigned c = 0; c < alph.size; ++c ) letterTotals[c] += letterCounts[c];
-					letterCounts.assign( alph.size, 0 );
-					multi.reinitForAppending();
-				}
-			} catch (const std::exception &ex){
-				std::cerr << ex.what() << std::endl;
-				std::cerr << "Encountered a malformed sequence. Ignoring sequence and continuing" << std::endl;
-				multi.removeLatest();
+	while(in){
+		try {
+			appendFromFasta( multi, indexes, numOfIndexes, args, alph, in );
+			if( !args.isProtein &&
+			    args.userAlphabet.empty() &&
+			    sequenceCount == 0 &&
+			    isDubiousDna( alph, multi ) ){
+				std::cerr << "lastdb: that's some funny-lookin DNA\n";
 			}
+
+			if( multi.isFinished() ){
+				++sequenceCount;
+				indexT lastSeq = multi.finishedSequences() - 1;
+				alph.count( multi.seqReader() + multi.seqBeg(lastSeq),
+				            multi.seqReader() + multi.seqEnd(lastSeq),
+				            &letterCounts[0] );
+				// memory-saving, which seems to be important on 32-bit systems:
+				if( args.isCountsOnly ) multi.reinitForAppending();
+			} else {
+				const std::string baseName = args.lastdbName + stringify(volumeNumber++);
+				makeVolume( indexes, numOfIndexes,
+				            multi, args, alph, letterCounts, baseName );
+				for( unsigned c = 0; c < alph.size; ++c ) letterTotals[c] += letterCounts[c];
+				letterCounts.assign( alph.size, 0 );
+				multi.reinitForAppending();
+			}
+		} catch (const std::exception &ex){
+			std::cerr << ex.what() << std::endl;
+			std::cerr << "Encountered a malformed sequence. Ignoring sequence and continuing" << std::endl;
+			multi.removeLatest();
 		}
 	}
 
@@ -379,6 +303,17 @@ void incrementalFormatWithNovel(const LastdbArguments &args,
 	              sequenceCount, letterTotals, volumeNumber, numOfIndexes );
 }
 
+void generateDifference(const std::string &filename, const string &dbname){
+
+	/*
+	 for (int i=0; i<volumes; i++){
+			read in the volume sequence names into a set
+			read through the file
+			if the sequence is not found we output it.
+	 }
+	 */
+
+}
 
 void lastdb( int argc, char** argv ){
 	LastdbArguments args;
@@ -397,16 +332,30 @@ void lastdb( int argc, char** argv ){
 	char** inputBegin = argv + args.inputStart;
 
 	if(args.latestDatabase){
-		incrementalFormatWithLatest(args, alph, multi,
-		                            indexes, numOfIndexes,
-		                            inputBegin, defaultInput);
+		//!!
+		// Run a diff across both databases, the formatted last and the new unformatted database
+		// Write all of the sequences that dont appear in the formatted database to a temp file
+		std::string tmpFile = generate_directory_name("");
+
+		for( char** i = *inputBegin ? inputBegin : defaultInput; *i; ++i ) {
+			generateDifference(tmpFile);
+		}
+
+		// Run the incrementalFormat with the new tmp file
+		incrementalFormatWithNovel(args, alph, multi,
+		                           indexes, numOfIndexes, tmpFile);
+
+		// delete the old tmp file
+		remove(tmpFile.c_str());
+
 		return;
 	}
 
 	if(args.novelSequenceFile){
-		incrementalFormatWithNovel(args, alph, multi,
-		                           indexes, numOfIndexes,
-		                           inputBegin, defaultInput);
+		for( char** i = *inputBegin ? inputBegin : defaultInput; *i; ++i ) {
+			incrementalFormatWithNovel(args, alph, multi,
+			                           indexes, numOfIndexes, string(*i));
+		}
 		return;
 	}
 

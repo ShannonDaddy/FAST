@@ -50,6 +50,18 @@ string random_str(const int len) {
   return str;
 }
 
+string generate_directory_name(const string &tmpdir){
+	string random_string;
+	int err = -1;
+	do{
+		random_string = random_str(30);
+		string potential_directory = tmpdir + random_string + "LASTtemp0";
+		struct stat potential_directory_stat;
+		err = stat(potential_directory.c_str(), &potential_directory_stat);
+	} while(err != -1);
+	return random_string;
+}
+
 string orf_extractor_from_blast(const string & line){
   char buf[10000];
   string orfid  = split_n_pick(line, buf, '\t', 0);

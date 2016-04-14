@@ -44,9 +44,7 @@ int merge_sorted_files(const vector<string> &filenames,
 
 void remove_file(const string &filename); 
 
-string generate_directory_name(const string &tmpdir);
-
-void write_sorted_sequences(vector<Line *> &lines, 
+void write_sorted_sequences(vector<Line *> &lines,
     const string &filename);
 
 #endif // _EXTERNAL_SORT

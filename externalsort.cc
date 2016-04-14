@@ -3,18 +3,6 @@
 // Generate random string for output in order to allow mutiple LAST+ binaries to run simultaneously on a single machine.
 // Check if the directory structure already exists. If it does we need to generate a new randstr
 
-string generate_directory_name(const string &tmpdir){
-  string random_string;
-  int err = -1;
-  do{
-    random_string = random_str(30);
-    string potential_directory = tmpdir + random_string + "LASTtemp0";
-    struct stat potential_directory_stat;
-    err = stat(potential_directory.c_str(), &potential_directory_stat);
-  } while(err != -1);
-  return random_string;
-}
-
 bool comp_lines(const LINE &lhs, const LINE &rhs) {
   if (lhs->orfid < rhs->orfid) return true;
 
