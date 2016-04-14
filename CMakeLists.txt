@@ -33,6 +33,7 @@ set(LASTDB_SOURCE_FILES
         fileMap.hh
         qualityScoreUtil.hh
         version.hh
+        lastdb.hh
         )
 
 set(LASTAL_SOURCE_FILES
