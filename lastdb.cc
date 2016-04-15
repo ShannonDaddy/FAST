@@ -13,14 +13,16 @@ SEM_T io;
 unsigned currVolume = 0;
 
 // Set up an alphabet (e.g. DNA or protein), based on the user options
-void makeAlphabet( Alphabet& alph, const LastdbArguments& args ){
+void makeAlphabet( Alphabet& alph, const LastdbArguments& args )
+{
 	if( !args.userAlphabet.empty() )  alph.fromString( args.userAlphabet );
 	else if( args.isProtein )         alph.fromString( alph.protein );
 	else                              alph.fromString( alph.dna );
 }
 
 // Does the first sequence look like it isn't really DNA?
-bool isDubiousDna( const Alphabet& alph, const MultiSequence& multi ){
+bool isDubiousDna( const Alphabet& alph, const MultiSequence& multi )
+{
 	const uchar* seq = multi.seqReader() + multi.seqBeg(0);
 	unsigned dnaCount = 0;
 
@@ -35,7 +37,8 @@ bool isDubiousDna( const Alphabet& alph, const MultiSequence& multi ){
 
 static void addSeeds( SubsetSuffixArray indexes[], unsigned& numOfIndexes,
                       const std::vector<std::string>& seedStrings,
-                      const LastdbArguments& args, const Alphabet& alph ){
+                      const LastdbArguments& args, const Alphabet& alph )
+{
 	for( unsigned x = 0; x < seedStrings.size(); ++x ){
 		if( numOfIndexes >= maxNumOfIndexes ) ERR( "too many seed patterns" );
 		CyclicSubsetSeed& seed = indexes[ numOfIndexes++ ].getSeed();
@@ -45,7 +48,8 @@ static void addSeeds( SubsetSuffixArray indexes[], unsigned& numOfIndexes,
 
 // Set up the seed pattern(s), and return how many of them there are
 unsigned makeSubsetSeeds( SubsetSuffixArray indexes[],
-                          const LastdbArguments& args, const Alphabet& alph ){
+                          const LastdbArguments& args, const Alphabet& alph )
+{
 	unsigned numOfIndexes = 0;
 	const std::string& a = alph.letters;
 
@@ -79,7 +83,8 @@ unsigned makeSubsetSeeds( SubsetSuffixArray indexes[],
 void writePrjFile( const std::string& fileName, const LastdbArguments& args,
                    const Alphabet& alph, countT sequenceCount,
                    const std::vector<countT>& letterCounts,
-                   unsigned volumes, unsigned numOfIndexes ){
+                   unsigned volumes, unsigned numOfIndexes )
+{
 	countT letterTotal = std::accumulate( letterCounts.begin(),
 	                                      letterCounts.end(), countT(0) );
 
@@ -113,7 +118,8 @@ void writePrjFile( const std::string& fileName, const LastdbArguments& args,
 void makeVolume( SubsetSuffixArray indexes[], unsigned numOfIndexes,
                  const MultiSequence& multi, const LastdbArguments& args,
                  const Alphabet& alph, const std::vector<countT>& letterCounts,
-                 const std::string& baseName ){
+                 const std::string& baseName )
+{
 	LOG( "writing prj and multi ..." );
 	SEM_WAIT(io);
 	writePrjFile( baseName + ".prj", args, alph, multi.finishedSequences(),
@@ -143,12 +149,12 @@ void makeVolume( SubsetSuffixArray indexes[], unsigned numOfIndexes,
 	//SEM_POST(io);
 }
 
-
 void DatabaseThread::makeVolume( unsigned numOfIndexes,
                                  const LastdbArguments& args,
                                  const Alphabet& alph,
                                  const std::vector<countT>& letterCounts,
-                                 const std::string& baseName ){
+                                 const std::string& baseName )
+{
 	LOG( "writing prj and multi ..." );
 	SEM_WAIT(io);
 	writePrjFile( baseName + ".prj", args, alph, multi.finishedSequences(),
@@ -192,66 +198,62 @@ static indexT maxLettersPerVolume( const LastdbArguments& args,
 	return z;
 }
 
-
-
-
-
 std::istream&
 DatabaseThread::readFasta( unsigned numOfIndexes,
                            const LastdbArguments& args,
                            const Alphabet& alph,
                            std::istream& in )
 {
-	SEM_WAIT(io);
-
 	indexT maxSeqLen = maxLettersPerVolume( args, numOfIndexes );
 	if( multi.finishedSequences() == 0 ) maxSeqLen = indexT(-1);
 
-	std::size_t oldUnfinishedSize = multi.unfinishedSize();
-	indexT oldFinishedSize = multi.finishedSize();
+	std::size_t seqCount = 0;
+	while(seqCount < LOADSIZE) {
+		SEM_WAIT(io);
+		std::size_t oldUnfinishedSize = multi.unfinishedSize();
+		indexT oldFinishedSize = multi.finishedSize();
 
-	if ( args.inputFormat == sequenceFormat::fasta )
-		multi.appendFromFastaLASTDB( in, maxSeqLen, args.unlimited );
-	else
-		multi.appendFromFastq( in, maxSeqLen );
+		//SEM_WAIT(io);
+		if (args.inputFormat == sequenceFormat::fasta)
+			multi.appendFromFastaLASTDB(in, maxSeqLen, args.unlimited);
+		else
+			multi.appendFromFastq(in, maxSeqLen);
+		seqCount++;
+		//SEM_POST(io);
 
-	if( !multi.isFinished() && multi.finishedSequences() == 0 )
-		ERR( "encountered a sequence that's too long" );
+		if (!multi.isFinished() && multi.finishedSequences() == 0)
+			ERR("encountered a sequence that's too long");
 
-	// encode the newly-read sequence
-	alph.tr( multi.seqWriter() + oldUnfinishedSize,
-	         multi.seqWriter() + multi.unfinishedSize() );
+		// encode the newly-read sequence
+		alph.tr(multi.seqWriter() + oldUnfinishedSize,
+		        multi.seqWriter() + multi.unfinishedSize());
 
-	if( isPhred( args.inputFormat ) )  // assumes one quality code per letter:
-		checkQualityCodes( multi.qualityReader() + oldUnfinishedSize,
-		                   multi.qualityReader() + multi.unfinishedSize(),
-		                   qualityOffset( args.inputFormat ) );
+		if (isPhred(args.inputFormat))  // assumes one quality code per letter:
+			checkQualityCodes(multi.qualityReader() + oldUnfinishedSize,
+			                  multi.qualityReader() + multi.unfinishedSize(),
+			                  qualityOffset(args.inputFormat));
 
-	if( in && multi.isFinished() && !args.isCountsOnly ){
-		for( unsigned x = 0; x < numOfIndexes; ++x ){
-			indexes[x].addPositions( multi.seqReader(), oldFinishedSize,
-			                         multi.finishedSize(), args.indexStep );
-		}
+		if (in && multi.isFinished() && !args.isCountsOnly)
+			for (unsigned x = 0; x < numOfIndexes; ++x)
+				indexes[x].addPositions(multi.seqReader(), oldFinishedSize,
+				                        multi.finishedSize(), args.indexStep);
+
+		if (!args.isProtein && args.userAlphabet.empty() &&
+		    sequenceCount == 0 && isDubiousDna(alph, multi))
+			std::cerr << "lastdb: that's some funny-lookin DNA\n";
+
+
+		if (multi.isFinished()) {
+			++sequenceCount;
+			indexT lastSeq = multi.finishedSequences() - 1;
+			alph.count(multi.seqReader() + multi.seqBeg(lastSeq),
+			           multi.seqReader() + multi.seqEnd(lastSeq),
+			           &letterCounts[0]);
+			// memory-saving, which seems to be important on 32-bit systems:
+			if (args.isCountsOnly) multi.reinitForAppending();
+		} else prepareNextVolume();
+		SEM_POST(io);
 	}
-
-	if (!args.isProtein && args.userAlphabet.empty() &&
-	    sequenceCount == 0 && isDubiousDna(alph, multi))
-		std::cerr << "lastdb: that's some funny-lookin DNA\n";
-
-
-	if (multi.isFinished()) {
-		//!!
-		//cout << "FINISHED: " << rank << " " << multi.seq.size() << endl;
-		++sequenceCount;
-		indexT lastSeq = multi.finishedSequences() - 1;
-		alph.count(multi.seqReader() + multi.seqBeg(lastSeq),
-		           multi.seqReader() + multi.seqEnd(lastSeq),
-		           &letterCounts[0]);
-		// memory-saving, which seems to be important on 32-bit systems:
-		if (args.isCountsOnly) multi.reinitForAppending();
-	} else prepareNextVolume();
-
-	SEM_POST(io);
 
 	return in;
 }
@@ -261,8 +263,8 @@ std::istream&
 appendFromFasta( MultiSequence& multi,
                  SubsetSuffixArray indexes[], unsigned numOfIndexes,
                  const LastdbArguments& args, const Alphabet& alph,
-                 std::istream& in ){
-
+                 std::istream& in )
+{
 	SEM_WAIT(io);
 	indexT maxSeqLen = maxLettersPerVolume( args, numOfIndexes );
 	if( multi.finishedSequences() == 0 ) maxSeqLen = indexT(-1);
@@ -287,12 +289,10 @@ appendFromFasta( MultiSequence& multi,
 		                   multi.qualityReader() + multi.unfinishedSize(),
 		                   qualityOffset( args.inputFormat ) );
 
-	if( in && multi.isFinished() && !args.isCountsOnly ){
-		for( unsigned x = 0; x < numOfIndexes; ++x ){
+	if( in && multi.isFinished() && !args.isCountsOnly )
+		for( unsigned x = 0; x < numOfIndexes; ++x )
 			indexes[x].addPositions( multi.seqReader(), oldFinishedSize,
 			                         multi.finishedSize(), args.indexStep );
-		}
-	}
 	SEM_POST(io);
 
 	return in;
@@ -303,8 +303,8 @@ void readPrjFile(const std::string &prjname,
                  const Alphabet &alph,
                  countT &sequenceCount,
                  std::vector<countT> &letterTotals,
-                 unsigned &volumeNumber){
-
+                 unsigned &volumeNumber)
+{
 	std::ifstream f(prjname.c_str());
 	if (!f) ERR("can't open file: " + prjname);
 	unsigned version = 0;
@@ -332,8 +332,8 @@ void incrementalFormatWithNovel(const LastdbArguments &args,
                                 MultiSequence &multi,
                                 SubsetSuffixArray indexes[maxNumOfIndexes],
                                 const unsigned numOfIndexes,
-                                const std::string &inputName){
-
+                                const std::string &inputName)
+{
 	unsigned volumeNumber = 0;
 	countT sequenceCount = 0;
 	std::vector<countT> letterCounts( alph.size );
@@ -399,7 +399,8 @@ void incrementalFormatWithNovel(const LastdbArguments &args,
 	              sequenceCount, letterTotals, volumeNumber, numOfIndexes );
 }
 
-void generateDifference(const std::string &filename, const string &dbname){
+void generateDifference(const std::string &filename, const string &dbname)
+{
 
 	/*
 	 for (int i=0; i<volumes; i++){
@@ -417,7 +418,8 @@ string currFile;
 DatabaseThread **dbThreads;
 std::ifstream in;
 
-void lastdb( int argc, char** argv ){
+void lastdb( int argc, char** argv )
+{
 	args.fromArgs( argc, argv );
 	initializeSemaphores();
 	makeAlphabet( alph, args );
@@ -477,16 +479,15 @@ void lastdb( int argc, char** argv ){
 	//!! How do we prevent a million mini prjs from forming?
 	countT finalSequenceCount = 0;
 	std::vector<countT> FinalLetterTotals(alph.size);
+	std::size_t volumeCount = 0;
 	//!! How do we know about the final volumeNumber?
 	for(int i=0; i<args.threadNum; i++){
 		finalSequenceCount += dbThreads[i]->sequenceCount;
 		for(int j=0; j<alph.size; j++)
 			FinalLetterTotals[j] += dbThreads[i]->letterTotals[j];
 	}
-/*
 	writePrjFile( args.lastdbName + ".prj", args, alph,
-	              sequenceCount, letterTotals, volumeNumber, numOfIndexes );
- */
+	              finalSequenceCount, FinalLetterTotals, volumeCount, numOfIndexes );
 
 	for(int i=0; i<args.threadNum; i++){
 		delete dbThreads[i];
@@ -495,7 +496,8 @@ void lastdb( int argc, char** argv ){
 	destroySemaphores();
 }
 
-void DatabaseThread::prepareNextVolume(){
+void DatabaseThread::prepareNextVolume()
+{
 	std::string baseName = args.lastdbName + stringify(volumeNumber++);
 	makeVolume(numOfIndexes, args, alph,
 	           letterCounts, baseName);
@@ -507,43 +509,20 @@ void DatabaseThread::prepareNextVolume(){
 void DatabaseThread::formatdb(const LastdbArguments &args,
                               const Alphabet &alph,
                               const unsigned numOfIndexes,
-                              const std::string &inputName) {
+                              const std::string &inputName)
+{
 	LOG("reading " << inputName << "...");
 
-	while (readFasta(numOfIndexes, args, alph, in)){
-		//!!
-		//cout << rank << " " << multi.seq.size() << endl;
-		if (!args.isProtein && args.userAlphabet.empty() &&
-		    sequenceCount == 0 && isDubiousDna(alph, multi))
-			std::cerr << "lastdb: that's some funny-lookin DNA\n";
-
-
-		if (multi.isFinished()) {
-			//!!
-			//cout << "FINISHED: " << rank << " " << multi.seq.size() << endl;
-			++sequenceCount;
-			indexT lastSeq = multi.finishedSequences() - 1;
-			alph.count(multi.seqReader() + multi.seqBeg(lastSeq),
-			           multi.seqReader() + multi.seqEnd(lastSeq),
-			           &letterCounts[0]);
-			// memory-saving, which seems to be important on 32-bit systems:
-			if (args.isCountsOnly) multi.reinitForAppending();
-		} else prepareNextVolume();
-	}
+	while (readFasta(numOfIndexes, args, alph, in))
 
 	if( multi.finishedSequences() > 0 ){
 		if( volumeNumber == 0 ) makeVolume(numOfIndexes, args, alph, letterCounts, args.lastdbName);
 		else prepareNextVolume();
 	}
-	//!!
-	//!! Do this at the very end by having all the threads join their values and create the final prj file.
-/*
-	writePrjFile( args.lastdbName + ".prj", args, alph,
-	              sequenceCount, letterTotals, volumeNumber, numOfIndexes );
- */
 }
 
-int main( int argc, char** argv ) {
+int main( int argc, char** argv )
+{
 	try {
 		lastdb(argc, argv);
 		return EXIT_SUCCESS;
@@ -558,20 +537,24 @@ int main( int argc, char** argv ) {
 	}
 }
 
-void* DatabaseThread::threadEntry(void *args) {
+void* DatabaseThread::threadEntry(void *args)
+{
 	((DatabaseThread *) args)->threadFunction();
 	return NULL;
 }
 
-void DatabaseThread::threadFunction() {
+void DatabaseThread::threadFunction()
+{
 	formatdb(args, alph, numOfIndexes, currFile);
 }
 
-void DatabaseThread::startThread() {
+void DatabaseThread::startThread()
+{
 	pthread_create(&thread, NULL, threadEntry, this);
 }
 
-void DatabaseThread::joinThread() {
+void DatabaseThread::joinThread()
+{
 	pthread_join(thread, NULL);
 }
 
@@ -588,7 +571,8 @@ DatabaseThread::DatabaseThread(int s, int count):
 	sorter = new SuffixArraySorter();
 }
 
-DatabaseThread::~DatabaseThread(){
+DatabaseThread::~DatabaseThread()
+{
 	delete sorter;
 }
 

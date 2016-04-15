@@ -28,4 +28,5 @@ lastdb threading
 
 Merging the volumes as they are constructed
 Making sure that the database creation works in parallel (appendFromFasta, writing reading etc)
-Need to incorpoerate the sorter object into the thread class, its wastefeul as it is
+
+Need to kill the segfault.

@@ -28,8 +28,7 @@ typedef sem_t SEM_T;
 #define ERR(x) throw std::runtime_error(x)
 #define LOG(x) if( args.verbosity > 0 ) std::cerr << "lastdb: " << x << '\n'
 
-const std::size_t LOADSIZE = 1000;
-
+const std::size_t LOADSIZE = 100000;
 
 using namespace cbrc;
 
