@@ -4,21 +4,11 @@
 // McIlroy, K Bostic, MD McIlroy.
 
 #include "SubsetSuffixArray.hh"
-#include <algorithm>  // iter_swap, min
+#include "SubsetSuffixArraySort.hh"
 
 using namespace cbrc;
 
-namespace{
-  typedef SubsetSuffixArray::indexT indexT;
-  struct Stack{ indexT* beg; indexT* end; indexT depth; };
-  Stack stack[1048576];  // big enough???
-  Stack* sp = stack;
-}
-
-#define PUSH(b, e, d) sp->beg = b, sp->end = e, (sp++)->depth = d
-#define  POP(b, e, d) b = (--sp)->beg, e = sp->end, d = sp->depth
-
-static void insertionSort( const uchar* text, const CyclicSubsetSeed& seed,
+void SuffixArraySorter::insertionSort( const uchar* text, const CyclicSubsetSeed& seed,
 			   indexT* beg, indexT* end, indexT depth ){
   const uchar* textBase = text + depth;
   const uchar* subsetMap = seed.subsetMap(depth);
@@ -43,7 +33,7 @@ static void insertionSort( const uchar* text, const CyclicSubsetSeed& seed,
 
 // Specialized sort for 1 symbol + 1 delimiter.
 // E.g. wildcard positions in spaced seeds.
-static void radixSort1( const uchar* text, const uchar* subsetMap,
+void SuffixArraySorter::radixSort1( const uchar* text, const uchar* subsetMap,
 			indexT* beg, indexT* end, indexT depth ){
   indexT* end0 = beg;  // end of '0's
 
@@ -65,7 +55,7 @@ static void radixSort1( const uchar* text, const uchar* subsetMap,
 
 // Specialized sort for 2 symbols + 1 delimiter.
 // E.g. transition-constrained positions in subset seeds.
-static void radixSort2( const uchar* text, const uchar* subsetMap,
+void SuffixArraySorter::radixSort2( const uchar* text, const uchar* subsetMap,
                         indexT* beg, indexT* end, indexT depth ){
   indexT* end0 = beg;  // end of '0's
   indexT* end1 = beg;  // end of '1's
@@ -93,7 +83,7 @@ static void radixSort2( const uchar* text, const uchar* subsetMap,
 
 // Specialized sort for 3 symbols + 1 delimiter.
 // E.g. subset seeds for bisulfite-converted DNA.
-static void radixSort3( const uchar* text, const uchar* subsetMap,
+void SuffixArraySorter::radixSort3( const uchar* text, const uchar* subsetMap,
                         indexT* beg, indexT* end, indexT depth ){
   indexT* end0 = beg;  // end of '0's
   indexT* end1 = beg;  // end of '1's
@@ -127,7 +117,7 @@ static void radixSort3( const uchar* text, const uchar* subsetMap,
 }
 
 // Specialized sort for 4 symbols + 1 delimiter.  E.g. DNA.
-static void radixSort4( const uchar* text, const uchar* subsetMap,
+void SuffixArraySorter::radixSort4( const uchar* text, const uchar* subsetMap,
 			indexT* beg, indexT* end, indexT depth ){
   indexT* end0 = beg;  // end of '0's
   indexT* end1 = beg;  // end of '1's
@@ -167,10 +157,14 @@ static void radixSort4( const uchar* text, const uchar* subsetMap,
   PUSH( beg3, end, depth );  // the '3's
 }
 
-static void radixSortN( const uchar* text, const uchar* subsetMap,
+void SuffixArraySorter::radixSortN( const uchar* text, const uchar* subsetMap,
 			indexT* beg, indexT* end, indexT depth,
 			unsigned subsetCount ){
-  static indexT bucketSize[256];  // initialized to zero at startup
+  //static indexT bucketSize[256];  // initialized to zero at startup
+	indexT bucketSize[256];  // initialized to zero at startup
+	for(int i=0; i<256; i++){
+		bucketSize[0] = 0;
+	}
   /*  */ indexT* bucketEnd[256];  // "static" makes little difference to speed
 
   // get bucket sizes (i.e. letter counts):
@@ -203,6 +197,7 @@ static void radixSortN( const uchar* text, const uchar* subsetMap,
     unsigned subset;  // unsigned is faster than uchar!
     indexT holdOut = *i;
     while( --bucketEnd[ subset = subsetMap[ text[holdOut] ] ] > i ){
+	    //std::cout << bucketEnd[ subset = subsetMap[ text[holdOut] ] ] << " " <<  i << std::endl;
       std::swap( *bucketEnd[subset], holdOut );
     }
     *i = holdOut;
@@ -212,34 +207,45 @@ static void radixSortN( const uchar* text, const uchar* subsetMap,
 }
 
 void SubsetSuffixArray::sortIndex( const uchar* text,
-				   indexT maxUnsortedInterval ){
-  PUSH( &index.v.front(), &index.v.back() + 1, 0 );
+                                   indexT maxUnsortedInterval,
+                                   SuffixArraySorter *s )
+{
+	s->PUSH(&index.v.front(), &index.v.back() + 1, 0);
 
-  while( sp > stack ){
-    indexT* beg;
-    indexT* end;
-    indexT depth;
-    POP( beg, end, depth );
+	while (s->sp > s->stack) {
+		indexT *beg;
+		indexT *end;
+		indexT depth;
+		s->POP(beg, end, depth);
 
-    if( end - beg <= maxUnsortedInterval ) continue;
+		if (end - beg <= maxUnsortedInterval) continue;
 
-    if( end - beg < 10 ){  // ???
-      insertionSort( text, seed, beg, end, depth );
-      continue;
-    }
+		if (end - beg < 10) {  // ???
+			s->insertionSort(text, seed, beg, end, depth);
+			continue;
+		}
 
-    const uchar* textBase = text + depth;
-    const uchar* subsetMap = seed.subsetMap(depth);
-    unsigned subsetCount = seed.subsetCount(depth);
+		const uchar *textBase = text + depth;
+		const uchar *subsetMap = seed.subsetMap(depth);
+		unsigned subsetCount = seed.subsetCount(depth);
 
-    ++depth;
+		++depth;
 
-    switch( subsetCount ){
-      case 1:  radixSort1( textBase, subsetMap, beg, end, depth );  break;
-      case 2:  radixSort2( textBase, subsetMap, beg, end, depth );  break;
-      case 3:  radixSort3( textBase, subsetMap, beg, end, depth );  break;
-      case 4:  radixSort4( textBase, subsetMap, beg, end, depth );  break;
-      default: radixSortN( textBase, subsetMap, beg, end, depth, subsetCount );
-    }
-  }
+		switch (subsetCount) {
+			case 1:
+				s->radixSort1(textBase, subsetMap, beg, end, depth);
+				break;
+			case 2:
+				s->radixSort2(textBase, subsetMap, beg, end, depth);
+				break;
+			case 3:
+				s->radixSort3(textBase, subsetMap, beg, end, depth);
+				break;
+			case 4:
+				s->radixSort4(textBase, subsetMap, beg, end, depth);
+				break;
+			default:
+				s->radixSortN(textBase, subsetMap, beg, end, depth, subsetCount);
+		}
+	}
 }

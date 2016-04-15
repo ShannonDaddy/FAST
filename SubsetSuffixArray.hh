@@ -27,6 +27,8 @@
 
 namespace cbrc{
 
+	class SuffixArraySorter;
+
   class SubsetSuffixArray{
     public:
       //typedef std::size_t indexT;
@@ -41,7 +43,7 @@ namespace cbrc{
       void addPositions( const uchar* text, indexT beg, indexT end, indexT step );
 
       // Sort the suffix array (but don't make the buckets).
-      void sortIndex( const uchar* text, indexT maxUnsortedInterval );
+      void sortIndex( const uchar* text, indexT maxUnsortedInterval, SuffixArraySorter *s );
 
       // Make the buckets.  If bucketDepth+1 == 0, then a default
       // bucketDepth is used.  The default is: the maximum possible

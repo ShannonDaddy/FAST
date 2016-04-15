@@ -37,7 +37,7 @@ set(LASTDB_SOURCE_FILES
         lastdb.hh
         utilities.cc
         utilities.hh
-        )
+        SubsetSuffixArraySort.hh)
 
 set(LASTAL_SOURCE_FILES
         externalsort.hh

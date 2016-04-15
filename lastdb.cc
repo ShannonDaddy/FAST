@@ -5,6 +5,7 @@
 
 #include "lastdb.hh"
 #include "utilities.hh"
+#include "SubsetSuffixArraySort.hh"
 
 using namespace std;
 
@@ -99,15 +100,10 @@ void writePrjFile( const std::string& fileName, const LastdbArguments& args,
 	if( !args.isCountsOnly ){
 		f << "maxunsortedinterval=" << args.minSeedLimit << '\n';
 		f << "masklowercase=" << args.isCaseSensitive << '\n';
-		if( args.inputFormat != sequenceFormat::fasta ){
+		if( args.inputFormat != sequenceFormat::fasta )
 			f << "sequenceformat=" << args.inputFormat << '\n';
-		}
-		if( volumes+1 > 0 ){
-			f << "volumes=" << volumes << '\n';
-		}
-		else{
-			f << "numofindexes=" << numOfIndexes << '\n';
-		}
+		if( volumes+1 > 0 ) f << "volumes=" << volumes << '\n';
+		else f << "numofindexes=" << numOfIndexes << '\n';
 	}
 
 	if( !f ) ERR( "can't write file: " + fileName );
@@ -118,26 +114,33 @@ void makeVolume( SubsetSuffixArray indexes[], unsigned numOfIndexes,
                  const MultiSequence& multi, const LastdbArguments& args,
                  const Alphabet& alph, const std::vector<countT>& letterCounts,
                  const std::string& baseName ){
-	LOG( "writing..." );
+	LOG( "writing prj and multi ..." );
+	SEM_WAIT(io);
 	writePrjFile( baseName + ".prj", args, alph, multi.finishedSequences(),
 	              letterCounts, -1, numOfIndexes );
 	multi.toFiles( baseName );
+	SEM_POST(io);
 
+	SuffixArraySorter *s = new SuffixArraySorter();
 	for( unsigned x = 0; x < numOfIndexes; ++x ){
 		LOG( "sorting..." );
-		indexes[x].sortIndex( multi.seqReader(), args.minSeedLimit );
+		indexes[x].sortIndex( multi.seqReader(), args.minSeedLimit, s );
 
 		LOG( "bucketing..." );
 		indexes[x].makeBuckets( multi.seqReader(), args.bucketDepth );
 
-		LOG( "writing..." );
+		LOG( "writing suffix arrays..." );
 		indexT textLength = multi.finishedSize();
+		SEM_WAIT(io);
 		if( numOfIndexes > 1 ) indexes[x].toFiles( baseName + char('a' + x), false, textLength );
 		else indexes[x].toFiles( baseName, true, textLength );
+		SEM_POST(io);
 
 		indexes[x].clearPositions();
 	}
+	delete s;
 	LOG( "done!" );
+	//SEM_POST(io);
 }
 
 // The max number of sequence letters, such that the total volume size
@@ -163,6 +166,7 @@ appendFromFasta( MultiSequence& multi,
                  const LastdbArguments& args, const Alphabet& alph,
                  std::istream& in ){
 
+	SEM_WAIT(io);
 	indexT maxSeqLen = maxLettersPerVolume( args, numOfIndexes );
 	if( multi.finishedSequences() == 0 ) maxSeqLen = indexT(-1);
 
@@ -192,6 +196,7 @@ appendFromFasta( MultiSequence& multi,
 			                         multi.finishedSize(), args.indexStep );
 		}
 	}
+	SEM_POST(io);
 
 	return in;
 }
@@ -393,64 +398,60 @@ void lastdb( int argc, char** argv ){
 	destroySemaphores();
 }
 
+void DatabaseThread::prepareNextVolume(){
+	cout << "FINISHED: " << rank << " " << multi.seq.size() << endl;
+	std::string baseName = args.lastdbName + stringify(volumeNumber++);
+	makeVolume(indexes, numOfIndexes, multi, args, alph,
+	           letterCounts, baseName);
+	for (unsigned c = 0; c < alph.size; ++c) letterTotals[c] += letterCounts[c];
+	letterCounts.assign(alph.size, 0);
+	multi.reinitForAppending();
+}
+
 void DatabaseThread::formatdb(const LastdbArguments &args,
                               const Alphabet &alph,
                               const unsigned numOfIndexes,
                               const std::string &inputName)
 {
-	SEM_WAIT(io);
 	LOG( "reading " << inputName << "..." );
 
-	while(appendFromFasta( multi, indexes, numOfIndexes, args, alph, in )){
+	while (appendFromFasta(multi, indexes, numOfIndexes, args, alph, in)) {
 		//!!
-		cout << rank << " " << multi.seq.size() << endl;
-		if( !args.isProtein &&
+		//cout << rank << " " << multi.seq.size() << endl;
+		if (!args.isProtein &&
 		    args.userAlphabet.empty() &&
 		    sequenceCount == 0 &&
-		    isDubiousDna( alph, multi ) ){
+		    isDubiousDna(alph, multi)) {
 			std::cerr << "lastdb: that's some funny-lookin DNA\n";
 		}
 
-		if( multi.isFinished() ){
+		if (multi.isFinished()) {
+			//!!
+			//cout << "FINISHED: " << rank << " " << multi.seq.size() << endl;
 			++sequenceCount;
 			indexT lastSeq = multi.finishedSequences() - 1;
-			alph.count( multi.seqReader() + multi.seqBeg(lastSeq),
-			            multi.seqReader() + multi.seqEnd(lastSeq),
-			            &letterCounts[0] );
+			alph.count(multi.seqReader() + multi.seqBeg(lastSeq),
+			           multi.seqReader() + multi.seqEnd(lastSeq),
+			           &letterCounts[0]);
 			// memory-saving, which seems to be important on 32-bit systems:
-			if( args.isCountsOnly ) multi.reinitForAppending();
-		}else{
-			std::string baseName = args.lastdbName + stringify(volumeNumber++);
-			makeVolume( indexes, numOfIndexes,
-			            multi, args, alph, letterCounts, baseName );
-			for( unsigned c = 0; c < alph.size; ++c )
-				letterTotals[c] += letterCounts[c];
-			letterCounts.assign( alph.size, 0 );
-			multi.reinitForAppending();
-		}
+			if (args.isCountsOnly) multi.reinitForAppending();
+		} else prepareNextVolume();
 	}
 
 	if( multi.finishedSequences() > 0 ){
-		if( volumeNumber == 0 ){
-			makeVolume( indexes, numOfIndexes,
-			            multi, args, alph, letterCounts, args.lastdbName );
-			SEM_POST(io);
-			return;
-		} else {
-			std::string baseName = args.lastdbName + stringify(volumeNumber++);
-			makeVolume(indexes, numOfIndexes,
-			           multi, args, alph, letterCounts, baseName);
+		if( volumeNumber == 0 ) {
+			cout << "AAAAAAAAAA" << endl;
+			makeVolume(indexes, numOfIndexes, multi, args, alph,
+			           letterCounts, args.lastdbName);
 		}
+		else prepareNextVolume();
 	}
-
-	for( unsigned c = 0; c < alph.size; ++c ) letterTotals[c] += letterCounts[c];
 	//!!
 	//!! Do this at the very end by having all the threads join their values and create the final prj file.
 /*
 	writePrjFile( args.lastdbName + ".prj", args, alph,
 	              sequenceCount, letterTotals, volumeNumber, numOfIndexes );
  */
-	SEM_POST(io);
 }
 
 int main( int argc, char** argv ) {
@@ -486,7 +487,8 @@ void DatabaseThread::joinThread() {
 }
 
 DatabaseThread::DatabaseThread(int s, int count):
-	volumeNumber(0),
+	//volumeNumber(0),
+	volumeNumber(count),
 	sequenceCount(0),
 	rank(count)
 {
@@ -495,7 +497,6 @@ DatabaseThread::DatabaseThread(int s, int count):
 	letterCounts.resize(s);
 	letterTotals.resize(s);
 }
-
 
 void initializeSemaphores()
 {

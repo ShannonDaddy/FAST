@@ -69,6 +69,7 @@ public:
 		              const Alphabet &alph,
 		              const unsigned numOfIndexes,
 		              const std::string &inputName);
+		void prepareNextVolume();
 
 
 

@@ -2,9 +2,6 @@
 
 #include "SubsetSuffixArray.hh"
 #include "io.hh"
-#include <cassert>
-#include <sstream>
-#include <iostream>
 
 using namespace cbrc;
 
@@ -241,47 +238,47 @@ SubsetSuffixArray::upperBound( const indexT* beg, const indexT* end,
 }
 
 void SubsetSuffixArray::makeBuckets( const uchar* text, indexT bucketDepth ){
-  if( bucketDepth+1 == 0 ) bucketDepth = defaultBucketDepth();
+	if( bucketDepth+1 == 0 ) bucketDepth = defaultBucketDepth();
 
-  makeBucketSteps( bucketDepth );
+	makeBucketSteps( bucketDepth );
 
-  buckets.v.clear();
+	buckets.v.clear();
 
-  for( indexT i = 0; i < index.size(); ++i ){
-    const uchar* textPtr = text + index[i];
-    const uchar* subsetMap = seed.firstMap();
-    indexT bucketIndex = 0;
-    indexT depth = 0;
+	for( indexT i = 0; i < index.size(); ++i ){
+		const uchar* textPtr = text + index[i];
+		const uchar* subsetMap = seed.firstMap();
+		indexT bucketIndex = 0;
+		indexT depth = 0;
 
-    while( depth < bucketDepth ){
-      uchar subset = subsetMap[ *textPtr ];
-      if( subset == CyclicSubsetSeed::DELIMITER ){
-	bucketIndex += bucketSteps[depth] - 1;
-	break;
-      }
-      ++textPtr;
-      ++depth;
-      indexT step = bucketSteps[depth];
-      bucketIndex += subset * step;
-      subsetMap = seed.nextMap( subsetMap + 64 );
-    }
+		while( depth < bucketDepth ){
+			uchar subset = subsetMap[ *textPtr ];
+			if( subset == CyclicSubsetSeed::DELIMITER ){
+				bucketIndex += bucketSteps[depth] - 1;
+				break;
+			}
+			++textPtr;
+			++depth;
+			indexT step = bucketSteps[depth];
+			bucketIndex += subset * step;
+			subsetMap = seed.nextMap( subsetMap + 64 );
+		}
 
-    buckets.v.resize( bucketIndex+1, i );
-  }
+		buckets.v.resize( bucketIndex+1, i );
+	}
 
-  buckets.v.resize( bucketSteps[0], index.size() );
+	buckets.v.resize( bucketSteps[0], index.size() );
 }
 
 void SubsetSuffixArray::makeBucketSteps( indexT bucketDepth ){
-  indexT step = 0;
-  indexT depth = bucketDepth + 1;
-  bucketSteps.resize( depth );
+	indexT step = 0;
+	indexT depth = bucketDepth + 1;
+	bucketSteps.resize( depth );
 
-  while( depth > 0 ){
-    --depth;
-    step = step * seed.subsetCount(depth) + 1;
-    bucketSteps[depth] = step;
-  }
+	while( depth > 0 ){
+		--depth;
+		step = step * seed.subsetCount(depth) + 1;
+		bucketSteps[depth] = step;
+	}
 }
 
 SubsetSuffixArray::indexT SubsetSuffixArray::defaultBucketDepth(){
