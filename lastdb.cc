@@ -143,6 +143,41 @@ void makeVolume( SubsetSuffixArray indexes[], unsigned numOfIndexes,
 	//SEM_POST(io);
 }
 
+
+void DatabaseThread::makeVolume( unsigned numOfIndexes,
+                                 const LastdbArguments& args,
+                                 const Alphabet& alph,
+                                 const std::vector<countT>& letterCounts,
+                                 const std::string& baseName ){
+	LOG( "writing prj and multi ..." );
+	SEM_WAIT(io);
+	writePrjFile( baseName + ".prj", args, alph, multi.finishedSequences(),
+	              letterCounts, -1, numOfIndexes );
+	multi.toFiles( baseName );
+	SEM_POST(io);
+
+	SuffixArraySorter *s = new SuffixArraySorter();
+	for( unsigned x = 0; x < numOfIndexes; ++x ){
+		LOG( "sorting..." );
+		indexes[x].sortIndex( multi.seqReader(), args.minSeedLimit, s );
+
+		LOG( "bucketing..." );
+		indexes[x].makeBuckets( multi.seqReader(), args.bucketDepth );
+
+		LOG( "writing suffix arrays..." );
+		indexT textLength = multi.finishedSize();
+		SEM_WAIT(io);
+		if( numOfIndexes > 1 ) indexes[x].toFiles( baseName + char('a' + x), false, textLength );
+		else indexes[x].toFiles( baseName, true, textLength );
+		SEM_POST(io);
+
+		indexes[x].clearPositions();
+	}
+	delete s;
+	LOG( "done!" );
+	//SEM_POST(io);
+}
+
 // The max number of sequence letters, such that the total volume size
 // is likely to be less than volumeSize bytes.  (This is crude, it
 // neglects memory for the sequence names, and the fact that
@@ -382,9 +417,8 @@ void lastdb( int argc, char** argv ){
 	//!! How do we know about the final volumeNumber?
 	for(int i=0; i<args.threadNum; i++){
 		finalSequenceCount += dbThreads[i]->sequenceCount;
-		for(int j=0; j<alph.size; j++) {
+		for(int j=0; j<alph.size; j++)
 			FinalLetterTotals[j] += dbThreads[i]->letterTotals[j];
-		}
 	}
 /*
 	writePrjFile( args.lastdbName + ".prj", args, alph,
@@ -401,7 +435,7 @@ void lastdb( int argc, char** argv ){
 void DatabaseThread::prepareNextVolume(){
 	cout << "FINISHED: " << rank << " " << multi.seq.size() << endl;
 	std::string baseName = args.lastdbName + stringify(volumeNumber++);
-	makeVolume(indexes, numOfIndexes, multi, args, alph,
+	makeVolume(numOfIndexes, args, alph,
 	           letterCounts, baseName);
 	for (unsigned c = 0; c < alph.size; ++c) letterTotals[c] += letterCounts[c];
 	letterCounts.assign(alph.size, 0);
@@ -439,11 +473,7 @@ void DatabaseThread::formatdb(const LastdbArguments &args,
 	}
 
 	if( multi.finishedSequences() > 0 ){
-		if( volumeNumber == 0 ) {
-			cout << "AAAAAAAAAA" << endl;
-			makeVolume(indexes, numOfIndexes, multi, args, alph,
-			           letterCounts, args.lastdbName);
-		}
+		if( volumeNumber == 0 ) makeVolume(numOfIndexes, args, alph, letterCounts, args.lastdbName);
 		else prepareNextVolume();
 	}
 	//!!

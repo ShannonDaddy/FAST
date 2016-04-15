@@ -71,6 +71,10 @@ public:
 		              const std::string &inputName);
 		void prepareNextVolume();
 
+		void makeVolume( unsigned numOfIndexes,
+		                 const LastdbArguments& args,
+		                 const Alphabet& alph, const std::vector<countT>& letterCounts,
+		                 const std::string& baseName );
 
 
 		static void* threadEntry(void *args);
