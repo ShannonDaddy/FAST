@@ -28,6 +28,8 @@ typedef sem_t SEM_T;
 #define ERR(x) throw std::runtime_error(x)
 #define LOG(x) if( args.verbosity > 0 ) std::cerr << "lastdb: " << x << '\n'
 
+const std::size_t LOADSIZE = 1000;
+
 
 using namespace cbrc;
 
@@ -64,6 +66,7 @@ public:
 		std::vector<countT> letterTotals;
 
 		int rank;
+		SuffixArraySorter *sorter;
 
 		void formatdb(const LastdbArguments &args,
 		              const Alphabet &alph,
@@ -76,6 +79,9 @@ public:
 		                 const Alphabet& alph, const std::vector<countT>& letterCounts,
 		                 const std::string& baseName );
 
+		std::istream& readFasta(unsigned numOfIndexes,
+		                        const LastdbArguments& args, const Alphabet& alph,
+		                        std::istream& in );
 
 		static void* threadEntry(void *args);
 		void threadFunction();
@@ -85,6 +91,7 @@ public:
 		void joinThread();
 
 		DatabaseThread(int s, int count);
+		~DatabaseThread();
 };
 
 struct File{

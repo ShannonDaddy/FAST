@@ -156,10 +156,9 @@ void DatabaseThread::makeVolume( unsigned numOfIndexes,
 	multi.toFiles( baseName );
 	SEM_POST(io);
 
-	SuffixArraySorter *s = new SuffixArraySorter();
 	for( unsigned x = 0; x < numOfIndexes; ++x ){
 		LOG( "sorting..." );
-		indexes[x].sortIndex( multi.seqReader(), args.minSeedLimit, s );
+		indexes[x].sortIndex( multi.seqReader(), args.minSeedLimit, sorter );
 
 		LOG( "bucketing..." );
 		indexes[x].makeBuckets( multi.seqReader(), args.bucketDepth );
@@ -173,7 +172,6 @@ void DatabaseThread::makeVolume( unsigned numOfIndexes,
 
 		indexes[x].clearPositions();
 	}
-	delete s;
 	LOG( "done!" );
 	//SEM_POST(io);
 }
@@ -192,6 +190,70 @@ static indexT maxLettersPerVolume( const LastdbArguments& args,
 	indexT z = y;
 	if( z < y ) z = indexT(-1);
 	return z;
+}
+
+
+
+
+
+std::istream&
+DatabaseThread::readFasta( unsigned numOfIndexes,
+                           const LastdbArguments& args,
+                           const Alphabet& alph,
+                           std::istream& in )
+{
+	SEM_WAIT(io);
+
+	indexT maxSeqLen = maxLettersPerVolume( args, numOfIndexes );
+	if( multi.finishedSequences() == 0 ) maxSeqLen = indexT(-1);
+
+	std::size_t oldUnfinishedSize = multi.unfinishedSize();
+	indexT oldFinishedSize = multi.finishedSize();
+
+	if ( args.inputFormat == sequenceFormat::fasta )
+		multi.appendFromFastaLASTDB( in, maxSeqLen, args.unlimited );
+	else
+		multi.appendFromFastq( in, maxSeqLen );
+
+	if( !multi.isFinished() && multi.finishedSequences() == 0 )
+		ERR( "encountered a sequence that's too long" );
+
+	// encode the newly-read sequence
+	alph.tr( multi.seqWriter() + oldUnfinishedSize,
+	         multi.seqWriter() + multi.unfinishedSize() );
+
+	if( isPhred( args.inputFormat ) )  // assumes one quality code per letter:
+		checkQualityCodes( multi.qualityReader() + oldUnfinishedSize,
+		                   multi.qualityReader() + multi.unfinishedSize(),
+		                   qualityOffset( args.inputFormat ) );
+
+	if( in && multi.isFinished() && !args.isCountsOnly ){
+		for( unsigned x = 0; x < numOfIndexes; ++x ){
+			indexes[x].addPositions( multi.seqReader(), oldFinishedSize,
+			                         multi.finishedSize(), args.indexStep );
+		}
+	}
+
+	if (!args.isProtein && args.userAlphabet.empty() &&
+	    sequenceCount == 0 && isDubiousDna(alph, multi))
+		std::cerr << "lastdb: that's some funny-lookin DNA\n";
+
+
+	if (multi.isFinished()) {
+		//!!
+		//cout << "FINISHED: " << rank << " " << multi.seq.size() << endl;
+		++sequenceCount;
+		indexT lastSeq = multi.finishedSequences() - 1;
+		alph.count(multi.seqReader() + multi.seqBeg(lastSeq),
+		           multi.seqReader() + multi.seqEnd(lastSeq),
+		           &letterCounts[0]);
+		// memory-saving, which seems to be important on 32-bit systems:
+		if (args.isCountsOnly) multi.reinitForAppending();
+	} else prepareNextVolume();
+
+	SEM_POST(io);
+
+	return in;
 }
 
 // Read the next sequence, adding it to the MultiSequence and the SuffixArray
@@ -404,6 +466,7 @@ void lastdb( int argc, char** argv ){
 				cout << "Starting thread : " << i << endl;
 				dbThreads[i]->startThread();
 			}
+
 			for (int i = 0; i < args.threadNum; i++) {
 				dbThreads[i]->joinThread();
 				cout << "Joined thread : " << i << endl;
@@ -433,7 +496,6 @@ void lastdb( int argc, char** argv ){
 }
 
 void DatabaseThread::prepareNextVolume(){
-	cout << "FINISHED: " << rank << " " << multi.seq.size() << endl;
 	std::string baseName = args.lastdbName + stringify(volumeNumber++);
 	makeVolume(numOfIndexes, args, alph,
 	           letterCounts, baseName);
@@ -445,19 +507,16 @@ void DatabaseThread::prepareNextVolume(){
 void DatabaseThread::formatdb(const LastdbArguments &args,
                               const Alphabet &alph,
                               const unsigned numOfIndexes,
-                              const std::string &inputName)
-{
-	LOG( "reading " << inputName << "..." );
+                              const std::string &inputName) {
+	LOG("reading " << inputName << "...");
 
-	while (appendFromFasta(multi, indexes, numOfIndexes, args, alph, in)) {
+	while (readFasta(numOfIndexes, args, alph, in)){
 		//!!
 		//cout << rank << " " << multi.seq.size() << endl;
-		if (!args.isProtein &&
-		    args.userAlphabet.empty() &&
-		    sequenceCount == 0 &&
-		    isDubiousDna(alph, multi)) {
+		if (!args.isProtein && args.userAlphabet.empty() &&
+		    sequenceCount == 0 && isDubiousDna(alph, multi))
 			std::cerr << "lastdb: that's some funny-lookin DNA\n";
-		}
+
 
 		if (multi.isFinished()) {
 			//!!
@@ -526,6 +585,11 @@ DatabaseThread::DatabaseThread(int s, int count):
 	multi.initForAppending(1);
 	letterCounts.resize(s);
 	letterTotals.resize(s);
+	sorter = new SuffixArraySorter();
+}
+
+DatabaseThread::~DatabaseThread(){
+	delete sorter;
 }
 
 void initializeSemaphores()
