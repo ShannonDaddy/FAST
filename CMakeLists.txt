@@ -6,7 +6,8 @@ set(DIRECTORIES gumbel_params gumbel_params/common
 
 include_directories(${DIRECTORIES})
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -pthread")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -pthread")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -pthread")
 
 set(LASTDB_SOURCE_FILES
         Alphabet.cc
@@ -34,6 +35,8 @@ set(LASTDB_SOURCE_FILES
         qualityScoreUtil.hh
         version.hh
         lastdb.hh
+        utilities.cc
+        utilities.hh
         )
 
 set(LASTAL_SOURCE_FILES

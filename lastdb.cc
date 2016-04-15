@@ -8,6 +8,9 @@
 
 using namespace std;
 
+SEM_T io;
+unsigned currVolume = 0;
+
 // Set up an alphabet (e.g. DNA or protein), based on the user options
 void makeAlphabet( Alphabet& alph, const LastdbArguments& args ){
 	if( !args.userAlphabet.empty() )  alph.fromString( args.userAlphabet );
@@ -129,12 +132,8 @@ void makeVolume( SubsetSuffixArray indexes[], unsigned numOfIndexes,
 
 		LOG( "writing..." );
 		indexT textLength = multi.finishedSize();
-		if( numOfIndexes > 1 ){
-			indexes[x].toFiles( baseName + char('a' + x), false, textLength );
-		}
-		else{
-			indexes[x].toFiles( baseName, true, textLength );
-		}
+		if( numOfIndexes > 1 ) indexes[x].toFiles( baseName + char('a' + x), false, textLength );
+		else indexes[x].toFiles( baseName, true, textLength );
 
 		indexes[x].clearPositions();
 	}
@@ -164,39 +163,34 @@ appendFromFasta( MultiSequence& multi,
                  const LastdbArguments& args, const Alphabet& alph,
                  std::istream& in ){
 
-	try{
-		indexT maxSeqLen = maxLettersPerVolume( args, numOfIndexes );
-		if( multi.finishedSequences() == 0 ) maxSeqLen = indexT(-1);
+	indexT maxSeqLen = maxLettersPerVolume( args, numOfIndexes );
+	if( multi.finishedSequences() == 0 ) maxSeqLen = indexT(-1);
 
-		std::size_t oldUnfinishedSize = multi.unfinishedSize();
-		indexT oldFinishedSize = multi.finishedSize();
+	std::size_t oldUnfinishedSize = multi.unfinishedSize();
+	indexT oldFinishedSize = multi.finishedSize();
 
-		if ( args.inputFormat == sequenceFormat::fasta )
-			multi.appendFromFastaLASTDB( in, maxSeqLen, args.unlimited );
-		else
-			multi.appendFromFastq( in, maxSeqLen );
+	if ( args.inputFormat == sequenceFormat::fasta )
+		multi.appendFromFastaLASTDB( in, maxSeqLen, args.unlimited );
+	else
+		multi.appendFromFastq( in, maxSeqLen );
 
-		if( !multi.isFinished() && multi.finishedSequences() == 0 )
-			ERR( "encountered a sequence that's too long" );
+	if( !multi.isFinished() && multi.finishedSequences() == 0 )
+		ERR( "encountered a sequence that's too long" );
 
-		// encode the newly-read sequence
-		alph.tr( multi.seqWriter() + oldUnfinishedSize,
-		         multi.seqWriter() + multi.unfinishedSize() );
+	// encode the newly-read sequence
+	alph.tr( multi.seqWriter() + oldUnfinishedSize,
+	         multi.seqWriter() + multi.unfinishedSize() );
 
-		if( isPhred( args.inputFormat ) )  // assumes one quality code per letter:
-			checkQualityCodes( multi.qualityReader() + oldUnfinishedSize,
-			                   multi.qualityReader() + multi.unfinishedSize(),
-			                   qualityOffset( args.inputFormat ) );
+	if( isPhred( args.inputFormat ) )  // assumes one quality code per letter:
+		checkQualityCodes( multi.qualityReader() + oldUnfinishedSize,
+		                   multi.qualityReader() + multi.unfinishedSize(),
+		                   qualityOffset( args.inputFormat ) );
 
-		if( in && multi.isFinished() && !args.isCountsOnly ){
-			for( unsigned x = 0; x < numOfIndexes; ++x ){
-				indexes[x].addPositions( multi.seqReader(), oldFinishedSize,
-				                         multi.finishedSize(), args.indexStep );
-			}
+	if( in && multi.isFinished() && !args.isCountsOnly ){
+		for( unsigned x = 0; x < numOfIndexes; ++x ){
+			indexes[x].addPositions( multi.seqReader(), oldFinishedSize,
+			                         multi.finishedSize(), args.indexStep );
 		}
-
-	} catch(const std::exception& ex) {
-		throw;
 	}
 
 	return in;
@@ -315,17 +309,25 @@ void generateDifference(const std::string &filename, const string &dbname){
 
 }
 
-void lastdb( int argc, char** argv ){
-	LastdbArguments args;
-	args.fromArgs( argc, argv );
+Alphabet alph;
+LastdbArguments args;
+string currFile;
+DatabaseThread **dbThreads;
+std::ifstream in;
 
-	Alphabet alph;
-	MultiSequence multi;
-	SubsetSuffixArray indexes[maxNumOfIndexes];
+void lastdb( int argc, char** argv ){
+	args.fromArgs( argc, argv );
+	initializeSemaphores();
 	makeAlphabet( alph, args );
-	const unsigned numOfIndexes = makeSubsetSeeds( indexes, args, alph );
-	multi.initForAppending(1);
-	alph.tr( multi.seqWriter(), multi.seqWriter() + multi.unfinishedSize() );
+
+	dbThreads = new DatabaseThread*[args.threadNum];
+	for(int i=0; i<args.threadNum; i++){
+		dbThreads[i] = new DatabaseThread(alph.size, i);
+	}
+	alph.tr( dbThreads[0]->multi.seqWriter(),
+	         dbThreads[0]->multi.seqWriter() + dbThreads[0]->multi.unfinishedSize() );
+
+	unsigned numOfIndexes = dbThreads[0]->numOfIndexes;
 
 	char defaultInputName[] = "-";
 	char* defaultInput[] = { defaultInputName, 0 };
@@ -338,70 +340,93 @@ void lastdb( int argc, char** argv ){
 		std::string tmpFile = generate_directory_name("");
 
 		for( char** i = *inputBegin ? inputBegin : defaultInput; *i; ++i ) {
-			generateDifference(tmpFile);
+			//generateDifference(tmpFile);
 		}
 
 		// Run the incrementalFormat with the new tmp file
-		incrementalFormatWithNovel(args, alph, multi,
-		                           indexes, numOfIndexes, tmpFile);
+		incrementalFormatWithNovel(args, alph, dbThreads[0]->multi,
+		                           dbThreads[0]->indexes, numOfIndexes, tmpFile);
 
 		// delete the old tmp file
 		remove(tmpFile.c_str());
-
-		return;
-	}
-
-	if(args.novelSequenceFile){
+	} else if(args.novelSequenceFile){
+		for( char** i = *inputBegin ? inputBegin : defaultInput; *i; ++i )
+			incrementalFormatWithNovel(args, alph, dbThreads[0]->multi,
+			                           dbThreads[0]->indexes, numOfIndexes, string(*i));
+	} else {
 		for( char** i = *inputBegin ? inputBegin : defaultInput; *i; ++i ) {
-			incrementalFormatWithNovel(args, alph, multi,
-			                           indexes, numOfIndexes, string(*i));
+			string inputName(*i);
+			currFile = inputName;
+
+			in.open(inputName.c_str());
+
+			for (int i = 0; i < args.threadNum; i++) {
+				cout << "Starting thread : " << i << endl;
+				dbThreads[i]->startThread();
+			}
+			for (int i = 0; i < args.threadNum; i++) {
+				dbThreads[i]->joinThread();
+				cout << "Joined thread : " << i << endl;
+			}
 		}
-		return;
 	}
 
+	//!! How do we prevent a million mini prjs from forming?
+	countT finalSequenceCount = 0;
+	std::vector<countT> FinalLetterTotals(alph.size);
+	//!! How do we know about the final volumeNumber?
+	for(int i=0; i<args.threadNum; i++){
+		finalSequenceCount += dbThreads[i]->sequenceCount;
+		for(int j=0; j<alph.size; j++) {
+			FinalLetterTotals[j] += dbThreads[i]->letterTotals[j];
+		}
+	}
+/*
+	writePrjFile( args.lastdbName + ".prj", args, alph,
+	              sequenceCount, letterTotals, volumeNumber, numOfIndexes );
+ */
 
-	unsigned volumeNumber = 0;
-	countT sequenceCount = 0;
-	std::vector<countT> letterCounts( alph.size );
-	std::vector<countT> letterTotals( alph.size );
+	for(int i=0; i<args.threadNum; i++){
+		delete dbThreads[i];
+	}
+	delete[] dbThreads;
+	destroySemaphores();
+}
 
-	for( char** i = *inputBegin ? inputBegin : defaultInput; *i; ++i ){
-		std::ifstream inFileStream;
-		std::istream& in = openIn( *i, inFileStream );
-		LOG( "reading " << *i << "..." );
+void DatabaseThread::formatdb(const LastdbArguments &args,
+                              const Alphabet &alph,
+                              const unsigned numOfIndexes,
+                              const std::string &inputName)
+{
+	SEM_WAIT(io);
+	LOG( "reading " << inputName << "..." );
 
-		while(in){
-			try {
-				appendFromFasta( multi, indexes, numOfIndexes, args, alph, in );
-				if( !args.isProtein &&
-				    args.userAlphabet.empty() &&
-				    sequenceCount == 0 &&
-				    isDubiousDna( alph, multi ) ){
-					std::cerr << "lastdb: that's some funny-lookin DNA\n";
-				}
+	while(appendFromFasta( multi, indexes, numOfIndexes, args, alph, in )){
+		//!!
+		cout << rank << " " << multi.seq.size() << endl;
+		if( !args.isProtein &&
+		    args.userAlphabet.empty() &&
+		    sequenceCount == 0 &&
+		    isDubiousDna( alph, multi ) ){
+			std::cerr << "lastdb: that's some funny-lookin DNA\n";
+		}
 
-				if( multi.isFinished() ){
-					++sequenceCount;
-					indexT lastSeq = multi.finishedSequences() - 1;
-					alph.count( multi.seqReader() + multi.seqBeg(lastSeq),
-					            multi.seqReader() + multi.seqEnd(lastSeq),
-					            &letterCounts[0] );
-					// memory-saving, which seems to be important on 32-bit systems:
-					if( args.isCountsOnly ) multi.reinitForAppending();
-				}else{
-					std::string baseName = args.lastdbName + stringify(volumeNumber++);
-					makeVolume( indexes, numOfIndexes,
-					            multi, args, alph, letterCounts, baseName );
-					for( unsigned c = 0; c < alph.size; ++c )
-						letterTotals[c] += letterCounts[c];
-					letterCounts.assign( alph.size, 0 );
-					multi.reinitForAppending();
-				}
-			} catch (const std::exception &ex){
-				std::cerr << ex.what() << std::endl;
-				std::cerr << "Encountered a malformed sequence. Ignoring sequence and continuing" << std::endl;
-				multi.removeLatest();
-			}
+		if( multi.isFinished() ){
+			++sequenceCount;
+			indexT lastSeq = multi.finishedSequences() - 1;
+			alph.count( multi.seqReader() + multi.seqBeg(lastSeq),
+			            multi.seqReader() + multi.seqEnd(lastSeq),
+			            &letterCounts[0] );
+			// memory-saving, which seems to be important on 32-bit systems:
+			if( args.isCountsOnly ) multi.reinitForAppending();
+		}else{
+			std::string baseName = args.lastdbName + stringify(volumeNumber++);
+			makeVolume( indexes, numOfIndexes,
+			            multi, args, alph, letterCounts, baseName );
+			for( unsigned c = 0; c < alph.size; ++c )
+				letterTotals[c] += letterCounts[c];
+			letterCounts.assign( alph.size, 0 );
+			multi.reinitForAppending();
 		}
 	}
 
@@ -409,17 +434,23 @@ void lastdb( int argc, char** argv ){
 		if( volumeNumber == 0 ){
 			makeVolume( indexes, numOfIndexes,
 			            multi, args, alph, letterCounts, args.lastdbName );
+			SEM_POST(io);
 			return;
+		} else {
+			std::string baseName = args.lastdbName + stringify(volumeNumber++);
+			makeVolume(indexes, numOfIndexes,
+			           multi, args, alph, letterCounts, baseName);
 		}
-		std::string baseName = args.lastdbName + stringify(volumeNumber++);
-		makeVolume( indexes, numOfIndexes,
-		            multi, args, alph, letterCounts, baseName );
 	}
 
 	for( unsigned c = 0; c < alph.size; ++c ) letterTotals[c] += letterCounts[c];
-
+	//!!
+	//!! Do this at the very end by having all the threads join their values and create the final prj file.
+/*
 	writePrjFile( args.lastdbName + ".prj", args, alph,
 	              sequenceCount, letterTotals, volumeNumber, numOfIndexes );
+ */
+	SEM_POST(io);
 }
 
 int main( int argc, char** argv ) {
@@ -435,4 +466,55 @@ int main( int argc, char** argv ) {
 	} catch (int i) {
 		return i;
 	}
+}
+
+void* DatabaseThread::threadEntry(void *args) {
+	((DatabaseThread *) args)->threadFunction();
+	return NULL;
+}
+
+void DatabaseThread::threadFunction() {
+	formatdb(args, alph, numOfIndexes, currFile);
+}
+
+void DatabaseThread::startThread() {
+	pthread_create(&thread, NULL, threadEntry, this);
+}
+
+void DatabaseThread::joinThread() {
+	pthread_join(thread, NULL);
+}
+
+DatabaseThread::DatabaseThread(int s, int count):
+	volumeNumber(0),
+	sequenceCount(0),
+	rank(count)
+{
+	numOfIndexes = makeSubsetSeeds( indexes, args, alph );
+	multi.initForAppending(1);
+	letterCounts.resize(s);
+	letterTotals.resize(s);
+}
+
+
+void initializeSemaphores()
+{
+#ifdef __APPLE__
+	sem_unlink("/io");
+  if (( io = sem_open("/io", O_CREAT, 0644, 1)) == SEM_FAILED ) {
+    perror("sem_open");
+    exit(EXIT_FAILURE);
+  }
+#elif __linux
+	sem_init(&io, 0, 1);
+#endif
+}
+
+void destroySemaphores()
+{
+#ifdef __APPLE__
+  sem_unlink("/io");
+#elif __linux
+	sem_destroy(&io);
+#endif
 }

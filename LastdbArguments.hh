@@ -45,6 +45,7 @@ namespace cbrc{
 
 			bool novelSequenceFile;
 			bool latestDatabase;
+			unsigned threadNum;
 	};
 
 }  // end namespace

@@ -32,7 +32,8 @@ LastdbArguments::LastdbArguments() :
 		isCountsOnly(false),
 		verbosity(0),
 		version(false),
-		inputFormat(sequenceFormat::fasta){}
+		inputFormat(sequenceFormat::fasta),
+		threadNum(1){}
 
 void LastdbArguments::fromArgs( int argc, char** argv ){
 	std::string usage = "\
@@ -42,7 +43,8 @@ Prepare sequences for subsequent alignment with lastal.\n\
 Main Options:\n\
 -h: show all options and their default settings\n\
 -p: interpret the sequences as proteins\n\
--c: soft-mask lowercase letters";
+-c: soft-mask lowercase letters\n\
+-t: number of threads";
 
 	std::string help = usage + "\n\
 \n\
@@ -72,7 +74,7 @@ LAST+ home page: github.com/hallamlab/LAST-Plus/\n\
 ";
 
 	int c;
-	while( (c = getopt(argc, argv, "hpcm:s:w:u:a:i:b:xvVQ:nd")) != -1 ) {
+	while( (c = getopt(argc, argv, "hpcm:s:w:u:a:i:b:xvVQ:ndt:")) != -1 ) {
 		switch(c){
 			case 'h':
 				std::cout << help;
@@ -125,6 +127,9 @@ LAST+ home page: github.com/hallamlab/LAST-Plus/\n\
 				break;
 			case 'd':
 				latestDatabase = true;
+				break;
+			case 't':
+				unstringify(threadNum, optarg);
 				break;
 			case '?':
 				ERR( "bad option" );

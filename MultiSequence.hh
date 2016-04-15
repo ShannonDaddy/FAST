@@ -121,7 +121,9 @@ class MultiSequence{
     void removeName();
     void printOffensiveName();
 
-  private:
+  //private:
+		//!! i want to see whats inside
+public:
   indexT padSize;  // number of delimiter chars between sequences
   VectorOrMmap<uchar> seq;  // concatenated sequences
   VectorOrMmap<indexT> ends;  // coordinates of ends of delimiter pads
