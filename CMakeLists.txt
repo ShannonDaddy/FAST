@@ -23,6 +23,7 @@ set(LASTDB_SOURCE_FILES
         io.hh
         fileMap.cc
         SubsetSuffixArraySort.cc
+        SubsetSuffixArraySort.hh
         SubsetSuffixArray.hh
         CyclicSubsetSeed.hh
         Mmap.hh
@@ -37,7 +38,8 @@ set(LASTDB_SOURCE_FILES
         lastdb.hh
         utilities.cc
         utilities.hh
-        SubsetSuffixArraySort.hh)
+        prjFiles.cpp
+        prjFiles.hh)
 
 set(LASTAL_SOURCE_FILES
         externalsort.hh

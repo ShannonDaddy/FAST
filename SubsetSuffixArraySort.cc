@@ -151,53 +151,52 @@ void SuffixArraySorter::radixSort4( const uchar* text, const uchar* subsetMap,
     }
   }
 
-  PUSH( beg, end0, depth );   // the '0's
-  PUSH( end0, end1, depth );  // the '1's
-  PUSH( end1, beg3, depth );  // the '2's
-  PUSH( beg3, end, depth );  // the '3's
+	PUSH( beg, end0, depth );   // the '0's
+	PUSH( end0, end1, depth );  // the '1's
+	PUSH( end1, beg3, depth );  // the '2's
+	PUSH( beg3, end, depth );  // the '3's
 }
 
-void SuffixArraySorter::radixSortN( const uchar* text, const uchar* subsetMap,
-			indexT* beg, indexT* end, indexT depth,
-			unsigned subsetCount ){
-  //static indexT bucketSize[256];  // initialized to zero at startup
-	indexT bucketSize[256];  // initialized to zero at startup
+void SuffixArraySorter::radixSortN( const uchar* text,
+                                    const uchar* subsetMap,
+                                    indexT* beg, indexT* end, indexT depth,
+                                    unsigned subsetCount ){
+	indexT bucketSize[256];
 	for(int i=0; i<256; i++){
 		bucketSize[0] = 0;
 	}
-  /*  */ indexT* bucketEnd[256];  // "static" makes little difference to speed
+	indexT* bucketEnd[256];
 
-  // get bucket sizes (i.e. letter counts):
-  // The intermediate oracle array makes it faster (see "Engineering
-  // Radix Sort for Strings" by J Karkkainen & T Rantala)
-  for( indexT* i = beg; i < end; /* noop */ ){
-    uchar oracle[256];
-    uchar* oracleEnd =
-      oracle + std::min( sizeof(oracle), std::size_t(end - i) );
-    for( uchar* j = oracle; j < oracleEnd; ++j )
-      *j = subsetMap[ text[ *i++ ] ];
-    for( uchar* j = oracle; j < oracleEnd; ++j )
-      ++bucketSize[ *j ];
-  }
+	// get bucket sizes (i.e. letter counts):
+	// The intermediate oracle array makes it faster (see "Engineering
+	// Radix Sort for Strings" by J Karkkainen & T Rantala)
+	for( indexT* i = beg; i < end; /* noop */ ){
+		uchar oracle[256];
+		uchar* oracleEnd =
+				oracle + std::min( sizeof(oracle), std::size_t(end - i) );
+		for( uchar* j = oracle; j < oracleEnd; ++j )
+			*j = subsetMap[ text[ *i++ ] ];
+		for( uchar* j = oracle; j < oracleEnd; ++j )
+			++bucketSize[ *j ];
+	}
 
-  // get bucket ends, and put buckets on the stack to sort within them later:
-  // (could push biggest bucket first, to ensure logarithmic stack growth)
-  indexT* pos = beg;
-  for( unsigned i = 0; i < subsetCount; ++i ){
-    indexT* nextPos = pos + bucketSize[i];
-    PUSH( pos, nextPos, depth );
-    pos = nextPos;
-    bucketEnd[i] = pos;
-  }
-  // don't sort within the delimiter bucket:
-  bucketEnd[ CyclicSubsetSeed::DELIMITER ] = end;
+	// get bucket ends, and put buckets on the stack to sort within them later:
+	// (could push biggest bucket first, to ensure logarithmic stack growth)
+	indexT* pos = beg;
+	for( unsigned i = 0; i < subsetCount; ++i ){
+		indexT* nextPos = pos + bucketSize[i];
+		PUSH( pos, nextPos, depth );
+		pos = nextPos;
+		bucketEnd[i] = pos;
+	}
+	// don't sort within the delimiter bucket:
+	bucketEnd[ CyclicSubsetSeed::DELIMITER ] = end;
 
-  // permute items into the correct buckets:
+	// permute items into the correct buckets:
   for( indexT* i = beg; i < end; /* noop */ ) {
     unsigned subset;  // unsigned is faster than uchar!
     indexT holdOut = *i;
     while( --bucketEnd[ subset = subsetMap[ text[holdOut] ] ] > i ){
-	    //std::cout << bucketEnd[ subset = subsetMap[ text[holdOut] ] ] << " " <<  i << std::endl;
       std::swap( *bucketEnd[subset], holdOut );
     }
     *i = holdOut;

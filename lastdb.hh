@@ -75,11 +75,13 @@ public:
 
 		void makeVolume( unsigned numOfIndexes,
 		                 const LastdbArguments& args,
-		                 const Alphabet& alph, const std::vector<countT>& letterCounts,
+		                 const Alphabet& alph,
+		                 const std::vector<countT>& letterCounts,
 		                 const std::string& baseName );
 
 		std::istream& readFasta(unsigned numOfIndexes,
-		                        const LastdbArguments& args, const Alphabet& alph,
+		                        const LastdbArguments& args,
+		                        const Alphabet& alph,
 		                        std::istream& in );
 
 		static void* threadEntry(void *args);

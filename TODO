@@ -30,3 +30,7 @@ Merging the volumes as they are constructed
 Making sure that the database creation works in parallel (appendFromFasta, writing reading etc)
 
 Need to kill the segfault.
+
+Think about how to handle the memory problem of 20GB. We can do it by writing every little partition
+to disk in a proper format rather than handling it all at once.
+We can use file pointers to concatenate properly!
