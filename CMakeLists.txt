@@ -39,7 +39,10 @@ set(LASTDB_SOURCE_FILES
         utilities.cc
         utilities.hh
         prjFiles.cpp
-        prjFiles.hh)
+        prjFiles.hh
+        DatabaseThread.cpp
+        DatabaseThread.hh
+        )
 
 set(LASTAL_SOURCE_FILES
         externalsort.hh

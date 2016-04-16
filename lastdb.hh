@@ -25,12 +25,18 @@ typedef sem_t SEM_T;
 #define SEM_WAIT(x) sem_wait(&x)
 #endif
 
+using namespace cbrc;
+
 #define ERR(x) throw std::runtime_error(x)
 #define LOG(x) if( args.verbosity > 0 ) std::cerr << "lastdb: " << x << '\n'
 
-const std::size_t LOADSIZE = 100000;
+// Defined in lastdb.cc
+extern Alphabet alph;
+extern LastdbArguments args;
+extern std::string currFile;
+extern std::ifstream in;
 
-using namespace cbrc;
+const std::size_t LOADSIZE = 100000;
 
 typedef MultiSequence::indexT indexT;
 typedef unsigned long long countT;
@@ -47,58 +53,20 @@ void readPrjFile(
 
 void generateDifference(const std::string &filename, const std::string &dbname);
 
-void initializeSemaphores();
-void destroySemaphores();
 
-class DatabaseThread{
-//private:
-public:
-		pthread_t thread;
 
-		MultiSequence multi;
-		SubsetSuffixArray indexes[maxNumOfIndexes];
+void makeAlphabet( Alphabet& alph, const LastdbArguments& args );
+bool isDubiousDna( const Alphabet& alph, const MultiSequence& multi );
+unsigned makeSubsetSeeds( SubsetSuffixArray indexes[],
+                          const LastdbArguments& args,
+                          const Alphabet& alph );
 
-		unsigned volumeNumber;
-		unsigned numOfIndexes;
-		countT sequenceCount;
-		std::vector<countT> letterCounts;
-		std::vector<countT> letterTotals;
+void writePrjFile( const std::string& fileName, const LastdbArguments& args,
+                   const Alphabet& alph, countT sequenceCount,
+                   const std::vector<countT>& letterCounts,
+                   unsigned volumes, unsigned numOfIndexes );
 
-		int rank;
-		SuffixArraySorter *sorter;
-
-		void formatdb(const LastdbArguments &args,
-		              const Alphabet &alph,
-		              const unsigned numOfIndexes,
-		              const std::string &inputName);
-		void prepareNextVolume();
-
-		void makeVolume( unsigned numOfIndexes,
-		                 const LastdbArguments& args,
-		                 const Alphabet& alph,
-		                 const std::vector<countT>& letterCounts,
-		                 const std::string& baseName );
-
-		std::istream& readFasta(unsigned numOfIndexes,
-		                        const LastdbArguments& args,
-		                        const Alphabet& alph,
-		                        std::istream& in );
-
-		static void* threadEntry(void *args);
-		void threadFunction();
-
-//public:
-		void startThread();
-		void joinThread();
-
-		DatabaseThread(int s, int count);
-		~DatabaseThread();
-};
-
-struct File{
-
-		//std::ifstream inFileStream;
-		//std::istream &in = openIn( inputName, inFileStream );
-};
+indexT maxLettersPerVolume( const LastdbArguments& args,
+                            unsigned numOfIndexes );
 
 #endif //THREADEDLAST_LASTDB_HH
