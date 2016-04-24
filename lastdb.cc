@@ -391,9 +391,18 @@ void lastdb( int argc, char** argv )
 	//!! How do we know about the final volumeNumber?
 	for(int i=0; i<args.threadNum; i++){
 		finalSequenceCount += dbThreads[i]->sequenceCount;
-		for(int j=0; j<alph.size; j++)
+		//cout<< "FSC: " << dbThreads[i]->sequenceCount << endl;
+		for(int j=0; j<alph.size; j++) {
 			FinalLetterTotals[j] += dbThreads[i]->letterTotals[j];
+			//cout << "FLT: " << dbThreads[i]->letterTotals[j] << endl;
+		}
 	}
+
+	//cout<< "FINAL_FSC: " << finalSequenceCount  << endl;
+	for(int j=0; j<alph.size; j++)
+		//cout << "FINAL_FLT: " << FinalLetterTotals[j] << std::endl;
+
+
 	writePrjFile( args.lastdbName + ".prj", args, alph,
 	              finalSequenceCount, FinalLetterTotals, volumeCount, numOfIndexes );
 

@@ -37,7 +37,6 @@ void DatabaseThread::makeVolume( unsigned numOfIndexes,
 		indexes[x].clearPositions();
 	}
 	LOG( "done!" );
-	//SEM_POST(io);
 }
 
 std::istream&
@@ -50,7 +49,7 @@ DatabaseThread::readFasta( unsigned numOfIndexes,
 	if( multi.finishedSequences() == 0 ) maxSeqLen = indexT(-1);
 
 	std::size_t seqCount = 0;
-	while(seqCount < LOADSIZE) {
+	while(seqCount < LOADSIZE && in) {
 		SEM_WAIT(io);
 		std::size_t oldUnfinishedSize = multi.unfinishedSize();
 		indexT oldFinishedSize = multi.finishedSize();
@@ -103,8 +102,7 @@ DatabaseThread::readFasta( unsigned numOfIndexes,
 void DatabaseThread::prepareNextVolume()
 {
 	std::string baseName = args.lastdbName + stringify(volumeNumber++);
-	makeVolume(numOfIndexes, args, alph,
-	           letterCounts, baseName);
+	makeVolume(numOfIndexes, args, alph, letterCounts, baseName);
 	for (unsigned c = 0; c < alph.size; ++c) letterTotals[c] += letterCounts[c];
 	letterCounts.assign(alph.size, 0);
 	multi.reinitForAppending();
@@ -123,6 +121,9 @@ void DatabaseThread::formatdb(const LastdbArguments &args,
 			if( volumeNumber == 0 ) makeVolume(numOfIndexes, args, alph, letterCounts, args.lastdbName);
 			else prepareNextVolume();
 		}
+
+	for (unsigned c = 0; c < alph.size; ++c) letterTotals[c] += letterCounts[c];
+	//std::cout << "HAPPENED" << std::endl;
 }
 
 void* DatabaseThread::threadEntry(void *args)
