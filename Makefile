@@ -50,29 +50,15 @@ alp/sls_fsa1_utils.o \
 alp/sls_fsa1.o    \
 alp/sls_fsa1_parameters.o
 
-
-
-SPOBJ = Alphabet.o MultiSequence.o fileMap.o split/cbrc_linalg.o	\
-split/last-split.o split/cbrc_split_aligner.o split/last-split-main.o	\
-split/cbrc_unsplit_alignment.o
-
-MBOBJ = last-merge-batches.o
-
-ALL = lastdb+ lastal+ last-split+ last-merge-batches+
+ALL =  fastdb fastal
 
 all: $(ALL)
 
-lastal+: $(ALOBJ)
+fastal: $(ALOBJ)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) -pthread -o $@ $(ALOBJ)
 
-lastdb+: $(DBOBJ)
+fastdb: $(DBOBJ)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ $(DBOBJ)
-
-last-split+: $(SPOBJ)
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ $(SPOBJ)
-
-last-merge-batches+: $(MBOBJ)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(MBOBJ)
 
 all: $(ALL)
 
@@ -210,16 +196,10 @@ lastex.o: lastex.cc LastexArguments.hh ScoreMatrix.hh Alphabet.hh io.hh \
 lambda_calculator.o: lambda_calculator.cc nrutil.hh \
  nrutil.cc ludcmp.cc lubksb.cc  lambda_calculator.hh
 
-
-
-
-
 LastEvaluer.o: LastEvaluer.cc LastEvaluer.hh ScoreMatrixRow.hh \
  alp/sls_alignment_evaluer.hpp alp/sls_pvalues.hpp alp/sls_basic.hpp \
  alp/sls_falp_alignment_evaluer.hpp alp/sls_fsa1_pvalues.hpp \
  GeneticCode.hh
-
-
 
 alp/njn_dynprogprob.o: alp/njn_dynprogprob.cpp alp/njn_dynprogprob.hpp \
  alp/njn_dynprogprobproto.hpp alp/njn_memutil.hpp alp/njn_ioutil.hpp
@@ -292,13 +272,6 @@ alp/sls_fsa1_utils.o: alp/sls_fsa1_utils.cpp alp/sls_fsa1_utils.hpp \
 alp/sls_pvalues.o: alp/sls_pvalues.cpp alp/sls_pvalues.hpp alp/sls_basic.hpp \
  alp/sls_alp_data.hpp alp/sls_alp_regression.hpp alp/njn_random.hpp \
  alp/njn_uniform.hpp alp/sls_normal_distr_array.hpp
-
-
-
-
-
-
-
 
 
 gumbel_params/mcf_local_alignment_evaluer.o: \

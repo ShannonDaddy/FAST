@@ -37,8 +37,8 @@ LastdbArguments::LastdbArguments() :
 
 void LastdbArguments::fromArgs( int argc, char** argv ){
 	std::string usage = "\
-Usage: lastdb [options] output-name fasta-sequence-file(s)\n\
-Prepare sequences for subsequent alignment with lastal.\n\
+Usage: fastdb [options] output-name fasta-sequence-file(s)\n\
+Prepare sequences for subsequent alignment with fastdb.\n\
 \n\
 Main Options:\n\
 -h: show all options and their default settings\n\
@@ -50,9 +50,9 @@ Main Options:\n\
 \n\
 Incremental Formatting:\n\
 -n provide only the novel sequences not currently present in the database \n\
-Usage: lastdb -n formatted_db_name novel_sequences\n\
+Usage: fastdb -n formatted_db_name novel_sequences\n\
 -d provide the newest version of the unformatted database\n\
-Usage: lastdb -d formatted_db_name newest_unformatted_database\n\
+Usage: fastdb -d formatted_db_name newest_unformatted_database\n\
 \n\
 Advanced Options (default settings):\n\
 -Q: input format: 0=fasta, 1=fastq-sanger, 2=fastq-solexa, 3=fastq-illumina ("
@@ -66,11 +66,11 @@ Advanced Options (default settings):\n\
 	                   + stringify(minSeedLimit) + ")\n\
 -b: bucket depth\n\
 -x: just count sequences and letters\n\
--v: be verbose: write messages about what lastdb is doing\n\
+-v: be verbose: write messages about what fastdb is doing\n\
 -V: print out version information\n\
 \n\
-Report bugs to:  github.com/hallamlab/LAST-Plus/issues\n\
-LAST+ home page: github.com/hallamlab/LAST-Plus/\n\
+Report bugs to:  github.com/hallamlab/FAST/issues\n\
+LAST+ home page: github.com/hallamlab/FAST/\n\
 ";
 
 	int c;

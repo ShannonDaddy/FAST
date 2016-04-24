@@ -34,3 +34,5 @@ Need to kill the segfault.
 Think about how to handle the memory problem of 20GB. We can do it by writing every little partition
 to disk in a proper format rather than handling it all at once.
 We can use file pointers to concatenate properly!
+
+Change all mentions of last and last+ to FAST.

@@ -5,7 +5,7 @@
 #include <numeric>
 #include "prjFiles.hh"
 
-void prjFiles::accumulatePrj(const std::vector<countT>& letterCounts,
+void PrjFiles::accumulatePrj(const std::vector<countT>& letterCounts,
                              unsigned _sequenceCount)
 {
 	sequenceCount += _sequenceCount;
@@ -14,7 +14,7 @@ void prjFiles::accumulatePrj(const std::vector<countT>& letterCounts,
 	}
 }
 
-void prjFiles::writePrjFile(const LastdbArguments &args)
+void PrjFiles::writePrjFile(const LastdbArguments &args)
 {
 	countT letterTotal = std::accumulate( letterTotals.begin(),
 	                                      letterTotals.end(), countT(0) );
@@ -53,7 +53,7 @@ void prjFiles::writePrjFile(const LastdbArguments &args)
  * prjFiles(-1, numOfIndexes, alph) // this is the master one
  * prjFiles(volumes, numOfIndexes, alph) // per volume
  */
-prjFiles::prjFiles(unsigned _volumes,
+PrjFiles::PrjFiles(unsigned _volumes,
                    unsigned _numOfIndexes,
                    const Alphabet &alph):
 volumes(_volumes),

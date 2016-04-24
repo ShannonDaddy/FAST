@@ -14,7 +14,7 @@
  * reached a mark of size.
  */
 
-class prjFiles {
+class PrjFiles {
 private:
 		countT sequenceCount;
 		unsigned volumes;
@@ -25,9 +25,10 @@ public:
 		void writePrjFile(const LastdbArguments &args);
 		void accumulatePrj(const std::vector<countT>& letterCounts,
 		                   unsigned _sequenceCount);
-		prjFiles(unsigned _volumes,
+		PrjFiles(unsigned _volumes,
 		         unsigned numOfIndexes,
 		         const Alphabet &alph);
+		//PrjFiles() {}
 };
 
 

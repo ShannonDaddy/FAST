@@ -68,13 +68,15 @@ void LastalArguments::fromArgs( int argc, char** argv, bool optionsOnly ){
 Find local sequence alignments.\n\
 \n\
 Usage Examples:\n\
-Protein - Protein (blastp): lastal+ [options] -o outputFile amino-acid-lastdb-name amino-acid-fasta-sequence-file(s)\n\
-DNA - Protein     (blastx): lastal+ [options] -F -o outputFile amino-acid-lastdb-name DNA-fasta-sequence-file(s)\n\
-DNA - DNA         (blastn): lastal+ [options] -o outputFile DNA-lastdb-name DNA-fasta-sequence-file(s)\n\
-Suggested Usage           : lastal+ -P number_of_cores -o outputFile lastdb-name fasta-sequence-file(s)";
+Protein - Protein (blastp): fastal [options] -o outputFile amino-acid-lastdb-name \
+amino-acid-fasta-sequence-file(s)\n\
+DNA - Protein     (blastx): fastal [options] -F -o outputFile amino-acid-lastdb-name \
+DNA-fasta-sequence-file(s)\n\
+DNA - DNA         (blastn): fastal [options] -o outputFile DNA-fastdb-name DNA-fasta-sequence-file(s)\n\
+Suggested Usage           : fastal -P number_of_cores -o outputFile fastdb-name fasta-sequence-file(s)";
   std::string help = usage + "\n\
 \n\
-LAST+ Functionality:\n\
+FAST Functionality:\n\
 -V: Version information\n\
 -S: Optional bit-Score cutoff value (" + stringify(scoreCutoff) + ")\n\
 -E: Optional e-value cutoff value (" + stringify(evalueCutoff) + ")\n\
@@ -102,7 +104,7 @@ Score options (default settings):\n\
 \n\
 Cosmetic options (default settings):\n\
 -h: show all options and their default settings\n\
--v: be verbose: write messages about what lastal is doing\n\
+-v: be verbose: write messages about what fast is doing\n\
 -f: output format: 0=tabular, 1=maf 2=BLAST-like ("
     + stringify(outputFormat) + ")\n\
 \n\
@@ -116,9 +118,9 @@ Miscellaneous options (default settings):\n\
 -n: maximum gapless alignments per query position (infinity if m=0, else m)\n\
 -k: step-size along the query sequence ("
     + stringify(queryStep) + ")\n\
--i: query batch size (8 KiB, unless there are multiple lastdb volumes)\n\
+-i: query batch size (8 KiB, unless there are multiple fastdb volumes)\n\
 -u: mask lowercase during extensions: 0=never, 1=gapless,\n\
-    2=gapless+gapped but not final, 3=always (2 if lastdb -c and Q<5, else 0)\n\
+    2=gapless+gapped but not final, 3=always (2 if fastdb -c and Q<5, else 0)\n\
 -w: supress repeats inside exact matches, offset by this distance or less ("
     + stringify(maxRepeatDistance) + ")\n\
 -G: genetic code file\n\
@@ -132,8 +134,8 @@ Miscellaneous options (default settings):\n\
                   4=prb, 5=PSSM ("
     + stringify(inputFormat) + ")\n\
 \n\
-Report bugs to:  github.com/hallamlab/LAST-Plus/issues\n\
-LAST+ home page: github.com/hallamlab\n\
+Report bugs to:  github.com/hallamlab/FAST/issues\n\
+FAST home page: github.com/hallamlab/FAST\n\
 ";
 
   optind = 1;  // allows us to scan arguments more than once(???)
@@ -271,7 +273,7 @@ LAST+ home page: github.com/hallamlab\n\
 
       //!!
     case 'V':
-      std::cout <<  "LAST+ 1.0 based on LAST " <<
+      std::cout <<  "FAST 1.0 based on LAST " <<
 #include "version.hh" 
       << std::endl;
       break;

@@ -42,7 +42,10 @@ set(LASTDB_SOURCE_FILES
         prjFiles.hh
         DatabaseThread.cpp
         DatabaseThread.hh
-        )
+        DatabaseWriter.cpp
+        DatabaseWriter.h
+        DatabaseVolume.cpp
+        DatabaseVolume.hh)
 
 set(LASTAL_SOURCE_FILES
         externalsort.hh
@@ -170,5 +173,5 @@ file(GLOB GUMBEL
 include_directories(${CMAKE_SOURCE_DIR}/alp)
 include_directories(${CMAKE_SOURCE_DIR}/gumbel_params)
 
-add_executable(lastdb ${LASTDB_SOURCE_FILES})
-add_executable(lastal ${LASTAL_SOURCE_FILES} ${ALP} ${GUMBEL})
+add_executable(fastdb ${LASTDB_SOURCE_FILES})
+add_executable(fastal ${LASTAL_SOURCE_FILES} ${ALP} ${GUMBEL})
