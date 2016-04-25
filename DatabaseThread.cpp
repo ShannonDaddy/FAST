@@ -50,17 +50,16 @@ DatabaseThread::readFasta( unsigned numOfIndexes,
 
 	std::size_t seqCount = 0;
 	while(seqCount < LOADSIZE && in) {
-		SEM_WAIT(io);
 		std::size_t oldUnfinishedSize = multi.unfinishedSize();
 		indexT oldFinishedSize = multi.finishedSize();
 
-		//SEM_WAIT(io);
+		SEM_WAIT(io);
 		if (args.inputFormat == sequenceFormat::fasta)
 			multi.appendFromFastaLASTDB(in, maxSeqLen, args.unlimited);
 		else
 			multi.appendFromFastq(in, maxSeqLen);
 		seqCount++;
-		//SEM_POST(io);
+		SEM_POST(io);
 
 		if (!multi.isFinished() && multi.finishedSequences() == 0)
 			ERR("encountered a sequence that's too long");
@@ -93,7 +92,6 @@ DatabaseThread::readFasta( unsigned numOfIndexes,
 			// memory-saving, which seems to be important on 32-bit systems:
 			if (args.isCountsOnly) multi.reinitForAppending();
 		} else prepareNextVolume();
-		SEM_POST(io);
 	}
 
 	return in;
@@ -123,7 +121,6 @@ void DatabaseThread::formatdb(const LastdbArguments &args,
 		}
 
 	for (unsigned c = 0; c < alph.size; ++c) letterTotals[c] += letterCounts[c];
-	//std::cout << "HAPPENED" << std::endl;
 }
 
 void* DatabaseThread::threadEntry(void *args)

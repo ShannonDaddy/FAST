@@ -373,13 +373,13 @@ void lastdb( int argc, char** argv )
 			in.open(inputName.c_str());
 
 			for (int i = 0; i < args.threadNum; i++) {
-				cout << "Starting thread : " << i << endl;
+				LOG("Starting thread : " << i);
 				dbThreads[i]->startThread();
 			}
 
 			for (int i = 0; i < args.threadNum; i++) {
 				dbThreads[i]->joinThread();
-				cout << "Joined thread : " << i << endl;
+				LOG("Joined thread : " << i);
 			}
 		}
 	}
@@ -399,7 +399,7 @@ void lastdb( int argc, char** argv )
 	}
 
 	//cout<< "FINAL_FSC: " << finalSequenceCount  << endl;
-	for(int j=0; j<alph.size; j++)
+	//for(int j=0; j<alph.size; j++)
 		//cout << "FINAL_FLT: " << FinalLetterTotals[j] << std::endl;
 
 

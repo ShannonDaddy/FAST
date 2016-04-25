@@ -25,13 +25,13 @@ namespace cbrc {
 
 			friend class SubsetSuffixArray;
 
-			void PUSH(indexT *b, indexT *e, indexT d) {
+			inline void PUSH(indexT *b, indexT *e, indexT d) {
 				sp->beg = b;
 				sp->end = e;
 				(sp++)->depth = d;
 			}
 
-			void POP(indexT *&b, indexT *&e, indexT &d) {
+			inline void POP(indexT *&b, indexT *&e, indexT &d) {
 				b = (--sp)->beg;
 				e = sp->end;
 				d = sp->depth;
