@@ -238,7 +238,7 @@ void readPrjFile(const std::string &prjname,
 	}
 
 	if (version < 294 && version > 0)
-		ERR("the lastdb files are old: please re-run lastdb");
+		ERR("the fastdb files are old: please re-run fastdb");
 }
 
 void incrementalFormatWithNovel(const LastdbArguments &args,
@@ -269,7 +269,7 @@ void incrementalFormatWithNovel(const LastdbArguments &args,
 			    args.userAlphabet.empty() &&
 			    sequenceCount == 0 &&
 			    isDubiousDna( alph, multi ) ){
-				std::cerr << "lastdb: that's some funny-lookin DNA\n";
+				std::cerr << "fastdb: that's some funny-lookin DNA\n";
 			}
 
 			if( multi.isFinished() ){
@@ -419,10 +419,10 @@ int main( int argc, char** argv )
 		lastdb(argc, argv);
 		return EXIT_SUCCESS;
 	} catch (const std::bad_alloc &e) {  // bad_alloc::what() may be unfriendly
-		std::cerr << "lastdb: out of memory\n";
+		std::cerr << "fastdb: out of memory\n";
 		return EXIT_FAILURE;
 	} catch (const std::exception &e) {
-		std::cerr << "lastdb: " << e.what() << '\n';
+		std::cerr << "fastdb: " << e.what() << '\n';
 		return EXIT_FAILURE;
 	} catch (int i) {
 		return i;

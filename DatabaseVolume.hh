@@ -6,11 +6,8 @@
 #define THREADEDLAST_DATABASEVOLUME_HH
 
 #include "DatabaseThread.hh"
-//!! Recursive include is causing headaches
-//#include "prjFiles.hh"
+#include "prjFiles.hh"
 
-//!! Absolutely arbitrary number that I need as a placeholder for now
-const unsigned LIMIT = 10000000;
 /*
  * File which holds the incomplete database volume until it's ready to be flushed
  */
@@ -28,6 +25,5 @@ public:
 
 		DatabaseVolume();
 };
-
 
 #endif //THREADEDLAST_DATABASEVOLUME_HH

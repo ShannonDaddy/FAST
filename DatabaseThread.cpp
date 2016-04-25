@@ -80,7 +80,7 @@ DatabaseThread::readFasta( unsigned numOfIndexes,
 
 		if (!args.isProtein && args.userAlphabet.empty() &&
 		    sequenceCount == 0 && isDubiousDna(alph, multi))
-			std::cerr << "lastdb: that's some funny-lookin DNA\n";
+			std::cerr << "fastdb: that's some funny-lookin DNA\n";
 
 
 		if (multi.isFinished()) {

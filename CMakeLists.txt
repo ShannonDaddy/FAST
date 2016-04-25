@@ -45,7 +45,8 @@ set(LASTDB_SOURCE_FILES
         DatabaseWriter.cpp
         DatabaseWriter.h
         DatabaseVolume.cpp
-        DatabaseVolume.hh)
+        DatabaseVolume.hh
+        Globals.hh)
 
 set(LASTAL_SOURCE_FILES
         externalsort.hh

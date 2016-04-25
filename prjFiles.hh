@@ -5,14 +5,20 @@
 #ifndef THREADEDLAST_PRJFILES_HH
 #define THREADEDLAST_PRJFILES_HH
 
-#include "lastal.hh"
 #include "LastdbArguments.hh"
+#include "MultiSequence.hh"
+#include "Alphabet.hh"
 
 /*
  * This structure is because every thread will create a Prj along with it's database partition.
  * Instead of creating a million mini ones we pour them into a structure and produce it when it has
  * reached a mark of size.
  */
+
+using namespace cbrc;
+
+typedef MultiSequence::indexT indexT;
+typedef unsigned long long countT;
 
 class PrjFiles {
 private:

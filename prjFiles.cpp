@@ -3,7 +3,9 @@
 //
 
 #include <numeric>
+#include <fstream>
 #include "prjFiles.hh"
+#include "Globals.hh"
 
 void PrjFiles::accumulatePrj(const std::vector<countT>& letterCounts,
                              unsigned _sequenceCount)
@@ -46,7 +48,7 @@ void PrjFiles::writePrjFile(const LastdbArguments &args)
 		else f << "numofindexes=" << numOfIndexes << '\n';
 	}
 
-	if( !f ) ERR( "can't write file: " + fileName );
+	//if( !f ) ERR( "can't write file: " + fileName );
 }
 
 /*
