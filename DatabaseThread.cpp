@@ -13,12 +13,14 @@ void DatabaseThread::makeVolume( unsigned numOfIndexes,
                                  const std::vector<countT>& letterCounts,
                                  const std::string& baseName )
 {
+	/*
 	LOG( "writing prj and multi ..." );
 	SEM_WAIT(io);
 	writePrjFile( baseName + ".prj", args, alph, multi.finishedSequences(),
 	              letterCounts, -1, numOfIndexes );
 	multi.toFiles( baseName );
 	SEM_POST(io);
+	 */
 
 	for( unsigned x = 0; x < numOfIndexes; ++x ){
 		LOG( "sorting..." );
@@ -36,6 +38,14 @@ void DatabaseThread::makeVolume( unsigned numOfIndexes,
 
 		indexes[x].clearPositions();
 	}
+
+	LOG( "writing prj and multi ..." );
+	SEM_WAIT(io);
+	writePrjFile( baseName + ".prj", args, alph, multi.finishedSequences(),
+	              letterCounts, -1, numOfIndexes );
+	multi.toFiles( baseName );
+	SEM_POST(io);
+
 	LOG( "done!" );
 }
 
@@ -49,17 +59,17 @@ DatabaseThread::readFasta( unsigned numOfIndexes,
 	if( multi.finishedSequences() == 0 ) maxSeqLen = indexT(-1);
 
 	std::size_t seqCount = 0;
+
+	SEM_WAIT(io);
 	while(seqCount < LOADSIZE && in) {
 		std::size_t oldUnfinishedSize = multi.unfinishedSize();
 		indexT oldFinishedSize = multi.finishedSize();
 
-		SEM_WAIT(io);
 		if (args.inputFormat == sequenceFormat::fasta)
 			multi.appendFromFastaLASTDB(in, maxSeqLen, args.unlimited);
 		else
 			multi.appendFromFastq(in, maxSeqLen);
 		seqCount++;
-		SEM_POST(io);
 
 		if (!multi.isFinished() && multi.finishedSequences() == 0)
 			ERR("encountered a sequence that's too long");
@@ -93,6 +103,7 @@ DatabaseThread::readFasta( unsigned numOfIndexes,
 			if (args.isCountsOnly) multi.reinitForAppending();
 		} else prepareNextVolume();
 	}
+	SEM_POST(io);
 
 	return in;
 }

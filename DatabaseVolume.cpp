@@ -14,7 +14,6 @@ void DatabaseVolume::writeToDisk(DatabaseThread *db){
 
 }
 
-
 DatabaseVolume::DatabaseVolume() :
 seqLen(0)
 {
