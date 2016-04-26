@@ -9,6 +9,7 @@
 #include "Alphabet.hh"
 #include "LastdbArguments.hh"
 #include "MultiSequence.hh"
+#include "DatabaseVolume.hh"
 #include <semaphore.h>
 
 using namespace cbrc;
@@ -17,6 +18,7 @@ extern Alphabet alph;
 extern LastdbArguments args;
 extern std::string currFile;
 extern std::ifstream in;
+extern DatabaseVolume *vol;
 
 const std::size_t LOADSIZE = 100000;
 

@@ -21,7 +21,8 @@ typedef MultiSequence::indexT indexT;
 typedef unsigned long long countT;
 
 class PrjFiles {
-private:
+//private:
+public:
 		countT sequenceCount;
 		unsigned volumes;
 		unsigned numOfIndexes;

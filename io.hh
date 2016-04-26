@@ -85,8 +85,8 @@ void memoryToBinaryFile( T beg, T end, const std::string& fileName ){
 
 template<typename T>
 void vectorToBinaryFile( const std::vector<T>& v,
-			 const std::string& fileName ){
-  memoryToBinaryFile( v.begin(), v.end(), fileName );
+                         const std::string& fileName ){
+	memoryToBinaryFile( v.begin(), v.end(), fileName );
 }
 
 }  // end namespace cbrc

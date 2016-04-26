@@ -15,6 +15,8 @@
 #include <string>
 #include <iosfwd>
 
+class DatabaseVolume;
+
 namespace cbrc{
 
 class MultiSequence{
@@ -22,6 +24,8 @@ class MultiSequence{
   typedef unsigned indexT;
   //typedef std::size_t indexT;
   typedef unsigned char uchar;
+
+		friend class DatabaseVolume;
 
   // initialize with leftmost delimiter pad, ready for appending sequences
   //void initForAppending( indexT padSizeIn );

@@ -5,8 +5,8 @@
 #ifndef THREADEDLAST_DATABASEVOLUME_HH
 #define THREADEDLAST_DATABASEVOLUME_HH
 
-#include "DatabaseThread.hh"
 #include "prjFiles.hh"
+#include "SubsetSuffixArray.hh"
 
 /*
  * File which holds the incomplete database volume until it's ready to be flushed
@@ -14,15 +14,18 @@
 class DatabaseVolume {
 public:
 //private:
-		MultiSequence multi;
-		SubsetSuffixArray suffixArray;
+		//MultiSequence multi;
+		//SubsetSuffixArray suffixArray;
 		PrjFiles *prj;
 
 		unsigned seqLen;
 
 public:
-		bool checkIfReady();
-		void writeToDisk(DatabaseThread *db);
+		//bool checkIfReady();
+		//void writeToDisk(DatabaseThread *db);
+		void writePooledMultiSequence( const MultiSequence &multi ) const;
+
+		void writePooledSubsetSuffixArray(const SubsetSuffixArray &sa) const;
 
 		DatabaseVolume(unsigned _volumes,
 		               unsigned _numOfIndexes,

@@ -25,11 +25,16 @@
 #include "CyclicSubsetSeed.hh"
 #include "VectorOrMmap.hh"
 
+class DatabaseVolume;
+
 namespace cbrc{
 
 	class SuffixArraySorter;
 
   class SubsetSuffixArray{
+
+		  friend class DatabaseVolume;
+
     public:
       //typedef std::size_t indexT;
       typedef unsigned indexT;

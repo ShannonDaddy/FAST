@@ -17,6 +17,7 @@ LastdbArguments args;
 DatabaseThread **dbThreads;
 std::string currFile;
 std::ifstream in;
+DatabaseVolume *vol;
 
 // Set up an alphabet (e.g. DNA or protein), based on the user options
 void makeAlphabet( Alphabet& alph, const LastdbArguments& args )
@@ -397,6 +398,11 @@ void lastdb( int argc, char** argv )
 			FinalLetterTotals[j] += dbThreads[i]->letterTotals[j];
 			//cout << "FLT: " << dbThreads[i]->letterTotals[j] << endl;
 		}
+	}
+
+	cout << "FSC: " << vol->prj->sequenceCount << endl;
+	for(int j=0; j<alph.size; j++) {
+		cout << "FLT: " << vol->prj->letterTotals[j] << endl;
 	}
 
 	writePrjFile( args.lastdbName + ".prj", args, alph,
