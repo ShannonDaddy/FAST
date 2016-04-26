@@ -400,10 +400,13 @@ void lastdb( int argc, char** argv )
 		}
 	}
 
+	//!! Why does this cause a segfault?
+	/*
 	cout << "FSC: " << vol->prj->sequenceCount << endl;
 	for(int j=0; j<alph.size; j++) {
 		cout << "FLT: " << vol->prj->letterTotals[j] << endl;
 	}
+	 */
 
 	writePrjFile( args.lastdbName + ".prj", args, alph,
 	              finalSequenceCount, FinalLetterTotals,
