@@ -5,7 +5,6 @@ incrementally add to that volume.
 parition size.
 * I choose to follow the original partition size
 
-
 2) Make an option for controlling the memory
 
 3) Make it threaded
@@ -18,18 +17,8 @@ void generateDifference(const std::string &filename){
 
 Make sure the prjs are correct for all scenarios of incremental formatting
 
-lastdb threading
-
-// everybody needs a copy of the index structure
-// everybody needs a copy of the multi
-
-// threads read in a certain amount with an IO lock.
-
-
 Merging the volumes as they are constructed
 Making sure that the database creation works in parallel (appendFromFasta, writing reading etc)
-
-Need to kill the segfault.
 
 Think about how to handle the memory problem of 20GB. We can do it by writing every little partition
 to disk in a proper format rather than handling it all at once.

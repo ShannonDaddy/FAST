@@ -126,9 +126,13 @@ void DatabaseThread::formatdb(const LastdbArguments &args,
 
 	while (readFasta(numOfIndexes, args, alph, in))
 
-		if( multi.finishedSequences() > 0 ){
-			if( volumeNumber == 0 ) makeVolume(numOfIndexes, args, alph, letterCounts, args.lastdbName);
-			else prepareNextVolume();
+		if( multi.finishedSequences() > 0 ) {
+			if (volumeNumber == 0){
+				makeVolume(numOfIndexes, args, alph, letterCounts, args.lastdbName);
+			}else {
+				std::string baseName = args.lastdbName + stringify(volumeNumber++);
+				makeVolume( numOfIndexes, args, alph, letterCounts, baseName );
+			}
 		}
 
 	for (unsigned c = 0; c < alph.size; ++c) letterTotals[c] += letterCounts[c];

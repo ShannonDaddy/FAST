@@ -365,7 +365,8 @@ void lastdb( int argc, char** argv )
 		for( char** i = *inputBegin ? inputBegin : defaultInput; *i; ++i )
 			incrementalFormatWithNovel(args, alph, dbThreads[0]->multi,
 			                           dbThreads[0]->indexes, numOfIndexes, string(*i));
-	} else {
+	} else { // normal threading to build lastdb
+
 		for( char** i = *inputBegin ? inputBegin : defaultInput; *i; ++i ) {
 			string inputName(*i);
 			currFile = inputName;
@@ -398,13 +399,9 @@ void lastdb( int argc, char** argv )
 		}
 	}
 
-	//cout<< "FINAL_FSC: " << finalSequenceCount  << endl;
-	//for(int j=0; j<alph.size; j++)
-		//cout << "FINAL_FLT: " << FinalLetterTotals[j] << std::endl;
-
-
 	writePrjFile( args.lastdbName + ".prj", args, alph,
-	              finalSequenceCount, FinalLetterTotals, volumeCount, numOfIndexes );
+	              finalSequenceCount, FinalLetterTotals,
+	              volumeCount, numOfIndexes );
 
 	for(int i=0; i<args.threadNum; i++){
 		delete dbThreads[i];

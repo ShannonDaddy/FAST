@@ -77,7 +77,12 @@ class MultiSequence{
   // which sequence is the coordinate in?
   indexT whichSequence( indexT coordinate ) const;
 
-  indexT seqBeg( indexT seqNum ) const{ return ends[seqNum]; }
+  indexT seqBeg( indexT seqNum ) const{
+	  if(seqNum > ends.size()) {
+		  std::cout << "seqNum: " << seqNum << " ends.size(): " << ends.size() << std::endl;
+	  }
+    return ends[seqNum];
+  }
   indexT seqEnd( indexT seqNum ) const{ return ends[seqNum+1] - padSize; }
   indexT seqLen( indexT seqNum ) const{ return seqEnd(seqNum) - ends[seqNum]; }
   std::string seqName( indexT seqNum ) const;
