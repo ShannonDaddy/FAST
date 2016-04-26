@@ -14,8 +14,15 @@ void DatabaseVolume::writeToDisk(DatabaseThread *db){
 
 }
 
-DatabaseVolume::DatabaseVolume() :
+DatabaseVolume::DatabaseVolume(unsigned _volumes,
+                               unsigned _numOfIndexes,
+                               unsigned alphSize):
 seqLen(0)
 {
+	prj = new PrjFiles(_volumes, _numOfIndexes, alphSize);
+}
 
+
+DatabaseVolume::~DatabaseVolume(){
+	delete prj;
 }

@@ -33,8 +33,7 @@ public:
 		                   unsigned _sequenceCount);
 		PrjFiles(unsigned _volumes,
 		         unsigned numOfIndexes,
-		         const Alphabet &alph);
-		//PrjFiles() {}
+		         unsigned alphSize);
 };
 
 

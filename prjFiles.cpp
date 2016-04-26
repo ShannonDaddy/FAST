@@ -57,10 +57,10 @@ void PrjFiles::writePrjFile(const LastdbArguments &args)
  */
 PrjFiles::PrjFiles(unsigned _volumes,
                    unsigned _numOfIndexes,
-                   const Alphabet &alph):
+                   unsigned alphSize):
 volumes(_volumes),
 numOfIndexes(_numOfIndexes),
 sequenceCount(0)
 {
-	letterTotals.resize(alph.size);
+	letterTotals.resize(alphSize);
 }

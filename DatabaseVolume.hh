@@ -12,10 +12,11 @@
  * File which holds the incomplete database volume until it's ready to be flushed
  */
 class DatabaseVolume {
-private:
+public:
+//private:
 		MultiSequence multi;
 		SubsetSuffixArray suffixArray;
-		//PrjFiles prj;
+		PrjFiles *prj;
 
 		unsigned seqLen;
 
@@ -23,7 +24,10 @@ public:
 		bool checkIfReady();
 		void writeToDisk(DatabaseThread *db);
 
-		DatabaseVolume();
+		DatabaseVolume(unsigned _volumes,
+		               unsigned _numOfIndexes,
+		               unsigned alphSize);
+		~DatabaseVolume();
 };
 
 #endif //THREADEDLAST_DATABASEVOLUME_HH
