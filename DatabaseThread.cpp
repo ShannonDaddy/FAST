@@ -6,6 +6,7 @@
 #include "SubsetSuffixArraySort.hh"
 
 SEM_T io;
+unsigned currentVolumeNumber = 0;
 
 void DatabaseThread::makeVolume( unsigned numOfIndexes,
                                  const LastdbArguments& args,
@@ -27,9 +28,12 @@ void DatabaseThread::makeVolume( unsigned numOfIndexes,
 	//!!
 	// Currently just set the filler values
 	if(vol == NULL){
-		unsigned _volumes = 0;
 		unsigned _numOfIndexes = 0;
-		vol = new DatabaseVolume(_volumes, _numOfIndexes, alph.size);
+		vol = new DatabaseVolume(args.lastdbName,
+		                         currentVolumeNumber,
+		                         _numOfIndexes,
+		                         alph.size);
+		currentVolumeNumber++;
 	}
 	std::cout << "sequenceCount: " << sequenceCount << std::endl;
 	vol->prj->accumulatePrj(letterCounts, sequenceCount);
@@ -57,14 +61,13 @@ void DatabaseThread::makeVolume( unsigned numOfIndexes,
 		indexes[x].clearPositions();
 	}
 
-	//!! WRITE POOLED MULTI
-	vol->writePooledMultiSequence( multi );
-
 	LOG( "writing prj and multi ..." );
 	SEM_WAIT(io);
+	//!! WRITE POOLED MULTI
+	vol->writePooledMultiSequence( multi );
+	//multi.toFiles( baseName );
 	writePrjFile( baseName + ".prj", args, alph, multi.finishedSequences(),
 	              letterCounts, -1, numOfIndexes );
-	multi.toFiles( baseName );
 	SEM_POST(io);
 
 	LOG( "done!" );

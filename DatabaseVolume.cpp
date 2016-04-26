@@ -21,11 +21,11 @@ void DatabaseVolume::writeToDisk(DatabaseThread *db){
 
 void DatabaseVolume::writePooledMultiSequence( const MultiSequence &multi ) const
 {
-	std::ofstream sspfile ("sspfile", std::ios::binary | std::ios::app );
-	std::ofstream tisfile ("tisfile", std::ios::binary | std::ios::app );
-	std::ofstream sdsfile ("sdsfile", std::ios::binary | std::ios::app );
-	std::ofstream desfile ("desfile", std::ios::binary | std::ios::app );
-	std::ofstream quafile ("quafile", std::ios::binary | std::ios::app );
+	std::ofstream sspfile ((databaseName+".ssp").c_str(), std::ios::binary | std::ios::app );
+	std::ofstream tisfile ((databaseName+".tis").c_str(), std::ios::binary | std::ios::app );
+	std::ofstream sdsfile ((databaseName+".sds").c_str(), std::ios::binary | std::ios::app );
+	std::ofstream desfile ((databaseName+".des").c_str(), std::ios::binary | std::ios::app );
+	std::ofstream quafile ((databaseName+".qua").c_str(), std::ios::binary | std::ios::app );
 
 	std::cout << "WRITING THE MULTI FILES TO DISK" << std::endl;
 	if( multi.ends.begin() != multi.ends.end() )
@@ -57,8 +57,8 @@ void DatabaseVolume::writePooledMultiSequence( const MultiSequence &multi ) cons
 
 void DatabaseVolume::writePooledSubsetSuffixArray(const SubsetSuffixArray &sa) const
 {
-	std::ofstream suffile ("suffile", std::ios::binary | std::ios::app );
-	std::ofstream bckfile ("bckfile", std::ios::binary | std::ios::app );
+	std::ofstream suffile ((databaseName+".suf").c_str(), std::ios::binary | std::ios::app );
+	std::ofstream bckfile ((databaseName+".bck").c_str(), std::ios::binary | std::ios::app );
 
 	std::cout << "WRITING THE SUFFIX ARRAY FILES TO DISK" << std::endl;
 	if( sa.index.begin() != sa.index.end())
@@ -72,11 +72,15 @@ void DatabaseVolume::writePooledSubsetSuffixArray(const SubsetSuffixArray &sa) c
 	std::cout << "WRITTEN THE SUFFIX ARRAY FILES TO DISK" << std::endl;
 }
 
-DatabaseVolume::DatabaseVolume(unsigned _volumes,
+DatabaseVolume::DatabaseVolume(const std::string &dbname,
+                               unsigned _volumes,
                                unsigned _numOfIndexes,
                                unsigned alphSize):
 seqLen(0)
 {
+	std::stringstream s;
+	s << _volumes;
+	databaseName = dbname + s.str();
 	prj = new PrjFiles(_volumes, _numOfIndexes, alphSize);
 }
 

@@ -18,6 +18,8 @@ public:
 		//SubsetSuffixArray suffixArray;
 		PrjFiles *prj;
 
+		std::string databaseName;
+
 		unsigned seqLen;
 
 public:
@@ -25,11 +27,13 @@ public:
 		//void writeToDisk(DatabaseThread *db);
 		void writePooledMultiSequence( const MultiSequence &multi ) const;
 
-		void writePooledSubsetSuffixArray(const SubsetSuffixArray &sa) const;
+		void writePooledSubsetSuffixArray( const SubsetSuffixArray &sa ) const;
 
-		DatabaseVolume(unsigned _volumes,
+		DatabaseVolume(const std::string &dbname,
+		               unsigned _volumes,
 		               unsigned _numOfIndexes,
 		               unsigned alphSize);
+
 		~DatabaseVolume();
 };
 

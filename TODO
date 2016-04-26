@@ -25,3 +25,6 @@ to disk in a proper format rather than handling it all at once.
 We can use file pointers to concatenate properly!
 
 Change all mentions of last and last+ to FAST.
+
+If we have an ofstream with append, does that mean we are actually behind the scenes reading the
+entire file in again?
