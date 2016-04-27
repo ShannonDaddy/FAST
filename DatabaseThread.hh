@@ -32,13 +32,10 @@ public:
 		SuffixArraySorter *sorter;
 
 		void formatdb(const LastdbArguments &args,
-		              const Alphabet &alph,
-		              const unsigned numOfIndexes,
-		              const std::string &inputName);
+		              const Alphabet &alph);
 
-		void makeVolume( unsigned numOfIndexes,
-		                 const LastdbArguments& args,
-		                 const Alphabet& alph);
+		void makeVolume(const LastdbArguments& args,
+		                const Alphabet& alph);
 
 		std::istream& readFasta(unsigned numOfIndexes,
 		                        const LastdbArguments& args,
@@ -53,8 +50,9 @@ public:
 
 		void createSuffixArrays(int x);
 
-		static void* threadEntry(void *args);
-		void threadFunction();
+		void replaceVolumeObject();
+
+		static void* threadEntry(void *_args);
 
 //public:
 		void startThread();

@@ -16,19 +16,15 @@ using namespace cbrc;
 
 extern Alphabet alph;
 extern LastdbArguments args;
-extern std::string currFile;
 extern std::ifstream in;
 extern DatabaseVolume *vol;
 extern unsigned currentVolumeNumber;
 
 const std::size_t LOADSIZE = 100000;
+const unsigned maxNumOfIndexes = 16;
 
 typedef MultiSequence::indexT indexT;
 typedef unsigned long long countT;
-
-//!! Absolutely arbitrary number that I need as a placeholder for now
-const unsigned LIMIT = 10000000;
-const unsigned maxNumOfIndexes = 16;
 
 #ifdef __APPLE__
 typedef sem_t* SEM_T;

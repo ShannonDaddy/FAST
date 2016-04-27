@@ -10,11 +10,9 @@
 
 using namespace std;
 
-unsigned currVolume = 0;
 Alphabet alph;
 LastdbArguments args;
 DatabaseThread **dbThreads;
-std::string currFile;
 std::ifstream in;
 DatabaseVolume *vol;
 unsigned currentVolumeNumber = 0;
@@ -399,7 +397,29 @@ void generateDifference(const std::string &filename, const string &dbname)
 			if the sequence is not found we output it.
 	 }
 	 */
+}
 
+void writeOuterPrj(unsigned numOfIndexes){
+	countT finalSequenceCount = 0;
+	std::vector<countT> FinalLetterTotals(alph.size);
+	for(int i=0; i<args.threadNum; i++){
+		finalSequenceCount += dbThreads[i]->sequenceTotals;
+		for(int j=0; j<alph.size; j++) {
+			FinalLetterTotals[j] += dbThreads[i]->letterTotals[j];
+		}
+	}
+
+	// This is the final prj
+	writePrjFile( args.lastdbName + ".prj", args, alph,
+	              finalSequenceCount, FinalLetterTotals,
+	              currentVolumeNumber, numOfIndexes );
+}
+
+void createThreads(){
+	dbThreads = new DatabaseThread*[args.threadNum];
+	for(int i=0; i<args.threadNum; i++){
+		dbThreads[i] = new DatabaseThread(alph.size, i);
+	}
 }
 
 void lastdb( int argc, char** argv )
@@ -408,10 +428,8 @@ void lastdb( int argc, char** argv )
 	initializeSemaphores();
 	makeAlphabet( alph, args );
 
-	dbThreads = new DatabaseThread*[args.threadNum];
-	for(int i=0; i<args.threadNum; i++){
-		dbThreads[i] = new DatabaseThread(alph.size, i);
-	}
+	createThreads();
+
 	alph.tr( dbThreads[0]->multi.seqWriter(),
 	         dbThreads[0]->multi.seqWriter() + dbThreads[0]->multi.unfinishedSize() );
 
@@ -445,15 +463,12 @@ void lastdb( int argc, char** argv )
 
 		for( char** i = *inputBegin ? inputBegin : defaultInput; *i; ++i ) {
 			string inputName(*i);
-			currFile = inputName;
+			LOG("reading " << inputName << "...");
+			in.open(inputName.c_str());
 
 			//!! Create the DatabaseVolume for the first time here
-			vol = new DatabaseVolume(args.lastdbName,
-			                         currentVolumeNumber,
-			                         numOfIndexes,
-			                         alph.size);
-
-			in.open(inputName.c_str());
+			vol = new DatabaseVolume(args.lastdbName, currentVolumeNumber,
+			                         numOfIndexes, alph.size);
 
 			for (int i = 0; i < args.threadNum; i++) {
 				LOG("Starting thread : " << i);
@@ -467,31 +482,12 @@ void lastdb( int argc, char** argv )
 		}
 	}
 
-	//!! How do we prevent a million mini prjs from forming?
-	countT finalSequenceCount = 0;
-	std::vector<countT> FinalLetterTotals(alph.size);
-	std::size_t volumeCount = 0;
-	//!! How do we know about the final volumeNumber?
-	for(int i=0; i<args.threadNum; i++){
-		finalSequenceCount += dbThreads[i]->sequenceTotals;
-		for(int j=0; j<alph.size; j++) {
-			FinalLetterTotals[j] += dbThreads[i]->letterTotals[j];
-		}
-	}
+	writeOuterPrj(numOfIndexes);
 
-	//!! Why does this cause a segfault?
-	/*
-	cout << "FSC: " << vol->prj->sequenceCount << endl;
-	for(int j=0; j<alph.size; j++) {
-		cout << "FLT: " << vol->prj->letterTotals[j] << endl;
-	}
-	 */
+	deleteThreads();
+}
 
-	// This is the final prj
-	writePrjFile( args.lastdbName + ".prj", args, alph,
-	              finalSequenceCount, FinalLetterTotals,
-	              volumeCount, numOfIndexes );
-
+void deleteThreads(){
 	for(int i=0; i<args.threadNum; i++){
 		delete dbThreads[i];
 	}

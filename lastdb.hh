@@ -46,7 +46,13 @@ void writePrjFile( const std::string& fileName,
                    unsigned volumes,
                    unsigned numOfIndexes );
 
+void writeOuterPrj(unsigned numOfIndexes);
+
 indexT maxLettersPerVolume( const LastdbArguments& args,
                             unsigned numOfIndexes );
+
+void createThreads();
+
+void deleteThreads();
 
 #endif //THREADEDLAST_LASTDB_HH

@@ -43,16 +43,21 @@ void DatabaseThread::accumulateAndFlushMulti(){
 	multi.reinitForAppending();
 }
 
-void DatabaseThread::makeVolume( unsigned numOfIndexes,
-                                 const LastdbArguments& args,
+void DatabaseThread::replaceVolumeObject(){
+
+	delete vol;	 // Get rid of the old one
+	currentVolumeNumber++; // Increment the numbering scheme
+	vol = new DatabaseVolume(args.lastdbName, currentVolumeNumber,
+	                         numOfIndexes, alph.size);
+}
+
+void DatabaseThread::makeVolume( const LastdbArguments& args,
                                  const Alphabet& alph)
 {
 	// Check if the MultiSequence still has room in it for more
 	if ( vol->isFinished() ) {
-
 		accumulateAndFlushPrj();
 
-		// Create the suffix arrays and the bucket structures
 		for (unsigned x = 0; x < numOfIndexes; ++x) {
 			createSuffixArrays(x);
 			SEM_WAIT(io);
@@ -67,12 +72,7 @@ void DatabaseThread::makeVolume( unsigned numOfIndexes,
 		LOG("done with voluming batch");
 
 	} else {
-		delete vol;	 // Get rid of the old one
-		currentVolumeNumber++; // Increment the numbering scheme
-		vol = new DatabaseVolume(args.lastdbName,
-		                         currentVolumeNumber,
-		                         numOfIndexes,
-		                         alph.size);
+		replaceVolumeObject();
 	}
 }
 
@@ -128,25 +128,17 @@ DatabaseThread::readFasta( unsigned numOfIndexes,
 }
 
 void DatabaseThread::formatdb(const LastdbArguments &args,
-                              const Alphabet &alph,
-                              const unsigned numOfIndexes,
-                              const std::string &inputName)
+                              const Alphabet &alph)
 {
-	LOG("reading " << inputName << "...");
 	while (readFasta(numOfIndexes, args, alph, in)){
-		makeVolume(numOfIndexes, args, alph);
+		makeVolume(args, alph);
 	}
 }
 
-void* DatabaseThread::threadEntry(void *args)
+void* DatabaseThread::threadEntry(void *_args)
 {
-	((DatabaseThread *) args)->threadFunction();
+	((DatabaseThread *) _args)->formatdb(args, alph);
 	return NULL;
-}
-
-void DatabaseThread::threadFunction()
-{
-	formatdb(args, alph, numOfIndexes, currFile);
 }
 
 void DatabaseThread::startThread()
