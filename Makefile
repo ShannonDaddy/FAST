@@ -6,7 +6,11 @@ CFLAGS =   -O3 -w -m64
 
 DBOBJ = Alphabet.o MultiSequence.o CyclicSubsetSeed.o	\
 SubsetSuffixArray.o LastdbArguments.o io.o fileMap.o	\
-SubsetSuffixArraySort.o MultiSequenceQual.o lastdb.o
+SubsetSuffixArraySort.o MultiSequenceQual.o lastdb.o \
+prjFiles.o \
+DatabaseThread.o \
+DatabaseWriter.o \
+DatabaseVolume.o
 
 ALOBJ = Alphabet.o MultiSequence.o CyclicSubsetSeed.o			\
 SubsetSuffixArray.o LastalArguments.o io.o fileMap.o ScoreMatrix.o	\
@@ -97,6 +101,12 @@ depend:
 	$(CXX) -MM -Igumbel_params */*.cpp | sed 's|.*:|gumbel_params/&|' >> m
 	$(CXX) -MM -I. split/*.cc | sed 's|.*:|split/&|' >> m
 	mv m makefile
+
+
+prjFiles.o: prjFiles.cpp prjFiles.hh Globals.hh
+DatabaseThread.o: DatabaseThread.cpp DatabaseThread.hh Globals.hh
+DatabaseWriter.o: DatabaseWriter.cpp DatabaseWriter.h Globals.hh
+DatabaseVolume.o: DatabaseVolume.cpp DatabaseVolume.hh Globals.hh
 
 tempfiles.o: tempfiles.cc tempfiles.hh 
 Alignment.o: Alignment.cc Alignment.hh ScoreMatrixRow.hh SegmentPair.hh \
