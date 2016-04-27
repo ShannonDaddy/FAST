@@ -160,7 +160,7 @@ void makeVolume( SubsetSuffixArray indexes[], unsigned numOfIndexes,
 // neglects memory for the sequence names, and the fact that
 // lowercase-masked letters and DNA "N"s aren't indexed.)
 indexT maxLettersPerVolume( const LastdbArguments& args,
-                                   unsigned numOfIndexes ){
+                            unsigned numOfIndexes ){
 	std::size_t bytesPerLetter = isFastq( args.inputFormat ) ? 2 : 1;
 	std::size_t maxIndexBytesPerPosition = sizeof(indexT) + 1;
 	maxIndexBytesPerPosition *= numOfIndexes;
@@ -467,7 +467,8 @@ void lastdb( int argc, char** argv )
 			in.open(inputName.c_str());
 
 			//!! Create the DatabaseVolume for the first time here
-			vol = new DatabaseVolume(args.lastdbName, currentVolumeNumber,
+			vol = new DatabaseVolume(args.inputFormat, args.lastdbName,
+			                         currentVolumeNumber,
 			                         numOfIndexes, alph.size);
 
 			for (int i = 0; i < args.threadNum; i++) {

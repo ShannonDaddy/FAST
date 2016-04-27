@@ -6,13 +6,14 @@
 #include "io.hh"
 
 // Check if we have created a volume that we should proceed to the next volume
-bool DatabaseVolume::isFinished() const{
+bool DatabaseVolume::isFinished() const {
 	//std::cout << "endsSize: " << endsSize << std::endl;
 	//std::cout << "nameEndsSize: " << nameEndsSize << std::endl;
 	return endsSize == nameEndsSize;
 }
 
-void DatabaseVolume::writePooledMultiSequence( const MultiSequence &multi )
+void DatabaseVolume::writePooledMultiSequence( const MultiSequence &multi,
+                                               const LastdbArguments &args)
 {
 	endsSize += multi.ends.size();
 	nameEndsSize += multi.nameEnds.size();
@@ -38,10 +39,13 @@ void DatabaseVolume::writePooledMultiSequence( const MultiSequence &multi )
 	                multi.names.begin() + multi.nameEnds[multi.finishedSequences()],
 	                desfile);
 
-	if( multi.qualityScores.begin() != multi.qualityScores.begin() + multi.ends.back() * multi.qualsPerLetter())
-	memoryToStream( multi.qualityScores.begin(),
-	                multi.qualityScores.begin() + multi.ends.back() * multi.qualsPerLetter(),
-	                quafile);
+	if ( args.inputFormat != sequenceFormat::fasta ) {
+		if (multi.qualityScores.begin() !=
+		    multi.qualityScores.begin() + multi.ends.back() * multi.qualsPerLetter())
+			memoryToStream(multi.qualityScores.begin(),
+			               multi.qualityScores.begin() + multi.ends.back() * multi.qualsPerLetter(),
+			               quafile);
+	}
 	//std::cout << "WRITTEN THE MULTI FILES TO DISK" << std::endl;
 }
 
@@ -59,7 +63,8 @@ void DatabaseVolume::writePooledSubsetSuffixArray(const SubsetSuffixArray &sa)
 	//std::cout << "WRITTEN THE SUFFIX ARRAY FILES TO DISK" << std::endl;
 }
 
-DatabaseVolume::DatabaseVolume(const std::string &dbname,
+DatabaseVolume::DatabaseVolume(sequenceFormat::Enum inputFormat,
+                               const std::string &dbname,
                                unsigned _volumes,
                                unsigned _numOfIndexes,
                                unsigned alphSize):
@@ -76,7 +81,10 @@ DatabaseVolume::DatabaseVolume(const std::string &dbname,
 	tisfile.open( (databaseName+".tis").c_str(), std::ios::binary );
 	sdsfile.open( (databaseName+".sds").c_str(), std::ios::binary );
 	desfile.open( (databaseName+".des").c_str(), std::ios::binary );
-	quafile.open( (databaseName+".qua").c_str(), std::ios::binary );
+
+	if ( inputFormat != sequenceFormat::fasta ) {
+		quafile.open( (databaseName+".qua").c_str(), std::ios::binary );
+	}
 
 	suffile.open( (databaseName+".suf").c_str(), std::ios::binary );
 	bckfile.open( (databaseName+".bck").c_str(), std::ios::binary );

@@ -28,3 +28,5 @@ Change all mentions of last and last+ to FAST.
 
 If we have an ofstream with append, does that mean we are actually behind the scenes reading the
 entire file in again?
+
+How and when do I write out the full prj file to disk for the current partition?

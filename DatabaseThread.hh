@@ -44,7 +44,7 @@ public:
 
 		void accumulateAndFlushPrj();
 
-		void accumulateAndFlushMulti();
+		void accumulateAndFlushMulti(const LastdbArguments &args);
 
 		void accumulateAndFlushSuffixArrays(int x);
 

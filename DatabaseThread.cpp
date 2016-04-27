@@ -37,9 +37,9 @@ void DatabaseThread::createSuffixArrays(int x){
 	indexes[x].makeBuckets(multi.seqReader(), args.bucketDepth);
 }
 
-void DatabaseThread::accumulateAndFlushMulti(){
+void DatabaseThread::accumulateAndFlushMulti(const LastdbArguments &args){
 	LOG("accumulating multi...");
-	vol->writePooledMultiSequence(multi);
+	vol->writePooledMultiSequence(multi, args);
 	multi.reinitForAppending();
 }
 
@@ -47,8 +47,8 @@ void DatabaseThread::replaceVolumeObject(){
 
 	delete vol;	 // Get rid of the old one
 	currentVolumeNumber++; // Increment the numbering scheme
-	vol = new DatabaseVolume(args.lastdbName, currentVolumeNumber,
-	                         numOfIndexes, alph.size);
+	vol = new DatabaseVolume(args.inputFormat, args.lastdbName,
+	                         currentVolumeNumber, numOfIndexes, alph.size);
 }
 
 void DatabaseThread::makeVolume( const LastdbArguments& args,
@@ -66,12 +66,13 @@ void DatabaseThread::makeVolume( const LastdbArguments& args,
 		}
 
 		SEM_WAIT(io);
-		accumulateAndFlushMulti();
+		accumulateAndFlushMulti(args);
 		SEM_POST(io);
 
 		LOG("done with voluming batch");
 
 	} else {
+		vol->prj->writePrjFile(args);
 		replaceVolumeObject();
 	}
 }

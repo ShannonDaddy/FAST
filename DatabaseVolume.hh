@@ -38,11 +38,13 @@ public:
 public:
 		bool isFinished() const;
 		//void writeToDisk(DatabaseThread *db);
-		void writePooledMultiSequence( const MultiSequence &multi ) ;
+		void writePooledMultiSequence( const MultiSequence &multi,
+		                               const LastdbArguments &args) ;
 
 		void writePooledSubsetSuffixArray( const SubsetSuffixArray &sa ) ;
 
-		DatabaseVolume(const std::string &dbname,
+		DatabaseVolume(sequenceFormat::Enum inputFormat,
+		               const std::string &dbname,
 		               unsigned _volumes,
 		               unsigned _numOfIndexes,
 		               unsigned alphSize);
