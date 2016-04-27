@@ -5,6 +5,44 @@
 
 SEM_T io;
 
+void DatabaseThread::accumulateAndFlushPrj(){
+	LOG("accumulating prj...");
+	vol->prj->accumulatePrj(letterCounts, sequenceCount);
+	sequenceTotals += sequenceCount;
+	//std::cout << "sequenceCount: " << sequenceCount << std::endl;
+	//std::cout << "sequenceTotal: " << vol->prj->sequenceTotal << std::endl;
+	for (unsigned c = 0; c < alph.size; ++c) letterTotals[c] += letterCounts[c];
+	letterCounts.assign(alph.size, 0);
+	sequenceCount = 0;
+}
+
+void DatabaseThread::accumulateAndFlushSuffixArrays(int x){
+	LOG("accumulating suffix arrays...");
+	indexT textLength = multi.finishedSize();
+	//!! Original code snippet
+	//if( numOfIndexes > 1 ) indexes[x].toFiles( baseName + char('a' + x), false, textLength );
+	//else indexes[x].toFiles( baseName, true, textLength );
+
+	//!! POUR OUT THE SUFFIX ARRAYS
+	if (numOfIndexes > 1) vol->writePooledSubsetSuffixArray(indexes[x]);
+	else vol->writePooledSubsetSuffixArray(indexes[x]);
+	indexes[x].clearPositions();
+}
+
+void DatabaseThread::createSuffixArrays(int x){
+	LOG("sorting...");
+	indexes[x].sortIndex(multi.seqReader(), args.minSeedLimit, sorter);
+
+	LOG("bucketing...");
+	indexes[x].makeBuckets(multi.seqReader(), args.bucketDepth);
+}
+
+void DatabaseThread::accumulateAndFlushMulti(){
+	LOG("accumulating multi...");
+	vol->writePooledMultiSequence(multi);
+	multi.reinitForAppending();
+}
+
 void DatabaseThread::makeVolume( unsigned numOfIndexes,
                                  const LastdbArguments& args,
                                  const Alphabet& alph)
@@ -12,49 +50,21 @@ void DatabaseThread::makeVolume( unsigned numOfIndexes,
 	// Check if the MultiSequence still has room in it for more
 	if ( vol->isFinished() ) {
 
-		vol->prj->accumulatePrj(letterCounts, sequenceCount);
-		sequenceTotals += sequenceCount;
-		//std::cout << "sequenceCount: " << sequenceCount << std::endl;
-		//std::cout << "sequenceTotal: " << vol->prj->sequenceTotal << std::endl;
-		for (unsigned c = 0; c < alph.size; ++c) letterTotals[c] += letterCounts[c];
-		letterCounts.assign(alph.size, 0);
-		sequenceCount = 0;
+		accumulateAndFlushPrj();
 
+		// Create the suffix arrays and the bucket structures
 		for (unsigned x = 0; x < numOfIndexes; ++x) {
-			LOG("sorting...");
-			indexes[x].sortIndex(multi.seqReader(), args.minSeedLimit, sorter);
-
-			LOG("bucketing...");
-			indexes[x].makeBuckets(multi.seqReader(), args.bucketDepth);
-
-			LOG("writing suffix arrays...");
-			indexT textLength = multi.finishedSize();
+			createSuffixArrays(x);
 			SEM_WAIT(io);
-			//!! Original code snippet
-			//if( numOfIndexes > 1 ) indexes[x].toFiles( baseName + char('a' + x), false, textLength );
-			//else indexes[x].toFiles( baseName, true, textLength );
-
-			//!! POUR OUT THE SUFFIX ARRAYS
-			if (numOfIndexes > 1) vol->writePooledSubsetSuffixArray(indexes[x]);
-			else vol->writePooledSubsetSuffixArray(indexes[x]);
-
+			accumulateAndFlushSuffixArrays(x);
 			SEM_POST(io);
-
-			indexes[x].clearPositions();
 		}
 
-		LOG("writing prj and multi ...");
 		SEM_WAIT(io);
-		//!! WRITE POOLED MULTI
-		vol->writePooledMultiSequence(multi);
-		//multi.toFiles( baseName );
-
-		//!! Turned this off for now...
-		//writePrjFile( baseName + ".prj", args, alph, multi.finishedSequences(),
-		//              letterCounts, -1, numOfIndexes );
+		accumulateAndFlushMulti();
 		SEM_POST(io);
 
-		LOG("done!");
+		LOG("done with voluming batch");
 
 	} else {
 		delete vol;	 // Get rid of the old one
@@ -117,13 +127,6 @@ DatabaseThread::readFasta( unsigned numOfIndexes,
 	return in;
 }
 
-void DatabaseThread::prepareNextVolume()
-{
-	//!! What else should we be flushing out?
-	makeVolume(numOfIndexes, args, alph);
-	multi.reinitForAppending();
-}
-
 void DatabaseThread::formatdb(const LastdbArguments &args,
                               const Alphabet &alph,
                               const unsigned numOfIndexes,
@@ -131,7 +134,7 @@ void DatabaseThread::formatdb(const LastdbArguments &args,
 {
 	LOG("reading " << inputName << "...");
 	while (readFasta(numOfIndexes, args, alph, in)){
-		prepareNextVolume();
+		makeVolume(numOfIndexes, args, alph);
 	}
 }
 

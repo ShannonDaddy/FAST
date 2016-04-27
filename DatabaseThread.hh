@@ -36,8 +36,6 @@ public:
 		              const unsigned numOfIndexes,
 		              const std::string &inputName);
 
-		void prepareNextVolume();
-
 		void makeVolume( unsigned numOfIndexes,
 		                 const LastdbArguments& args,
 		                 const Alphabet& alph);
@@ -46,6 +44,14 @@ public:
 		                        const LastdbArguments& args,
 		                        const Alphabet& alph,
 		                        std::istream& in );
+
+		void accumulateAndFlushPrj();
+
+		void accumulateAndFlushMulti();
+
+		void accumulateAndFlushSuffixArrays(int x);
+
+		void createSuffixArrays(int x);
 
 		static void* threadEntry(void *args);
 		void threadFunction();
