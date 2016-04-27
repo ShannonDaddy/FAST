@@ -16,6 +16,10 @@ class DatabaseVolume {
 public:
 //private:
 		//MultiSequence multi;
+
+		std::size_t endsSize;
+		std::size_t nameEndsSize;
+
 		//SubsetSuffixArray suffixArray;
 		PrjFiles *prj;
 
@@ -32,7 +36,7 @@ public:
 		std::ofstream bckfile;
 
 public:
-		//bool checkIfReady();
+		bool isFinished() const;
 		//void writeToDisk(DatabaseThread *db);
 		void writePooledMultiSequence( const MultiSequence &multi ) ;
 

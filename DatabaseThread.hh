@@ -18,10 +18,14 @@ public:
 		MultiSequence multi;
 		SubsetSuffixArray indexes[maxNumOfIndexes];
 
-		unsigned volumeNumber;
 		unsigned numOfIndexes;
+		// Constantly flushed for each volume chunks prj portion
 		countT sequenceCount;
+		// Keep track of all of the sequences used for the final prj file.
+		countT sequenceTotals;
+		// Constantly flushed for each volume chunks prj portion
 		std::vector<countT> letterCounts;
+		// Keep track of all of the letters used for the final prj file.
 		std::vector<countT> letterTotals;
 
 		int rank;
@@ -31,13 +35,12 @@ public:
 		              const Alphabet &alph,
 		              const unsigned numOfIndexes,
 		              const std::string &inputName);
+
 		void prepareNextVolume();
 
 		void makeVolume( unsigned numOfIndexes,
 		                 const LastdbArguments& args,
-		                 const Alphabet& alph,
-		                 const std::vector<countT>& letterCounts,
-		                 const std::string& baseName );
+		                 const Alphabet& alph);
 
 		std::istream& readFasta(unsigned numOfIndexes,
 		                        const LastdbArguments& args,

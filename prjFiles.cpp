@@ -10,7 +10,7 @@
 void PrjFiles::accumulatePrj(const std::vector<countT>& letterCounts,
                              unsigned _sequenceCount)
 {
-	sequenceCount += _sequenceCount;
+	sequenceTotal += _sequenceCount;
 	for(int i=0; i<letterTotals.size(); i++){
 		letterTotals[i] += letterCounts[i];
 	}
@@ -30,7 +30,7 @@ void PrjFiles::writePrjFile(const LastdbArguments &args)
 	#include "version.hh"
 	<< '\n';
 	f << "alphabet=" << alph << '\n';
-	f << "numofsequences=" << sequenceCount << '\n';
+	f << "numofsequences=" << sequenceTotal << '\n';
 	f << "numofletters=" << letterTotal << '\n';
 	f << "letterfreqs=";
 	for( unsigned i = 0; i < letterTotals.size(); ++i ){
@@ -60,7 +60,7 @@ PrjFiles::PrjFiles(unsigned _volumes,
                    unsigned alphSize):
 volumes(_volumes),
 numOfIndexes(_numOfIndexes),
-sequenceCount(0)
+sequenceTotal(0)
 {
 	letterTotals.resize(alphSize);
 }

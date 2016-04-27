@@ -6,21 +6,17 @@
 #include "io.hh"
 
 // Check if we have created a volume that we should proceed to the next volume
-/*
-bool DatabaseVolume::checkIfReady(){
-	return (seqLen > LIMIT);
+bool DatabaseVolume::isFinished() const{
+	//std::cout << "endsSize: " << endsSize << std::endl;
+	//std::cout << "nameEndsSize: " << nameEndsSize << std::endl;
+	return endsSize == nameEndsSize;
 }
- */
-
-// Take the thread's database structure and add them to the one existing on the disk
-/*
-void DatabaseVolume::writeToDisk(DatabaseThread *db){
-
-}
- */
 
 void DatabaseVolume::writePooledMultiSequence( const MultiSequence &multi )
 {
+	endsSize += multi.ends.size();
+	nameEndsSize += multi.nameEnds.size();
+
 	//std::cout << "WRITING THE MULTI FILES TO DISK" << std::endl;
 	if( multi.ends.begin() != multi.ends.end() )
 	memoryToStream( multi.ends.begin(),
@@ -67,7 +63,9 @@ DatabaseVolume::DatabaseVolume(const std::string &dbname,
                                unsigned _volumes,
                                unsigned _numOfIndexes,
                                unsigned alphSize):
-seqLen(0)
+		seqLen(0),
+		endsSize(0),
+		nameEndsSize(0)
 {
 	std::stringstream s;
 	s << _volumes;
@@ -83,7 +81,6 @@ seqLen(0)
 	suffile.open( (databaseName+".suf").c_str(), std::ios::binary );
 	bckfile.open( (databaseName+".bck").c_str(), std::ios::binary );
 }
-
 
 DatabaseVolume::~DatabaseVolume(){
 	delete prj;

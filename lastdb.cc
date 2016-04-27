@@ -10,7 +10,6 @@
 
 using namespace std;
 
-//SEM_T io;
 unsigned currVolume = 0;
 Alphabet alph;
 LastdbArguments args;
@@ -18,6 +17,7 @@ DatabaseThread **dbThreads;
 std::string currFile;
 std::ifstream in;
 DatabaseVolume *vol;
+unsigned currentVolumeNumber = 0;
 
 // Set up an alphabet (e.g. DNA or protein), based on the user options
 void makeAlphabet( Alphabet& alph, const LastdbArguments& args )
@@ -242,6 +242,7 @@ void readPrjFile(const std::string &prjname,
 		ERR("the fastdb files are old: please re-run fastdb");
 }
 
+
 void incrementalFormatWithNovel(const LastdbArguments &args,
                                 const Alphabet &alph,
                                 MultiSequence &multi,
@@ -314,6 +315,80 @@ void incrementalFormatWithNovel(const LastdbArguments &args,
 	              sequenceCount, letterTotals, volumeNumber, numOfIndexes );
 }
 
+/*
+void incrementalFormatWithNovel(const LastdbArguments &args,
+                                const Alphabet &alph,
+                                MultiSequence &multi,
+                                SubsetSuffixArray indexes[maxNumOfIndexes],
+                                const unsigned numOfIndexes,
+                                const std::string &inputName)
+{
+	unsigned volumeNumber = 0;
+	countT sequenceCount = 0;
+	std::vector<countT> letterCounts( alph.size );
+	std::vector<countT> letterTotals( alph.size );
+
+	// Read in the old Prj file
+	readPrjFile( args.lastdbName + ".prj", args, alph,
+	             sequenceCount, letterTotals, volumeNumber);
+
+	// Create a new set of volumes for the novel sequences
+	std::ifstream inFileStream;
+	std::istream& in = openIn( inputName, inFileStream );
+	LOG( "reading " << inputName << "..." );
+
+	while(in){
+		try {
+			appendFromFasta( multi, indexes, numOfIndexes, args, alph, in );
+			if( !args.isProtein &&
+			    args.userAlphabet.empty() &&
+			    sequenceCount == 0 &&
+			    isDubiousDna( alph, multi ) ){
+				std::cerr << "fastdb: that's some funny-lookin DNA\n";
+			}
+
+			if( multi.isFinished() ){
+				++sequenceCount;
+				indexT lastSeq = multi.finishedSequences() - 1;
+				alph.count( multi.seqReader() + multi.seqBeg(lastSeq),
+				            multi.seqReader() + multi.seqEnd(lastSeq),
+				            &letterCounts[0] );
+				// memory-saving, which seems to be important on 32-bit systems:
+				if( args.isCountsOnly ) multi.reinitForAppending();
+			} else {
+				const std::string baseName = args.lastdbName + stringify(volumeNumber++);
+				makeVolume( indexes, numOfIndexes,
+				            multi, args, alph, letterCounts, baseName );
+				for( unsigned c = 0; c < alph.size; ++c ) letterTotals[c] += letterCounts[c];
+				letterCounts.assign( alph.size, 0 );
+				multi.reinitForAppending();
+			}
+		} catch (const std::exception &ex){
+			std::cerr << ex.what() << std::endl;
+			std::cerr << "Encountered a malformed sequence. Ignoring sequence and continuing" << std::endl;
+			multi.removeLatest();
+		}
+	}
+
+	if( multi.finishedSequences() > 0 ){
+		if( volumeNumber == 0 ){
+			makeVolume( indexes, numOfIndexes,
+			            multi, args, alph, letterCounts, args.lastdbName );
+			return;
+		}
+		std::string baseName = args.lastdbName + stringify(volumeNumber++);
+		makeVolume( indexes, numOfIndexes,
+		            multi, args, alph, letterCounts, baseName );
+	}
+
+	for( unsigned c = 0; c < alph.size; ++c ) letterTotals[c] += letterCounts[c];
+
+	// Write out the updated Prj file
+	writePrjFile( args.lastdbName + ".prj", args, alph,
+	              sequenceCount, letterTotals, volumeNumber, numOfIndexes );
+}
+ */
+
 void generateDifference(const std::string &filename, const string &dbname)
 {
 
@@ -372,6 +447,12 @@ void lastdb( int argc, char** argv )
 			string inputName(*i);
 			currFile = inputName;
 
+			//!! Create the DatabaseVolume for the first time here
+			vol = new DatabaseVolume(args.lastdbName,
+			                         currentVolumeNumber,
+			                         numOfIndexes,
+			                         alph.size);
+
 			in.open(inputName.c_str());
 
 			for (int i = 0; i < args.threadNum; i++) {
@@ -392,11 +473,9 @@ void lastdb( int argc, char** argv )
 	std::size_t volumeCount = 0;
 	//!! How do we know about the final volumeNumber?
 	for(int i=0; i<args.threadNum; i++){
-		finalSequenceCount += dbThreads[i]->sequenceCount;
-		//cout<< "FSC: " << dbThreads[i]->sequenceCount << endl;
+		finalSequenceCount += dbThreads[i]->sequenceTotals;
 		for(int j=0; j<alph.size; j++) {
 			FinalLetterTotals[j] += dbThreads[i]->letterTotals[j];
-			//cout << "FLT: " << dbThreads[i]->letterTotals[j] << endl;
 		}
 	}
 
@@ -408,6 +487,7 @@ void lastdb( int argc, char** argv )
 	}
 	 */
 
+	// This is the final prj
 	writePrjFile( args.lastdbName + ".prj", args, alph,
 	              finalSequenceCount, FinalLetterTotals,
 	              volumeCount, numOfIndexes );

@@ -23,15 +23,18 @@ typedef unsigned long long countT;
 class PrjFiles {
 //private:
 public:
-		countT sequenceCount;
+		countT sequenceTotal;
 		unsigned volumes;
 		unsigned numOfIndexes;
 		std::vector<countT> letterTotals;
 
 public:
 		void writePrjFile(const LastdbArguments &args);
+
 		void accumulatePrj(const std::vector<countT>& letterCounts,
 		                   unsigned _sequenceCount);
+
+
 		PrjFiles(unsigned _volumes,
 		         unsigned numOfIndexes,
 		         unsigned alphSize);

@@ -19,6 +19,7 @@ extern LastdbArguments args;
 extern std::string currFile;
 extern std::ifstream in;
 extern DatabaseVolume *vol;
+extern unsigned currentVolumeNumber;
 
 const std::size_t LOADSIZE = 100000;
 
