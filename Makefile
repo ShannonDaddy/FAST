@@ -7,6 +7,7 @@ CFLAGS =   -O3 -w -m64
 DBOBJ = Alphabet.o MultiSequence.o CyclicSubsetSeed.o	\
 SubsetSuffixArray.o LastdbArguments.o io.o fileMap.o	\
 SubsetSuffixArraySort.o MultiSequenceQual.o lastdb.o \
+utilities.o \
 prjFiles.o \
 DatabaseThread.o \
 DatabaseWriter.o \
@@ -62,7 +63,7 @@ fastal: $(ALOBJ)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) -pthread -o $@ $(ALOBJ)
 
 fastdb: $(DBOBJ)
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ $(DBOBJ)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) -pthread -o $@ $(DBOBJ)
 
 all: $(ALL)
 
@@ -196,7 +197,8 @@ lastal.o: lastal.cc LastalArguments.hh SequenceFormat.hh \
 lastdb.o: lastdb.cc LastdbArguments.hh SequenceFormat.hh \
  SubsetSuffixArray.hh CyclicSubsetSeed.hh VectorOrMmap.hh Mmap.hh \
  fileMap.hh stringify.hh Alphabet.hh MultiSequence.hh ScoreMatrixRow.hh \
- io.hh qualityScoreUtil.hh version.hh
+ io.hh qualityScoreUtil.hh version.hh \
+ utilities.hh 
 
 lastex.o: lastex.cc LastexArguments.hh ScoreMatrix.hh Alphabet.hh io.hh \
  gumbel_params/mcf_local_alignment_evaluer.hpp \
