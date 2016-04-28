@@ -15,41 +15,37 @@
 class DatabaseVolume {
 public:
 //private:
-		//MultiSequence multi;
 
-		std::size_t endsSize;
-		std::size_t nameEndsSize;
+	std::size_t endsSize;
+	std::size_t nameEndsSize;
 
-		//SubsetSuffixArray suffixArray;
-		PrjFiles *prj;
+	PrjFiles *prj;
 
-		std::string databaseName;
+	std::string databaseName;
 
-		unsigned seqLen;
-
-		std::ofstream sspfile;
-		std::ofstream tisfile;
-		std::ofstream sdsfile;
-		std::ofstream desfile;
-		std::ofstream quafile;
-		std::ofstream suffile;
-		std::ofstream bckfile;
+	std::ofstream sspfile;
+	std::ofstream tisfile;
+	std::ofstream sdsfile;
+	std::ofstream desfile;
+	std::ofstream quafile;
+	std::ofstream suffile;
+	std::ofstream bckfile;
 
 public:
-		bool isFinished() const;
-		//void writeToDisk(DatabaseThread *db);
-		void writePooledMultiSequence( const MultiSequence &multi,
-		                               const LastdbArguments &args) ;
+	bool isFinished() const;
+	//void writeToDisk(DatabaseThread *db);
+	void writePooledMultiSequence( const MultiSequence &multi,
+	                               const LastdbArguments &args) ;
 
-		void writePooledSubsetSuffixArray( const SubsetSuffixArray &sa ) ;
+	void writePooledSubsetSuffixArray( const SubsetSuffixArray &sa ) ;
 
-		DatabaseVolume(sequenceFormat::Enum inputFormat,
-		               const std::string &dbname,
-		               unsigned _volumes,
-		               unsigned _numOfIndexes,
-		               unsigned alphSize);
+	DatabaseVolume(sequenceFormat::Enum inputFormat,
+	               const std::string &dbname,
+	               unsigned _volumes,
+	               unsigned _numOfIndexes,
+	               unsigned alphSize);
 
-		~DatabaseVolume();
+	~DatabaseVolume();
 };
 
 #endif //THREADEDLAST_DATABASEVOLUME_HH

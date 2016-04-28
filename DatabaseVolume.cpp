@@ -15,24 +15,36 @@ bool DatabaseVolume::isFinished() const {
 void DatabaseVolume::writePooledMultiSequence( const MultiSequence &multi,
                                                const LastdbArguments &args)
 {
-	endsSize += multi.ends.size();
-	nameEndsSize += multi.nameEnds.size();
 
 	//std::cout << "WRITING THE MULTI FILES TO DISK" << std::endl;
 	if( multi.ends.begin() != multi.ends.end() )
-	memoryToStream( multi.ends.begin(),
+	memoryToStream( multi.ends.begin() + sizeof(unsigned char),
 	                multi.ends.end(),
 	                sspfile );
+	//!! Need to pass in the endsSize
+	/*
+	memoryToStream( multi.ends.begin(),
+	                multi.ends.end(),
+	                sspfile, endsSize);
+	                */
+	//printf("%p\n", (void*)(multi.seq.begin()));
+	//printf("%p\n", (void*)(multi.seq.begin() + sizeof(unsigned char)));
 
 	if( multi.seq.begin() != multi.seq.begin() + multi.ends.back())
-	memoryToStream( multi.seq.begin(),
+	memoryToStream( multi.seq.begin() + sizeof(unsigned char),
 	                multi.seq.begin() + multi.ends.back(),
 	                tisfile );
 
 	if( multi.nameEnds.begin() != multi.nameEnds.begin() + multi.ends.size())
-	memoryToStream( multi.nameEnds.begin(),
+	memoryToStream( multi.nameEnds.begin() + sizeof(unsigned char),
 	                multi.nameEnds.begin() + multi.ends.size(),
 	                sdsfile);
+	//!! Need to pass in the nameEndsSize
+	/*
+	memoryToStream( multi.nameEnds.begin(),
+	                multi.nameEnds.begin() + multi.ends.size(),
+	                sdsfile, nameEndsSize);
+	                */
 
 	if( multi.names.begin() != multi.names.begin() + multi.nameEnds[multi.finishedSequences()] )
 	memoryToStream( multi.names.begin(),
@@ -47,6 +59,9 @@ void DatabaseVolume::writePooledMultiSequence( const MultiSequence &multi,
 			               quafile);
 	}
 	//std::cout << "WRITTEN THE MULTI FILES TO DISK" << std::endl;
+
+	endsSize += multi.ends.size();
+	nameEndsSize += multi.nameEnds.size();
 }
 
 void DatabaseVolume::writePooledSubsetSuffixArray(const SubsetSuffixArray &sa)
@@ -68,7 +83,6 @@ DatabaseVolume::DatabaseVolume(sequenceFormat::Enum inputFormat,
                                unsigned _volumes,
                                unsigned _numOfIndexes,
                                unsigned alphSize):
-		seqLen(0),
 		endsSize(0),
 		nameEndsSize(0)
 {
@@ -77,9 +91,25 @@ DatabaseVolume::DatabaseVolume(sequenceFormat::Enum inputFormat,
 	databaseName = dbname + s.str();
 	prj = new PrjFiles(_volumes, _numOfIndexes, alphSize);
 
+	// sequence coordinates (ends)
 	sspfile.open( (databaseName+".ssp").c_str(), std::ios::binary );
+	int c1 = 1;
+	int *a1 = &c1;
+	int *b1 = a1+1;
+	memoryToStream(a1, b1, sspfile);
+
+	// sequences (seq)
 	tisfile.open( (databaseName+".tis").c_str(), std::ios::binary );
+	tisfile << ' ';
+
+	// name coordinates (nameEnds)
 	sdsfile.open( (databaseName+".sds").c_str(), std::ios::binary );
+	int c2 = 0;
+	int *a2 = &c2;
+	int *b2 = a2+1;
+	memoryToStream(a2, b2, sdsfile);
+
+	// names (names)
 	desfile.open( (databaseName+".des").c_str(), std::ios::binary );
 
 	if ( inputFormat != sequenceFormat::fasta ) {

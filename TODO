@@ -9,25 +9,9 @@ parition size.
 
 3) Make it threaded
 
-4) Update the wiki with the documentation for lastdb.
-
-void generateDifference(const std::string &filename){
-
-}
+void generateDifference(const std::string &filename){}
 
 Make sure the prjs are correct for all scenarios of incremental formatting
-
-Merging the volumes as they are constructed
-Making sure that the database creation works in parallel (appendFromFasta, writing reading etc)
-
-Think about how to handle the memory problem of 20GB. We can do it by writing every little partition
-to disk in a proper format rather than handling it all at once.
-We can use file pointers to concatenate properly!
-
-Change all mentions of last and last+ to FAST.
-
-If we have an ofstream with append, does that mean we are actually behind the scenes reading the
-entire file in again?
 
 How and when do I write out the full prj file to disk for the current partition?
 

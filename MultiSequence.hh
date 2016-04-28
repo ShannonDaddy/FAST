@@ -31,8 +31,8 @@ class MultiSequence{
   //void initForAppending( indexT padSizeIn );
   void initForAppending( indexT padSizeIn );
 
-  // re-initialize, but keep the last sequence if it is unfinished
-  void reinitForAppending();
+  //// re-initialize, but keep the last sequence if it is unfinished
+  //void reinitForAppending();
 
   // read seqCount finished sequences, and their names, from binary files
   void fromFiles( const std::string& baseName, indexT seqCount,
@@ -156,7 +156,7 @@ public:
   std::istream& readPssmHeader( std::istream& stream );
 
   // add a new sequence name
-  void addName( std::string& name );
+  void addName( const std::string& name );
 
   // can we finish the last sequence and stay within the memory limit?
   bool isFinishable( indexT maxSeqLen ) const;

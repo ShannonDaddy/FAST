@@ -16,12 +16,24 @@ std::string line;
 
 void MultiSequence::initForAppending( indexT padSizeIn ){
 	padSize = padSizeIn;
+	seq.v.assign( padSize, ' ' ); // tis
+	ends.v.assign( 1, padSize );  // ssp
+	names.v.clear();              // des
+	nameEnds.v.assign( 1, 0 );    // sds
+}
+
+/*
+void MultiSequence::initForAppending( indexT padSizeIn ){
+	padSize = padSizeIn;
 	seq.v.assign( padSize, ' ' );
 	ends.v.assign( 1, padSize );
 	names.v.clear();
 	nameEnds.v.assign( 1, 0 );
 }
+ */
 
+
+/*
 void MultiSequence::reinitForAppending(){
 	seq.v.erase( seq.v.begin(), seq.v.begin() + ends.v.back() - padSize );
 	names.v.erase( names.v.begin(), names.v.begin() + nameEnds.v[ finishedSequences() ] );
@@ -29,6 +41,7 @@ void MultiSequence::reinitForAppending(){
 	nameEnds.v.resize(1);
 	if( !names.v.empty() ) nameEnds.v.push_back( names.v.size() );
 }
+*/
 
 void MultiSequence::fromFiles( const std::string& baseName, indexT seqCount,
                                std::size_t qualitiesPerLetter ){
@@ -70,7 +83,7 @@ void MultiSequence::toFiles( const std::string& baseName ) const{
       baseName + ".qua" );
 }
 
-void MultiSequence::addName( std::string& name ){
+void MultiSequence::addName( const std::string& name ){
   names.v.insert( names.v.end(), name.begin(), name.end() );
   nameEnds.v.push_back( names.v.size() );
   if( nameEnds.v.back() < names.v.size() )

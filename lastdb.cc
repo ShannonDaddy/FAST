@@ -279,14 +279,16 @@ void incrementalFormatWithNovel(const LastdbArguments &args,
 				            multi.seqReader() + multi.seqEnd(lastSeq),
 				            &letterCounts[0] );
 				// memory-saving, which seems to be important on 32-bit systems:
-				if( args.isCountsOnly ) multi.reinitForAppending();
+				//!!if( args.isCountsOnly ) multi.reinitForAppending();
+				if( args.isCountsOnly ) multi.initForAppending(1);
 			} else {
 				const std::string baseName = args.lastdbName + stringify(volumeNumber++);
 				makeVolume( indexes, numOfIndexes,
 				            multi, args, alph, letterCounts, baseName );
 				for( unsigned c = 0; c < alph.size; ++c ) letterTotals[c] += letterCounts[c];
 				letterCounts.assign( alph.size, 0 );
-				multi.reinitForAppending();
+				//!!multi.reinitForAppending();
+				multi.initForAppending(1);
 			}
 		} catch (const std::exception &ex){
 			std::cerr << ex.what() << std::endl;

@@ -40,7 +40,8 @@ void DatabaseThread::createSuffixArrays(int x){
 void DatabaseThread::accumulateAndFlushMulti(const LastdbArguments &args){
 	LOG("accumulating multi...");
 	vol->writePooledMultiSequence(multi, args);
-	multi.reinitForAppending();
+	//!!multi.reinitForAppending();
+	multi.initForAppending(1);
 }
 
 void DatabaseThread::replaceVolumeObject(){
