@@ -15,33 +15,32 @@ using namespace cbrc;
 std::string line;
 
 void MultiSequence::initForAppending( indexT padSizeIn ){
-  padSize = padSizeIn;
-  seq.v.assign( padSize, ' ' );
-  ends.v.assign( 1, padSize );
-  names.v.clear();
-  nameEnds.v.assign( 1, 0 );
+	padSize = padSizeIn;
+	seq.v.assign( padSize, ' ' );
+	ends.v.assign( 1, padSize );
+	names.v.clear();
+	nameEnds.v.assign( 1, 0 );
 }
 
 void MultiSequence::reinitForAppending(){
-  seq.v.erase( seq.v.begin(), seq.v.begin() + ends.v.back() - padSize );
-  names.v.erase( names.v.begin(),
-      names.v.begin() + nameEnds.v[ finishedSequences() ] );
-  ends.v.resize(1);
-  nameEnds.v.resize(1);
-  if( !names.v.empty() ) nameEnds.v.push_back( names.v.size() );
+	seq.v.erase( seq.v.begin(), seq.v.begin() + ends.v.back() - padSize );
+	names.v.erase( names.v.begin(), names.v.begin() + nameEnds.v[ finishedSequences() ] );
+	ends.v.resize(1);
+	nameEnds.v.resize(1);
+	if( !names.v.empty() ) nameEnds.v.push_back( names.v.size() );
 }
 
 void MultiSequence::fromFiles( const std::string& baseName, indexT seqCount,
-    std::size_t qualitiesPerLetter ){
-  ends.m.open( baseName + ".ssp", seqCount + 1 );
-  seq.m.open( baseName + ".tis", ends.m.back() );
-  nameEnds.m.open( baseName + ".sds", seqCount + 1 );
-  names.m.open( baseName + ".des", nameEnds.m.back() );
+                               std::size_t qualitiesPerLetter ){
+	ends.m.open( baseName + ".ssp", seqCount + 1 );
+	seq.m.open( baseName + ".tis", ends.m.back() );
+	nameEnds.m.open( baseName + ".sds", seqCount + 1 );
+	names.m.open( baseName + ".des", nameEnds.m.back() );
 
-  padSize = ends.m[0];
+	padSize = ends.m[0];
 
-  qualityScores.m.open( baseName + ".qua",
-      ends.m.back() * qualitiesPerLetter );
+	qualityScores.m.open( baseName + ".qua",
+	                      ends.m.back() * qualitiesPerLetter );
 }
 
 void MultiSequence::closeFiles(){

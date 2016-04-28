@@ -30,3 +30,16 @@ If we have an ofstream with append, does that mean we are actually behind the sc
 entire file in again?
 
 How and when do I write out the full prj file to disk for the current partition?
+
+What is the meaning behind the pad sizes?
+
+How do I write the subset seeds for each partition
+
+// There are two sources of potential extra bytes
+From each thread
+From each reinit
+// Solution, start each file with a padsize and all the necessary paddings
+// collapse reinit and init for appending into a single function so we are just
+// always flushing the threads normally
+
+Problem is the buckets. Why are the buckets so much smaller then we think they should be?

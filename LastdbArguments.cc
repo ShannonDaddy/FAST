@@ -70,7 +70,7 @@ Advanced Options (default settings):\n\
 -V: print out version information\n\
 \n\
 Report bugs to:  github.com/hallamlab/FAST/issues\n\
-LAST+ home page: github.com/hallamlab/FAST/\n\
+FAST home page: github.com/hallamlab/FAST/\n\
 ";
 
 	int c;
@@ -114,7 +114,7 @@ LAST+ home page: github.com/hallamlab/FAST/\n\
 				++verbosity;
 				break;
 			case 'V':
-				std::cout << "LAST+ 1.0 based on LAST "
+				std::cout << "FAST 1.0 based on LAST "
 #include "version.hh"
 				<< std::endl;
 				break;

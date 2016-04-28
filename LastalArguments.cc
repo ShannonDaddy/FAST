@@ -68,12 +68,10 @@ void LastalArguments::fromArgs( int argc, char** argv, bool optionsOnly ){
 Find local sequence alignments.\n\
 \n\
 Usage Examples:\n\
-Protein - Protein (blastp): fastal [options] -o outputFile amino-acid-lastdb-name \
+Protein - Protein (blastp): fastal [options] -o outputFile amino-acid-fastdb \
 amino-acid-fasta-sequence-file(s)\n\
-DNA - Protein     (blastx): fastal [options] -F -o outputFile amino-acid-lastdb-name \
-DNA-fasta-sequence-file(s)\n\
-DNA - DNA         (blastn): fastal [options] -o outputFile DNA-fastdb-name DNA-fasta-sequence-file(s)\n\
-Suggested Usage           : fastal -P number_of_cores -o outputFile fastdb-name fasta-sequence-file(s)";
+DNA - DNA         (blastn): fastal [options] -o outputFile DNA-fastdb DNA-fasta-sequence-file(s)\n\
+Suggested Usage           : fastal -P number_of_cores -o outputFile fastdb fasta-sequence-file(s)";
   std::string help = usage + "\n\
 \n\
 FAST Functionality:\n\
@@ -104,7 +102,7 @@ Score options (default settings):\n\
 \n\
 Cosmetic options (default settings):\n\
 -h: show all options and their default settings\n\
--v: be verbose: write messages about what fast is doing\n\
+-v: be verbose: write messages about what fastal is doing\n\
 -f: output format: 0=tabular, 1=maf 2=BLAST-like ("
     + stringify(outputFormat) + ")\n\
 \n\
