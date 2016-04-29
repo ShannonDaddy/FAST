@@ -39,7 +39,18 @@ void DatabaseThread::createSuffixArrays(int x){
 
 void DatabaseThread::accumulateAndFlushMulti(const LastdbArguments &args){
 	LOG("accumulating multi...");
+
+	// Update the ends with the global position
+	for(int i=0; i<multi.ends.v.size(); i++){
+		multi.ends.v[i] += vol->endsSize;
+	}
+
+	// Update the nameEnds with the global position
 	vol->writePooledMultiSequence(multi, args);
+	for(int i=0; i<multi.ends.v.size(); i++){
+		multi.nameEnds.v[i] += vol->nameEndsSize;
+	}
+
 	//!!multi.reinitForAppending();
 	multi.initForAppending(1);
 }

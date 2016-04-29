@@ -21,15 +21,6 @@ void DatabaseVolume::writePooledMultiSequence( const MultiSequence &multi,
 	memoryToStream( multi.ends.begin() + sizeof(unsigned char),
 	                multi.ends.end(),
 	                sspfile );
-	//!! Need to pass in the endsSize
-	/*
-	memoryToStream( multi.ends.begin(),
-	                multi.ends.end(),
-	                sspfile, endsSize);
-	                */
-	//printf("%p\n", (void*)(multi.seq.begin()));
-	//printf("%p\n", (void*)(multi.seq.begin() + sizeof(unsigned char)));
-
 	if( multi.seq.begin() != multi.seq.begin() + multi.ends.back())
 	memoryToStream( multi.seq.begin() + sizeof(unsigned char),
 	                multi.seq.begin() + multi.ends.back(),
@@ -39,12 +30,6 @@ void DatabaseVolume::writePooledMultiSequence( const MultiSequence &multi,
 	memoryToStream( multi.nameEnds.begin() + sizeof(unsigned char),
 	                multi.nameEnds.begin() + multi.ends.size(),
 	                sdsfile);
-	//!! Need to pass in the nameEndsSize
-	/*
-	memoryToStream( multi.nameEnds.begin(),
-	                multi.nameEnds.begin() + multi.ends.size(),
-	                sdsfile, nameEndsSize);
-	                */
 
 	if( multi.names.begin() != multi.names.begin() + multi.nameEnds[multi.finishedSequences()] )
 	memoryToStream( multi.names.begin(),
@@ -60,8 +45,8 @@ void DatabaseVolume::writePooledMultiSequence( const MultiSequence &multi,
 	}
 	//std::cout << "WRITTEN THE MULTI FILES TO DISK" << std::endl;
 
-	endsSize += multi.ends.size();
-	nameEndsSize += multi.nameEnds.size();
+	endsSize += multi.ends.back();
+	nameEndsSize += multi.nameEnds.back() - 1;
 }
 
 void DatabaseVolume::writePooledSubsetSuffixArray(const SubsetSuffixArray &sa)
@@ -92,6 +77,7 @@ DatabaseVolume::DatabaseVolume(sequenceFormat::Enum inputFormat,
 	prj = new PrjFiles(_volumes, _numOfIndexes, alphSize);
 
 	// sequence coordinates (ends)
+	// Need to output the first sequence start position (1) to memory in binary format
 	sspfile.open( (databaseName+".ssp").c_str(), std::ios::binary );
 	int c1 = 1;
 	int *a1 = &c1;
@@ -99,10 +85,12 @@ DatabaseVolume::DatabaseVolume(sequenceFormat::Enum inputFormat,
 	memoryToStream(a1, b1, sspfile);
 
 	// sequences (seq)
+	// File starts with an initial pad, assuming padSize = 1
 	tisfile.open( (databaseName+".tis").c_str(), std::ios::binary );
 	tisfile << ' ';
 
 	// name coordinates (nameEnds)
+	// Need to output the first name start position (0) to memory in binary format
 	sdsfile.open( (databaseName+".sds").c_str(), std::ios::binary );
 	int c2 = 0;
 	int *a2 = &c2;
