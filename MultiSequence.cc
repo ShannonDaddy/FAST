@@ -23,17 +23,6 @@ void MultiSequence::initForAppending( indexT padSizeIn ){
 }
 
 /*
-void MultiSequence::initForAppending( indexT padSizeIn ){
-	padSize = padSizeIn;
-	seq.v.assign( padSize, ' ' );
-	ends.v.assign( 1, padSize );
-	names.v.clear();
-	nameEnds.v.assign( 1, 0 );
-}
- */
-
-
-/*
 void MultiSequence::reinitForAppending(){
 	seq.v.erase( seq.v.begin(), seq.v.begin() + ends.v.back() - padSize );
 	names.v.erase( names.v.begin(), names.v.begin() + nameEnds.v[ finishedSequences() ] );

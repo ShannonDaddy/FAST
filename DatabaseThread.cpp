@@ -41,19 +41,27 @@ void DatabaseThread::accumulateAndFlushMulti(const LastdbArguments &args){
 	LOG("accumulating multi...");
 
 	//!! Is this correct behaviour?
+	//!! Why is it that the byte count for the sequences and names are dramatically changed if we
+	// change the last coordinate?
+
 	// The minus one is because we need to take care to not upset the delimiter.
+	//std::cout << multi.ends.v.back() << std::endl;
+	//std::cout << multi.nameEnds.v.back() << std::endl;
+
+	unsigned endsLastCoordinate = multi.ends.back();
+	unsigned nameEndsLastCoordinate = multi.nameEnds.back();
 
 	// Update the ends with the global position
-	for(int i=0; i<multi.ends.v.size()-1; i++){ // ssp file
+	for(int i=0; i<multi.ends.v.size(); i++){ // ssp file
 		multi.ends.v[i] += vol->endsCoordinate;
 	}
 
 	// Update the nameEnds with the global position
-	for(int i=0; i<multi.nameEnds.v.size()-1; i++){ // sds file
+	for(int i=0; i<multi.nameEnds.v.size(); i++){ // sds file
 		multi.nameEnds.v[i] += vol->nameEndsCoordinate;
 	}
 
-	vol->writePooledMultiSequence(multi, args);
+	vol->writePooledMultiSequence(multi, args, endsLastCoordinate, nameEndsLastCoordinate);
 
 	//!!multi.reinitForAppending();
 	multi.initForAppending(1);

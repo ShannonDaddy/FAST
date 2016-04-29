@@ -17,18 +17,19 @@ bool DatabaseVolume::isFinished() const {
 }
 
 void DatabaseVolume::writePooledMultiSequence( const MultiSequence &multi,
-                                               const LastdbArguments &args)
+                                               const LastdbArguments &args,
+                                               unsigned endsLastCoordinate,
+                                               unsigned nameEndsLastCoordinate )
 {
-
 	//std::cout << "WRITING THE MULTI FILES TO DISK" << std::endl;
 	if( multi.ends.begin() != multi.ends.end() )
-	memoryToStream( multi.ends.begin() + sizeof(unsigned char),
+		memoryToStream( multi.ends.begin() + sizeof(unsigned char),
 	                multi.ends.end(),
 	                sspfile );
 
-	if( multi.seq.begin() != multi.seq.begin() + multi.ends.back())
+	if( multi.seq.begin() != multi.seq.begin() + endsLastCoordinate)
 	memoryToStream( multi.seq.begin() + sizeof(unsigned char),
-	                multi.seq.begin() + multi.ends.back(),
+	                multi.seq.begin() + endsLastCoordinate,
 	                tisfile );
 
 	if( multi.nameEnds.begin() != multi.nameEnds.begin() + multi.ends.size())
@@ -36,9 +37,9 @@ void DatabaseVolume::writePooledMultiSequence( const MultiSequence &multi,
 	                multi.nameEnds.begin() + multi.ends.size(),
 	                sdsfile);
 
-	if( multi.names.begin() != multi.names.begin() + multi.nameEnds[multi.finishedSequences()] )
+	if( multi.names.begin() != multi.names.begin() + nameEndsLastCoordinate)
 	memoryToStream( multi.names.begin(),
-	                multi.names.begin() + multi.nameEnds[multi.finishedSequences()],
+	                multi.names.begin() + nameEndsLastCoordinate,
 	                desfile);
 
 	if ( args.inputFormat != sequenceFormat::fasta ) {
@@ -53,8 +54,9 @@ void DatabaseVolume::writePooledMultiSequence( const MultiSequence &multi,
 	endsSize += multi.ends.size();
 	nameEndsSize += multi.nameEnds.size();
 
-	endsCoordinate += multi.ends.back();
-	nameEndsCoordinate += multi.nameEnds.back() - 1;
+	endsCoordinate += endsLastCoordinate;
+	//!! Is this -1 correct?
+	nameEndsCoordinate += nameEndsLastCoordinate;
 }
 
 void DatabaseVolume::writePooledSubsetSuffixArray(const SubsetSuffixArray &sa)

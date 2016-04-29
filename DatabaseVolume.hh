@@ -36,9 +36,11 @@ public:
 
 public:
 	bool isFinished() const;
-	//void writeToDisk(DatabaseThread *db);
+
 	void writePooledMultiSequence( const MultiSequence &multi,
-	                               const LastdbArguments &args) ;
+	                               const LastdbArguments &args,
+	                               unsigned endsLastCoordinate,
+	                               unsigned nameEndsLastCoordinate );
 
 	void writePooledSubsetSuffixArray( const SubsetSuffixArray &sa ) ;
 
