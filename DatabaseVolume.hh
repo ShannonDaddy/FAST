@@ -9,6 +9,7 @@
 #include "prjFiles.hh"
 #include "SubsetSuffixArray.hh"
 
+typedef unsigned indexT;
 /*
  * File which holds the incomplete database volume until it's ready to be flushed
  */
@@ -18,6 +19,8 @@ public:
 
 	std::size_t endsSize;
 	std::size_t nameEndsSize;
+	indexT endsCoordinate;
+	indexT nameEndsCoordinate;
 
 	PrjFiles *prj;
 

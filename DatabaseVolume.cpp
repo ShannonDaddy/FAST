@@ -7,9 +7,13 @@
 
 // Check if we have created a volume that we should proceed to the next volume
 bool DatabaseVolume::isFinished() const {
+
 	//std::cout << "endsSize: " << endsSize << std::endl;
 	//std::cout << "nameEndsSize: " << nameEndsSize << std::endl;
+	//std::cout << (endsSize == nameEndsSize) << std::endl;
 	return endsSize == nameEndsSize;
+
+	//return true;
 }
 
 void DatabaseVolume::writePooledMultiSequence( const MultiSequence &multi,
@@ -21,6 +25,7 @@ void DatabaseVolume::writePooledMultiSequence( const MultiSequence &multi,
 	memoryToStream( multi.ends.begin() + sizeof(unsigned char),
 	                multi.ends.end(),
 	                sspfile );
+
 	if( multi.seq.begin() != multi.seq.begin() + multi.ends.back())
 	memoryToStream( multi.seq.begin() + sizeof(unsigned char),
 	                multi.seq.begin() + multi.ends.back(),
@@ -45,8 +50,11 @@ void DatabaseVolume::writePooledMultiSequence( const MultiSequence &multi,
 	}
 	//std::cout << "WRITTEN THE MULTI FILES TO DISK" << std::endl;
 
-	endsSize += multi.ends.back();
-	nameEndsSize += multi.nameEnds.back() - 1;
+	endsSize += multi.ends.size();
+	nameEndsSize += multi.nameEnds.size();
+
+	endsCoordinate += multi.ends.back();
+	nameEndsCoordinate += multi.nameEnds.back() - 1;
 }
 
 void DatabaseVolume::writePooledSubsetSuffixArray(const SubsetSuffixArray &sa)
@@ -69,7 +77,9 @@ DatabaseVolume::DatabaseVolume(sequenceFormat::Enum inputFormat,
                                unsigned _numOfIndexes,
                                unsigned alphSize):
 		endsSize(0),
-		nameEndsSize(0)
+		nameEndsSize(0),
+		endsCoordinate(0),
+		nameEndsCoordinate(0)
 {
 	std::stringstream s;
 	s << _volumes;

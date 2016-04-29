@@ -21,6 +21,7 @@ extern DatabaseVolume *vol;
 extern unsigned currentVolumeNumber;
 
 const std::size_t LOADSIZE = 100000;
+const unsigned MAXMEMORY = 4294967295; // equivalent to 2^32 - 1 or 4GB.
 const unsigned maxNumOfIndexes = 16;
 
 typedef MultiSequence::indexT indexT;

@@ -22,7 +22,6 @@ namespace cbrc{
 class MultiSequence{
  public:
   typedef unsigned indexT;
-  //typedef std::size_t indexT;
   typedef unsigned char uchar;
 
 		friend class DatabaseVolume;

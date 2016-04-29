@@ -40,16 +40,20 @@ void DatabaseThread::createSuffixArrays(int x){
 void DatabaseThread::accumulateAndFlushMulti(const LastdbArguments &args){
 	LOG("accumulating multi...");
 
+	//!! Is this correct behaviour?
+	// The minus one is because we need to take care to not upset the delimiter.
+
 	// Update the ends with the global position
-	for(int i=0; i<multi.ends.v.size(); i++){
-		multi.ends.v[i] += vol->endsSize;
+	for(int i=0; i<multi.ends.v.size()-1; i++){ // ssp file
+		multi.ends.v[i] += vol->endsCoordinate;
 	}
 
 	// Update the nameEnds with the global position
-	vol->writePooledMultiSequence(multi, args);
-	for(int i=0; i<multi.ends.v.size(); i++){
-		multi.nameEnds.v[i] += vol->nameEndsSize;
+	for(int i=0; i<multi.nameEnds.v.size()-1; i++){ // sds file
+		multi.nameEnds.v[i] += vol->nameEndsCoordinate;
 	}
+
+	vol->writePooledMultiSequence(multi, args);
 
 	//!!multi.reinitForAppending();
 	multi.initForAppending(1);
@@ -84,8 +88,10 @@ void DatabaseThread::makeVolume( const LastdbArguments& args,
 		LOG("done with voluming batch");
 
 	} else {
+		SEM_WAIT(io);
 		vol->prj->writePrjFile(args);
 		replaceVolumeObject();
+		SEM_POST(io);
 	}
 }
 
