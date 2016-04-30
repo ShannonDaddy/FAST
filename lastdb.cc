@@ -411,10 +411,34 @@ void writeOuterPrj(unsigned numOfIndexes){
 		}
 	}
 
-	// This is the final prj
-	writePrjFile( args.lastdbName + ".prj", args, alph,
-	              finalSequenceCount, FinalLetterTotals,
-	              currentVolumeNumber, numOfIndexes );
+	countT letterTotal = std::accumulate( FinalLetterTotals.begin(),
+	                                      FinalLetterTotals.end(), countT(0) );
+	std::string fileName = args.lastdbName + ".prj";
+
+	std::ofstream f( fileName.c_str() );
+	f << "version=" <<
+	#include "version.hh"
+	<< '\n';
+	f << "alphabet=" << alph << '\n';
+	f << "numofsequences=" << finalSequenceCount << '\n';
+	f << "numofletters=" << letterTotal << '\n';
+	f << "letterfreqs=";
+	for( unsigned i = 0; i < FinalLetterTotals.size(); ++i ){
+		if( i > 0 ) f << ' ';
+		f << FinalLetterTotals[i];
+	}
+	f << '\n';
+
+	if( !args.isCountsOnly ){
+		f << "maxunsortedinterval=" << args.minSeedLimit << '\n';
+		f << "masklowercase=" << args.isCaseSensitive << '\n';
+		if( args.inputFormat != sequenceFormat::fasta )
+			f << "sequenceformat=" << args.inputFormat << '\n';
+		if( currentVolumeNumber+1 > 0 ) f << "volumes=" << (currentVolumeNumber+1) << '\n';
+		else f << "numofindexes=" << numOfIndexes << '\n';
+	}
+
+	if( !f ) ERR( "can't write file: " + fileName );
 }
 
 void createThreads(){
