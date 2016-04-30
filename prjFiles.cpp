@@ -16,7 +16,9 @@ void PrjFiles::accumulatePrj(const std::vector<countT>& letterCounts,
 	}
 }
 
-void PrjFiles::writePrjFile(const LastdbArguments &args)
+void PrjFiles::writePrjFile(const LastdbArguments &args,
+                            const SubsetSuffixArray &sa,
+                            indexT textLength)
 {
 	countT letterTotal = std::accumulate( letterTotals.begin(),
 	                                      letterTotals.end(), countT(0) );
@@ -44,11 +46,21 @@ void PrjFiles::writePrjFile(const LastdbArguments &args)
 		f << "masklowercase=" << args.isCaseSensitive << '\n';
 		if( args.inputFormat != sequenceFormat::fasta )
 			f << "sequenceformat=" << args.inputFormat << '\n';
-		if( volumes+1 > 0 ) f << "volumes=" << volumes << '\n';
-		else f << "numofindexes=" << numOfIndexes << '\n';
+		//if( volumes+1 > 0 ) f << "volumes=" << volumes << '\n';
+		//else f << "numofindexes=" << numOfIndexes << '\n';
+		f << "numofindexes=" << numOfIndexes << '\n';
 	}
 
-	//if( !f ) ERR( "can't write file: " + fileName );
+// SubsetSuffixArray portion of the prj files
+	f << "totallength=" << textLength << '\n';
+	f << "specialcharacters=" << textLength - sa.index.size() << '\n';
+	f << "prefixlength=" << sa.maxBucketPrefix() << '\n';
+
+	for( unsigned i = 0; i < sa.seed.span(); ++i ){
+		f << "subsetseed=";
+		sa.seed.writePosition( f, i );
+		f << '\n';
+	}
 }
 
 /*
@@ -58,7 +70,7 @@ void PrjFiles::writePrjFile(const LastdbArguments &args)
 PrjFiles::PrjFiles(unsigned _volumes,
                    unsigned _numOfIndexes,
                    unsigned alphSize):
-volumes(_volumes),
+	volumes(_volumes),
 numOfIndexes(_numOfIndexes),
 sequenceTotal(0)
 {

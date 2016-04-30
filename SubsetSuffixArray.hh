@@ -26,21 +26,23 @@
 #include "VectorOrMmap.hh"
 
 class DatabaseVolume;
+class PrjFiles;
 
 namespace cbrc{
 
 	class SuffixArraySorter;
 
-  class SubsetSuffixArray{
+	class SubsetSuffixArray{
 
-		  friend class DatabaseVolume;
+		friend class DatabaseVolume;
+		friend class PrjFiles;
 
-    public:
-      //typedef std::size_t indexT;
-      typedef unsigned indexT;
+	public:
+		//typedef std::size_t indexT;
+		typedef unsigned indexT;
 
-      CyclicSubsetSeed& getSeed() { return seed; }
-      const CyclicSubsetSeed& getSeed() const { return seed; }
+		CyclicSubsetSeed& getSeed() { return seed; }
+		const CyclicSubsetSeed& getSeed() const { return seed; }
 
       // Add every step-th text position in the range [beg,end).
       // Positions starting with delimiters aren't added.

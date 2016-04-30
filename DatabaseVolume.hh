@@ -35,7 +35,8 @@ public:
 	std::ofstream bckfile;
 
 public:
-	bool isFinished() const;
+	bool isFinished(unsigned nextBatchEnds,
+	                unsigned nextBatchNameEnds ) const;
 
 	void writePooledMultiSequence( const MultiSequence &multi,
 	                               const LastdbArguments &args,

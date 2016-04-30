@@ -8,6 +8,7 @@
 #include "LastdbArguments.hh"
 #include "MultiSequence.hh"
 #include "Alphabet.hh"
+#include "SubsetSuffixArray.hh"
 
 /*
  * This structure is because every thread will create a Prj along with it's database partition.
@@ -29,7 +30,9 @@ public:
 		std::vector<countT> letterTotals;
 
 public:
-		void writePrjFile(const LastdbArguments &args);
+	void writePrjFile(const LastdbArguments &args,
+	                  const SubsetSuffixArray &sa,
+	                  indexT textLength);
 
 		void accumulatePrj(const std::vector<countT>& letterCounts,
 		                   unsigned _sequenceCount);

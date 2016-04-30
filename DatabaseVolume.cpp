@@ -4,16 +4,18 @@
 
 #include "DatabaseVolume.hh"
 #include "io.hh"
+#include "Globals.hh"
 
 // Check if we have created a volume that we should proceed to the next volume
-bool DatabaseVolume::isFinished() const {
+bool DatabaseVolume::isFinished(unsigned nextBatchEnds,
+                                unsigned nextBatchNameEnds) const {
 
 	//std::cout << "endsSize: " << endsSize << std::endl;
 	//std::cout << "nameEndsSize: " << nameEndsSize << std::endl;
 	//std::cout << (endsSize == nameEndsSize) << std::endl;
-	return endsSize == nameEndsSize;
+	//return endsSize == nameEndsSize;
 
-	//return true;
+	return (endsSize + nextBatchEnds < MAXMEMORY && nameEndsSize + nextBatchNameEnds < MAXMEMORY);
 }
 
 void DatabaseVolume::writePooledMultiSequence( const MultiSequence &multi,
@@ -56,7 +58,7 @@ void DatabaseVolume::writePooledMultiSequence( const MultiSequence &multi,
 
 	endsCoordinate += endsLastCoordinate;
 	//!! Is this -1 correct?
-	nameEndsCoordinate += nameEndsLastCoordinate;
+	nameEndsCoordinate += nameEndsLastCoordinate - 1;
 }
 
 void DatabaseVolume::writePooledSubsetSuffixArray(const SubsetSuffixArray &sa)

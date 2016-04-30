@@ -237,6 +237,7 @@ SubsetSuffixArray::upperBound( const indexT* beg, const indexT* end,
   return end;
 }
 
+// Usage: indexes[x].makeBuckets(multi.seqReader(), args.bucketDepth);
 void SubsetSuffixArray::makeBuckets( const uchar* text, indexT bucketDepth ){
 	if( bucketDepth+1 == 0 ) bucketDepth = defaultBucketDepth();
 

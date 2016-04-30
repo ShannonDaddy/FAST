@@ -78,29 +78,20 @@ void DatabaseThread::replaceVolumeObject(){
 void DatabaseThread::makeVolume( const LastdbArguments& args,
                                  const Alphabet& alph)
 {
-	// Check if the MultiSequence still has room in it for more
-	if ( vol->isFinished() ) {
-		accumulateAndFlushPrj();
+	accumulateAndFlushPrj();
 
-		for (unsigned x = 0; x < numOfIndexes; ++x) {
-			createSuffixArrays(x);
-			SEM_WAIT(io);
-			accumulateAndFlushSuffixArrays(x);
-			SEM_POST(io);
-		}
-
+	for (unsigned x = 0; x < numOfIndexes; ++x) {
+		createSuffixArrays(x);
 		SEM_WAIT(io);
-		accumulateAndFlushMulti(args);
-		SEM_POST(io);
-
-		LOG("done with voluming batch");
-
-	} else {
-		SEM_WAIT(io);
-		vol->prj->writePrjFile(args);
-		replaceVolumeObject();
+		accumulateAndFlushSuffixArrays(x);
 		SEM_POST(io);
 	}
+
+	SEM_WAIT(io);
+	accumulateAndFlushMulti(args);
+	SEM_POST(io);
+
+	LOG("done with voluming batch");
 }
 
 std::istream&
@@ -158,7 +149,19 @@ void DatabaseThread::formatdb(const LastdbArguments &args,
                               const Alphabet &alph)
 {
 	while (readFasta(numOfIndexes, args, alph, in)){
-		makeVolume(args, alph);
+		// Check if the MultiSequence still has room in it for more
+		if ( vol->isFinished(multi.ends.back(), multi.nameEnds.back()) ) {
+			makeVolume(args, alph);
+		} else {
+			SEM_WAIT(io);
+			indexT textLength = multi.finishedSize();
+			//!! Assuming we always produce only one index!
+			vol->prj->writePrjFile(args, indexes[0], textLength);
+			replaceVolumeObject();
+			SEM_POST(io);
+
+			makeVolume(args, alph);
+		}
 	}
 }
 
