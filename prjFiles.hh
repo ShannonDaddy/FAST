@@ -24,23 +24,23 @@ typedef unsigned long long countT;
 class PrjFiles {
 //private:
 public:
-		countT sequenceTotal;
-		unsigned volumes;
-		unsigned numOfIndexes;
-		std::vector<countT> letterTotals;
+	countT sequenceTotal;
+	unsigned volumes;
+	unsigned numOfIndexes;
+	std::vector<countT> letterTotals;
 
 public:
 	void writePrjFile(const LastdbArguments &args,
 	                  const SubsetSuffixArray &sa,
-	                  indexT textLength);
+	                  indexT textLength,
+	                  std::size_t indexTotal);
 
-		void accumulatePrj(const std::vector<countT>& letterCounts,
-		                   unsigned _sequenceCount);
+	void accumulatePrj(const std::vector<countT>& letterCounts,
+	                   unsigned _sequenceCount);
 
-
-		PrjFiles(unsigned _volumes,
-		         unsigned numOfIndexes,
-		         unsigned alphSize);
+	PrjFiles(unsigned _volumes,
+	         unsigned numOfIndexes,
+	         unsigned alphSize);
 };
 
 

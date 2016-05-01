@@ -18,7 +18,8 @@ void PrjFiles::accumulatePrj(const std::vector<countT>& letterCounts,
 
 void PrjFiles::writePrjFile(const LastdbArguments &args,
                             const SubsetSuffixArray &sa,
-                            indexT textLength)
+                            indexT textLength,
+                            std::size_t indexTotal)
 {
 	countT letterTotal = std::accumulate( letterTotals.begin(),
 	                                      letterTotals.end(), countT(0) );
@@ -53,7 +54,8 @@ void PrjFiles::writePrjFile(const LastdbArguments &args,
 
 // SubsetSuffixArray portion of the prj files
 	f << "totallength=" << textLength << '\n';
-	f << "specialcharacters=" << textLength - sa.index.size() << '\n';
+	//f << "specialcharacters=" << textLength - sa.index.size() << '\n';
+	f << "specialcharacters=" << textLength - indexTotal << '\n';
 	f << "prefixlength=" << sa.maxBucketPrefix() << '\n';
 
 	for( unsigned i = 0; i < sa.seed.span(); ++i ){
@@ -71,8 +73,8 @@ PrjFiles::PrjFiles(unsigned _volumes,
                    unsigned _numOfIndexes,
                    unsigned alphSize):
 	volumes(_volumes),
-numOfIndexes(_numOfIndexes),
-sequenceTotal(0)
+	numOfIndexes(_numOfIndexes),
+	sequenceTotal(0)
 {
 	letterTotals.resize(alphSize);
 }

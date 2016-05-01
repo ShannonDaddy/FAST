@@ -65,14 +65,17 @@ void DatabaseVolume::writePooledSubsetSuffixArray(const SubsetSuffixArray &sa)
 {
 	//std::cout << "WRITING THE SUFFIX ARRAY FILES TO DISK" << std::endl;
 	if( sa.index.begin() != sa.index.end())
-	memoryToStream( sa.index.begin(),
-	                sa.index.end(),
-	                suffile);
-	if( sa.buckets.begin() != sa.buckets.end())
-	memoryToStream( sa.buckets.begin(),
-	                sa.buckets.end(),
-                  bckfile);
+		memoryToStream( sa.index.begin(),
+		                sa.index.end(),
+		                suffile);
 	//std::cout << "WRITTEN THE SUFFIX ARRAY FILES TO DISK" << std::endl;
+}
+
+void DatabaseVolume::writeBucketFile(const SubsetSuffixArray &sa){
+	if( sa.buckets.begin() != sa.buckets.end())
+		memoryToStream( sa.buckets.begin(),
+		                sa.buckets.end(),
+		                bckfile);
 }
 
 DatabaseVolume::DatabaseVolume(sequenceFormat::Enum inputFormat,
@@ -83,7 +86,8 @@ DatabaseVolume::DatabaseVolume(sequenceFormat::Enum inputFormat,
 		endsSize(0),
 		nameEndsSize(0),
 		endsCoordinate(0),
-		nameEndsCoordinate(0)
+		nameEndsCoordinate(0),
+		indexTotal(0)
 {
 	std::stringstream s;
 	s << _volumes;

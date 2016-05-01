@@ -44,68 +44,88 @@ namespace cbrc{
 		CyclicSubsetSeed& getSeed() { return seed; }
 		const CyclicSubsetSeed& getSeed() const { return seed; }
 
-      // Add every step-th text position in the range [beg,end).
-      // Positions starting with delimiters aren't added.
-      // The positions aren't sorted.
-      void addPositions( const uchar* text, indexT beg, indexT end, indexT step );
+		// Add every step-th text position in the range [beg,end).
+		// Positions starting with delimiters aren't added.
+		// The positions aren't sorted.
+		void addPositions( const uchar* text,
+		                   indexT beg,
+		                   indexT end,
+		                   indexT step );
 
-      // Sort the suffix array (but don't make the buckets).
-      void sortIndex( const uchar* text, indexT maxUnsortedInterval, SuffixArraySorter *s );
+		// Sort the suffix array (but don't make the buckets).
+		void sortIndex( const uchar* text,
+		                indexT maxUnsortedInterval,
+		                SuffixArraySorter *s );
 
-      // Make the buckets.  If bucketDepth+1 == 0, then a default
-      // bucketDepth is used.  The default is: the maximum possible
-      // bucketDepth such that the number of bucket entries is at most 1/4
-      // the number of suffix array entries.
-      void makeBuckets( const uchar* text, indexT bucketDepth );
+		// Clear the positions, so we can add new positions from scratch.
+		void clearPositions();
 
-      // Clear the positions, so we can add new positions from scratch.
-      void clearPositions();
+		void fromFiles( const std::string& baseName,
+		                bool isMaskLowercase,
+		                const uchar letterCode[] );
 
-      void fromFiles( const std::string& baseName,
-          bool isMaskLowercase, const uchar letterCode[] );
+		void closeFiles();
 
-      void closeFiles();
+		void toFiles( const std::string& baseName,
+		              bool isAppendPrj,
+		              indexT textLength ) const;
 
-      void toFiles( const std::string& baseName,
-          bool isAppendPrj, indexT textLength ) const;
+		// Find the smallest match to the text, starting at the given
+		// position in the query, such that there are at most maxHits
+		// matches, or the match-depth is at least minDepth.  Return the
+		// range of matching indices via beg and end.
+		void match( const indexT*& beg,
+		            const indexT*& end,
+		            const uchar* queryPtr,
+		            const uchar* text,
+		            indexT maxHits,
+		            indexT minDepth ) const;
 
-      // Find the smallest match to the text, starting at the given
-      // position in the query, such that there are at most maxHits
-      // matches, or the match-depth is at least minDepth.  Return the
-      // range of matching indices via beg and end.
-      void match( const indexT*& beg, const indexT*& end,
-          const uchar* queryPtr, const uchar* text,
-          indexT maxHits, indexT minDepth ) const;
+		// Count matches of all sizes, starting at the given position in the
+		// query.  Don't try this for large self-comparisons!
+		void countMatches( std::vector<unsigned long long>& counts,
+		                   const uchar* queryPtr,
+		                   const uchar* text ) const;
 
-      // Count matches of all sizes, starting at the given position in the
-      // query.  Don't try this for large self-comparisons!
-      void countMatches( std::vector<unsigned long long>& counts,
-          const uchar* queryPtr, const uchar* text ) const;
+		//private:
+	public:
+		CyclicSubsetSeed seed;
+		VectorOrMmap<indexT> index;  // sorted indices // suf file
+		VectorOrMmap<indexT> buckets; // bck file
+		std::vector<indexT> bucketSteps;  // step size for each k-mer
 
-    //private:
-public:
-      CyclicSubsetSeed seed;
-      VectorOrMmap<indexT> index;  // sorted indices
-      VectorOrMmap<indexT> buckets;
-      std::vector<indexT> bucketSteps;  // step size for each k-mer
+		static void equalRange( const indexT*& beg,
+		                        const indexT*& end,
+		                        const uchar* textBase,
+		                        const uchar* subsetMap,
+		                        uchar symbol );
 
-      static void equalRange( const indexT*& beg, const indexT*& end,
-          const uchar* textBase,
-          const uchar* subsetMap, uchar symbol );
-      static const indexT* lowerBound( const indexT* beg, const indexT* end,
-          const uchar* textBase,
-          const uchar* subsetMap, uchar subset );
-      static const indexT* upperBound( const indexT* beg, const indexT* end,
-          const uchar* textBase,
-          const uchar* subsetMap, uchar subset );
+		static const indexT* lowerBound( const indexT* beg,
+		                                 const indexT* end,
+		                                 const uchar* textBase,
+		                                 const uchar* subsetMap,
+		                                 uchar subset );
 
-      // Return the maximum prefix size covered by the buckets.
-      indexT maxBucketPrefix() const { return bucketSteps.size() - 1; }
+		static const indexT* upperBound( const indexT* beg,
+		                                 const indexT* end,
+		                                 const uchar* textBase,
+		                                 const uchar* subsetMap,
+		                                 uchar subset );
 
-      indexT defaultBucketDepth();
+		// Return the maximum prefix size covered by the buckets.
+		indexT maxBucketPrefix() const { return bucketSteps.size() - 1; }
 
-      void makeBucketSteps( indexT bucketDepth );
-  };
+		indexT defaultBucketDepth(std::size_t indexSize=0);
+
+		// Make the buckets.  If bucketDepth+1 == 0, then a default
+		// bucketDepth is used.  The default is: the maximum possible
+		// bucketDepth such that the number of bucket entries is at most 1/4
+		// the number of suffix array entries.
+		void makeBuckets( const uchar* text,
+		                  indexT bucketDepth );
+
+		void makeBucketSteps( indexT bucketDepth );
+	};
 
 }  // end namespace
 #endif

@@ -509,6 +509,29 @@ void lastdb( int argc, char** argv )
 		}
 	}
 
+	/*
+	//LOG("bucketing...");
+	//!! Assuming we always produce only one index!
+	std::cout << "indexTotal: " << vol->indexTotal << std::endl;
+	//indexes[0].makeBuckets( multi.seqReader(), vol->indexTotal );
+	indexes[0].buckets.v.resize( indexes[0].bucketSteps[0], vol->indexTotal );
+	vol->writeBucketFile(indexes[0]);
+	*/
+
+	// There may be a final volume which we never finished off.
+	if(vol->indexTotal > 0) {
+		indexT textLength = vol->endsCoordinate;
+		vol->prj->writePrjFile(args, dbThreads[0]->indexes[0], textLength, vol->indexTotal);
+		// buckets
+		/*
+		dbThreads[0]->indexes[0].makeBuckets( multi.seqReader(), vol->indexTotal );
+		if( bucketDepth+1 == 0 ) bucketDepth = defaultBucketDepth(vol->indexTotal);
+		dbThreads[0]->indexes[0].buckets.v.resize( dbThreads[0]->indexes[0].bucketSteps[0], vol->indexTotal );
+		vol->writeBucketFile(dbThreads[0]->indexes[0]);
+		 */
+	}
+
+	// Need one here?
 	writeOuterPrj(numOfIndexes);
 
 	deleteThreads();

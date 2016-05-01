@@ -9,8 +9,7 @@ void DatabaseThread::accumulateAndFlushPrj(){
 	LOG("accumulating prj...");
 	vol->prj->accumulatePrj(letterCounts, sequenceCount);
 	sequenceTotals += sequenceCount;
-	//std::cout << "sequenceCount: " << sequenceCount << std::endl;
-	//std::cout << "sequenceTotal: " << vol->prj->sequenceTotal << std::endl;
+
 	for (unsigned c = 0; c < alph.size; ++c) letterTotals[c] += letterCounts[c];
 	letterCounts.assign(alph.size, 0);
 	sequenceCount = 0;
@@ -18,14 +17,11 @@ void DatabaseThread::accumulateAndFlushPrj(){
 
 void DatabaseThread::accumulateAndFlushSuffixArrays(int x){
 	LOG("accumulating suffix arrays...");
-	indexT textLength = multi.finishedSize();
 	//!! Original code snippet
 	//if( numOfIndexes > 1 ) indexes[x].toFiles( baseName + char('a' + x), false, textLength );
 	//else indexes[x].toFiles( baseName, true, textLength );
 
-	//!! POUR OUT THE SUFFIX ARRAYS
-	if (numOfIndexes > 1) vol->writePooledSubsetSuffixArray(indexes[x]);
-	else vol->writePooledSubsetSuffixArray(indexes[x]);
+	vol->writePooledSubsetSuffixArray(indexes[x]);
 	indexes[x].clearPositions();
 }
 
@@ -33,20 +29,11 @@ void DatabaseThread::createSuffixArrays(int x){
 	LOG("sorting...");
 	indexes[x].sortIndex(multi.seqReader(), args.minSeedLimit, sorter);
 
-	LOG("bucketing...");
-	indexes[x].makeBuckets(multi.seqReader(), args.bucketDepth);
+	vol->indexTotal += indexes[x].index.size();
 }
 
 void DatabaseThread::accumulateAndFlushMulti(const LastdbArguments &args){
 	LOG("accumulating multi...");
-
-	//!! Is this correct behaviour?
-	//!! Why is it that the byte count for the sequences and names are dramatically changed if we
-	// change the last coordinate?
-
-	// The minus one is because we need to take care to not upset the delimiter.
-	//std::cout << multi.ends.v.back() << std::endl;
-	//std::cout << multi.nameEnds.v.back() << std::endl;
 
 	unsigned endsLastCoordinate = multi.ends.back();
 	unsigned nameEndsLastCoordinate = multi.nameEnds.back();
@@ -63,7 +50,6 @@ void DatabaseThread::accumulateAndFlushMulti(const LastdbArguments &args){
 
 	vol->writePooledMultiSequence(multi, args, endsLastCoordinate, nameEndsLastCoordinate);
 
-	//!!multi.reinitForAppending();
 	multi.initForAppending(1);
 }
 
@@ -127,8 +113,10 @@ DatabaseThread::readFasta( unsigned numOfIndexes,
 
 		if (in && multi.isFinished() && !args.isCountsOnly) {
 			for (unsigned x = 0; x < numOfIndexes; ++x) {
-				indexes[x].addPositions(multi.seqReader(), oldFinishedSize,
-				                        multi.finishedSize(), args.indexStep);
+				indexes[x].addPositions(multi.seqReader(),
+				                        oldFinishedSize,
+				                        multi.finishedSize(),
+				                        args.indexStep);
 			}
 		}
 
@@ -154,9 +142,19 @@ void DatabaseThread::formatdb(const LastdbArguments &args,
 			makeVolume(args, alph);
 		} else {
 			SEM_WAIT(io);
-			indexT textLength = multi.finishedSize();
+			/*
+			//LOG("bucketing...");
 			//!! Assuming we always produce only one index!
-			vol->prj->writePrjFile(args, indexes[0], textLength);
+			std::cout << "indexTotal: " << vol->indexTotal << std::endl;
+			//indexes[0].makeBuckets( multi.seqReader(), vol->indexTotal );
+			indexes[0].buckets.v.resize( indexes[0].bucketSteps[0], vol->indexTotal );
+			vol->writeBucketFile(indexes[0]);
+	makeBucketSteps( bucketDepth );
+			*/
+
+			//indexT textLength = multi.finishedSize();
+			indexT textLength = vol->endsCoordinate;
+			vol->prj->writePrjFile(args, indexes[0], textLength, vol->indexTotal);
 			replaceVolumeObject();
 			SEM_POST(io);
 

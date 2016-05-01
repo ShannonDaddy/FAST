@@ -22,6 +22,8 @@ public:
 	indexT endsCoordinate;
 	indexT nameEndsCoordinate;
 
+	std::size_t indexTotal;
+
 	PrjFiles *prj;
 
 	std::string databaseName;
@@ -44,6 +46,8 @@ public:
 	                               unsigned nameEndsLastCoordinate );
 
 	void writePooledSubsetSuffixArray( const SubsetSuffixArray &sa ) ;
+
+	void writeBucketFile(const SubsetSuffixArray &sa);
 
 	DatabaseVolume(sequenceFormat::Enum inputFormat,
 	               const std::string &dbname,
