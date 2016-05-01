@@ -520,18 +520,22 @@ void lastdb( int argc, char** argv )
 
 	// There may be a final volume which we never finished off.
 	if(vol->indexTotal > 0) {
+		// prj
+		LOG("writing prj...");
 		indexT textLength = vol->endsCoordinate;
 		vol->prj->writePrjFile(args, dbThreads[0]->indexes[0], textLength, vol->indexTotal);
-		// buckets
-		/*
-		dbThreads[0]->indexes[0].makeBuckets( multi.seqReader(), vol->indexTotal );
-		if( bucketDepth+1 == 0 ) bucketDepth = defaultBucketDepth(vol->indexTotal);
-		dbThreads[0]->indexes[0].buckets.v.resize( dbThreads[0]->indexes[0].bucketSteps[0], vol->indexTotal );
+
+		// buckets (bck)
+		LOG("bucketing...");
+		indexT bucketDepth = dbThreads[0]->indexes[0].defaultBucketDepth(vol->indexTotal);
+		dbThreads[0]->indexes[0].makeBucketSteps( bucketDepth );
+		dbThreads[0]->indexes[0].buckets.v.resize( dbThreads[0]->indexes[0].bucketSteps[0],
+		                                           vol->indexTotal );
+		LOG("writing buckets...");
 		vol->writeBucketFile(dbThreads[0]->indexes[0]);
-		 */
 	}
 
-	// Need one here?
+	LOG("writing database prj...");
 	writeOuterPrj(numOfIndexes);
 
 	deleteThreads();

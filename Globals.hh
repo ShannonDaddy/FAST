@@ -20,10 +20,9 @@ extern std::ifstream in;
 extern DatabaseVolume *vol;
 extern unsigned currentVolumeNumber;
 
-//!! These variables are important
 const std::size_t LOADSIZE = 10000;
 const unsigned MAXMEMORY = 4294967295; // equivalent to 2^32 - 1 or 4GB.
-//const unsigned MAXMEMORY = 1048576;
+//const unsigned MAXMEMORY = 1048576; // 1mb for fun
 const unsigned maxNumOfIndexes = 16;
 
 typedef MultiSequence::indexT indexT;

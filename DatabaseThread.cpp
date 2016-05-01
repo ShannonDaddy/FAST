@@ -142,17 +142,17 @@ void DatabaseThread::formatdb(const LastdbArguments &args,
 			makeVolume(args, alph);
 		} else {
 			SEM_WAIT(io);
-			/*
-			//LOG("bucketing...");
 			//!! Assuming we always produce only one index!
-			std::cout << "indexTotal: " << vol->indexTotal << std::endl;
-			//indexes[0].makeBuckets( multi.seqReader(), vol->indexTotal );
-			indexes[0].buckets.v.resize( indexes[0].bucketSteps[0], vol->indexTotal );
+			LOG("bucketing...");
+			indexT bucketDepth = indexes[0].defaultBucketDepth(vol->indexTotal);
+			indexes[0].makeBucketSteps( bucketDepth );
+			indexes[0].buckets.v.resize( indexes[0].bucketSteps[0],
+			                             vol->indexTotal );
+			LOG("writing buckets...");
 			vol->writeBucketFile(indexes[0]);
-	makeBucketSteps( bucketDepth );
-			*/
 
 			//indexT textLength = multi.finishedSize();
+			LOG("writing prj...");
 			indexT textLength = vol->endsCoordinate;
 			vol->prj->writePrjFile(args, indexes[0], textLength, vol->indexTotal);
 			replaceVolumeObject();

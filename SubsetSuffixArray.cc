@@ -289,10 +289,10 @@ void SubsetSuffixArray::makeBucketSteps( indexT bucketDepth ){
 
 SubsetSuffixArray::indexT SubsetSuffixArray::defaultBucketDepth(std::size_t indexSize){
 	indexT maxBucketEntries = 0;
-	if(indexSize == 0) {
-		maxBucketEntries = indexSize;
-	} else {
+	if(indexSize == 0) { // default condition
 		maxBucketEntries = index.size() / 4; // voila
+	} else {
+		maxBucketEntries = indexSize / 4;
 	}
 	indexT bucketDepth = 0;
 	indexT kmerEntries = 1;
