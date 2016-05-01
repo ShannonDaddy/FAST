@@ -248,7 +248,6 @@ void SubsetSuffixArray::makeBuckets( const uchar* text, indexT bucketDepth ){
 
 	buckets.v.clear();
 
-	//!! What purpose does this loop serve?
 	for( indexT i = 0; i < index.size(); ++i ){
 		const uchar* textPtr = text + index[i];
 		const uchar* subsetMap = seed.firstMap();
@@ -264,10 +263,9 @@ void SubsetSuffixArray::makeBuckets( const uchar* text, indexT bucketDepth ){
 			++textPtr;
 			++depth;
 			indexT step = bucketSteps[depth];
-			bucketIndex += subset * step;
+			bucketIndex += subset * step; // this is it.
 			subsetMap = seed.nextMap( subsetMap + 64 );
 		}
-		//!! What purpose does this resizing possibly serve
 		buckets.v.resize( bucketIndex+1, i );
 	}
 
@@ -287,7 +285,7 @@ void SubsetSuffixArray::makeBucketSteps( indexT bucketDepth ){
 	}
 }
 
-SubsetSuffixArray::indexT SubsetSuffixArray::defaultBucketDepth(std::size_t indexSize){
+SubsetSuffixArray::indexT SubsetSuffixArray::defaultBucketDepth(std::size_t indexSize) const{
 	indexT maxBucketEntries = 0;
 	if(indexSize == 0) { // default condition
 		maxBucketEntries = index.size() / 4; // voila

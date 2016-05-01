@@ -523,22 +523,46 @@ void lastdb( int argc, char** argv )
 		// prj
 		LOG("writing prj...");
 		indexT textLength = vol->endsCoordinate;
-		vol->prj->writePrjFile(args, dbThreads[0]->indexes[0], textLength, vol->indexTotal);
+		indexT bucketDepth = dbThreads[0]->indexes[0].defaultBucketDepth(vol->indexTotal);
+		vol->prj->writePrjFile(args, dbThreads[0]->indexes[0],
+		                       textLength, vol->indexTotal,
+		                       bucketDepth);
 
 		// buckets (bck)
 		LOG("bucketing...");
+		/*
 		indexT bucketDepth = dbThreads[0]->indexes[0].defaultBucketDepth(vol->indexTotal);
 		dbThreads[0]->indexes[0].makeBucketSteps( bucketDepth );
 		dbThreads[0]->indexes[0].buckets.v.resize( dbThreads[0]->indexes[0].bucketSteps[0],
 		                                           vol->indexTotal );
 		LOG("writing buckets...");
 		vol->writeBucketFile(dbThreads[0]->indexes[0]);
+		 */
+
+		delete vol;
 	}
 
-	LOG("writing database prj...");
-	writeOuterPrj(numOfIndexes);
+	if(currentVolumeNumber > 1) {
+		LOG("writing database prj...");
+		writeOuterPrj(numOfIndexes);
+	} else {
+		renameFiles();
+	}
 
 	deleteThreads();
+}
+
+void renameFiles(){
+	std::string n = args.lastdbName;
+	rename( (n+"0.prj").c_str(), (n+".prj").c_str() );
+	rename( (n+"0.ssp").c_str(), (n+".ssp").c_str() );
+	rename( (n+"0.tis").c_str(), (n+".tis").c_str() );
+	rename( (n+"0.sds").c_str(), (n+".sds").c_str() );
+	rename( (n+"0.des").c_str(), (n+".des").c_str() );
+	rename( (n+"0.suf").c_str(), (n+".suf").c_str() );
+	rename( (n+"0.bck").c_str(), (n+".bck").c_str() );
+	if(args.inputFormat != sequenceFormat::fasta)
+		rename( (n+"0.qua").c_str(), (n+".qua").c_str() );
 }
 
 void deleteThreads(){

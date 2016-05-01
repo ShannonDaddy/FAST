@@ -143,6 +143,8 @@ void DatabaseThread::formatdb(const LastdbArguments &args,
 		} else {
 			SEM_WAIT(io);
 			//!! Assuming we always produce only one index!
+
+			/*
 			LOG("bucketing...");
 			indexT bucketDepth = indexes[0].defaultBucketDepth(vol->indexTotal);
 			indexes[0].makeBucketSteps( bucketDepth );
@@ -150,11 +152,15 @@ void DatabaseThread::formatdb(const LastdbArguments &args,
 			                             vol->indexTotal );
 			LOG("writing buckets...");
 			vol->writeBucketFile(indexes[0]);
+			 */
 
 			//indexT textLength = multi.finishedSize();
 			LOG("writing prj...");
 			indexT textLength = vol->endsCoordinate;
-			vol->prj->writePrjFile(args, indexes[0], textLength, vol->indexTotal);
+			indexT bucketDepth = indexes[0].defaultBucketDepth(vol->indexTotal);
+			vol->prj->writePrjFile(args, indexes[0],
+			                       textLength, vol->indexTotal,
+			                       bucketDepth);
 			replaceVolumeObject();
 			SEM_POST(io);
 
@@ -216,4 +222,12 @@ void destroySemaphores()
 #elif __linux
 	sem_destroy(&io);
 #endif
+}
+
+void DatabaseThread::estimateBucketSize() {
+	// Number of bytes read
+
+	// Number of bytes from the sequences
+
+	// Number of bytes from names
 }

@@ -52,6 +52,8 @@ public:
 
 		void replaceVolumeObject();
 
+		void estimateBucketSize();
+
 		static void* threadEntry(void *_args);
 
 //public:

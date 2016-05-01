@@ -33,7 +33,8 @@ public:
 	void writePrjFile(const LastdbArguments &args,
 	                  const SubsetSuffixArray &sa,
 	                  indexT textLength,
-	                  std::size_t indexTotal);
+	                  std::size_t indexTotal,
+	                  std::size_t bucketDepth);
 
 	void accumulatePrj(const std::vector<countT>& letterCounts,
 	                   unsigned _sequenceCount);

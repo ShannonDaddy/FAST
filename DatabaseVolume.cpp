@@ -129,3 +129,11 @@ DatabaseVolume::DatabaseVolume(sequenceFormat::Enum inputFormat,
 DatabaseVolume::~DatabaseVolume(){
 	delete prj;
 }
+
+/*
+void DatabaseVolume::buildBuckets() {
+	indexT bucketDepth = sa.defaultBucketDepth(indexTotal);
+	sa.makeBucketSteps( bucketDepth );
+	sa.makeBuckets( multi.seqReader(), bucketDepth );
+}
+ */

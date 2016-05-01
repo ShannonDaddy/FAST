@@ -48,6 +48,8 @@ void writePrjFile( const std::string& fileName,
 
 void writeOuterPrj(unsigned numOfIndexes);
 
+void renameFiles();
+
 indexT maxLettersPerVolume( const LastdbArguments& args,
                             unsigned numOfIndexes );
 

@@ -115,7 +115,7 @@ namespace cbrc{
 		// Return the maximum prefix size covered by the buckets.
 		indexT maxBucketPrefix() const { return bucketSteps.size() - 1; }
 
-		indexT defaultBucketDepth(std::size_t indexSize=0);
+		indexT defaultBucketDepth(std::size_t indexSize=0) const;
 
 		// Make the buckets.  If bucketDepth+1 == 0, then a default
 		// bucketDepth is used.  The default is: the maximum possible

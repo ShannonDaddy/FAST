@@ -47,6 +47,8 @@ public:
 
 	void writePooledSubsetSuffixArray( const SubsetSuffixArray &sa ) ;
 
+	void buildBuckets();
+
 	void writeBucketFile(const SubsetSuffixArray &sa);
 
 	DatabaseVolume(sequenceFormat::Enum inputFormat,
