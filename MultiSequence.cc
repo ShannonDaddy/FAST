@@ -22,7 +22,6 @@ void MultiSequence::initForAppending( indexT padSizeIn ){
 	nameEnds.v.assign( 1, 0 );    // sds
 }
 
-/*
 void MultiSequence::reinitForAppending(){
 	seq.v.erase( seq.v.begin(), seq.v.begin() + ends.v.back() - padSize );
 	names.v.erase( names.v.begin(), names.v.begin() + nameEnds.v[ finishedSequences() ] );
@@ -30,7 +29,6 @@ void MultiSequence::reinitForAppending(){
 	nameEnds.v.resize(1);
 	if( !names.v.empty() ) nameEnds.v.push_back( names.v.size() );
 }
-*/
 
 void MultiSequence::fromFiles( const std::string& baseName, indexT seqCount,
                                std::size_t qualitiesPerLetter ){

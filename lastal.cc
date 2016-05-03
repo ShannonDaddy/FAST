@@ -31,7 +31,7 @@ countT refSequences = 0;
 countT refLetters = 0;
 countT maxRefSequences = 0;
 
-TEMPFILES *listptr;
+TempFiles *listptr;
 
 void createStructures(std::string &matrixFile){
 
@@ -864,7 +864,7 @@ void *writerFunction(void *arguments){
   // Create a TEMPFILES class to deal with all of the filenames generated.
   std::string randstr = generate_directory_name(args->outputdir);
   // listptr is a global structure so it can be dealt with after the writer thread collapses
-  listptr = new TEMPFILES( args->outputdir, randstr + "LASTtemp0");
+  listptr = new TempFiles( args->outputdir, randstr + "LASTtemp0");
   //listptr->clear();
 
   while (1) {
@@ -1013,7 +1013,7 @@ void *threadFunction(void *__threadData){
     data->query->reinitForAppending();
 
     sort(data->outputVector->begin(), data->outputVector->end(), compare_blast);
-    if (args->topHits < 1000 ){
+    if (args->topHits < 1000 ){ // Arbitrary number of "infinite"
       topHitsVector(*(data->outputVector), args->topHits);
     }
 
@@ -1089,24 +1089,26 @@ void lastal(int argc, char **argv) {
     suffixArrays[x].closeFiles();
   }
 
-  if(args->outputFormat == 2){
-    LOG("Beginning sorting operation")
-      //now sort the LAST output on the disk
-      disk_sort_file(args->outputdir, args->outFile, 
-          std::string(args->outFile) + std::string("sort"),
-          10, orf_extractor_from_blast, listptr->getFileNames());
-    LOG("Completed sorting operation")
+	if(args->outputFormat == 2){
+		LOG("Beginning sorting operation")
+		//now sort the LAST output on the disk
+		disk_sort_file(args->outputdir,
+		               args->outFile,
+		               args->outFile + "sort",
+		               listptr->getFileNames());
+		LOG("Completed sorting operation")
 
-      // parse the top k hits from the file
-      if (args->topHits < 1000 ){
-        LOG("Parsing top k hits")
-          topHits(args->outFile, args->topHits);
-        LOG("Completed parsing top k hits")
-      }
-  }
-  LOG("Completed alignment operations, exiting")
+		// parse the top k hits from the file
+		if (args->topHits < 1000 ){
+			LOG("Parsing top k hits")
+			topHits(args->outFile, args->topHits);
+			LOG("Completed parsing top k hits")
+		}
+	}
+	LOG("Completed alignment operations, exiting")
   
-  listptr->clear();
+	listptr->clear();
+	delete listptr;
 }
 
 

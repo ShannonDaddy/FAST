@@ -34,6 +34,10 @@ void DatabaseVolume::writePooledMultiSequence( const MultiSequence &multi,
 	                multi.seq.begin() + endsLastCoordinate,
 	                tisfile );
 
+	for(int i=0; i<multi.seq.v.size(); i++){
+		std::cout << multi.seq.v.size() << std::endl;
+	}
+
 	if( multi.nameEnds.begin() != multi.nameEnds.begin() + multi.ends.size())
 	memoryToStream( multi.nameEnds.begin() + sizeof(unsigned char),
 	                multi.nameEnds.begin() + multi.ends.size(),

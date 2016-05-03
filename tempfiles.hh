@@ -9,33 +9,28 @@
 
 using namespace std;
 
-
-typedef struct TempFiles {
-
-      TempFiles(std::string _tempdir, std::string _basedir) : tempdir(_tempdir), basedir(_basedir), count(0), S(1000) {} 
-      void setFanOut(unsigned int i ) {  S = i; }
-
-
-
-public:
-     string nextFileName() ;
-     void clear();
-     unsigned int size();
-     vector<string> getFileNames();
+class TempFiles {
 
 private:
-     string filename(unsigned int i);
-     string dirname(unsigned int i);
-     string toString(unsigned int i);
-     void remove_dir(char *path);
-     vector<string> filenames;
+	string filename(unsigned int i);
+	string dirname(unsigned int i);
+	string toString(unsigned int i);
+	void remove_dir(char *path);
+	void setFanOut(unsigned int i ) {  S = i; }
+	vector<string> filenames;
 
-     vector<string> names;
-     std::string tempdir;
-     std::string basedir ;
-     unsigned int count; 
-     unsigned int S; // fanout
+	vector<string> names;
+	std::string tempdir;
+	std::string basedir ;
+	unsigned int count;
+	unsigned int S; // fanout
 
+public:
+	TempFiles(const std::string &_tempdir,
+	          const std::string &_basedir);
 
-} TEMPFILES;
-
+	string nextFileName() ;
+	void clear();
+	unsigned int size();
+	vector<string> getFileNames();
+};

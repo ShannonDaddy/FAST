@@ -1,7 +1,7 @@
 #include "utilities.hh"
 #include "lastal.hh"
 
-char *split_n_pick(const string  &strn,  char *buf, char d, unsigned int n) {
+char *split_n_pick(const string  &strn,  char *buf, char d, unsigned n) {
   strcpy(buf, strn.c_str());
 
   char *v=buf;
@@ -22,21 +22,7 @@ char *split_n_pick(const string  &strn,  char *buf, char d, unsigned int n) {
   return v;
 }
 
-void split(const string  &strn, std::vector<char *> &v, char *buf, char d) {
-  strcpy(buf, strn.c_str());
-  char *s1 = buf;
-  v.clear();
-  v.push_back(s1);
-  while(*s1 != '\0') {
-    if(*s1==d) {
-      *s1 = '\0';
-      v.push_back(s1+1);
-    }
-    s1++;
-  }
-}
-
-string random_str(const int len) {
+string random_str(int len) {
   static const char alphanum[] =
     "0123456789"
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -97,45 +83,38 @@ double bit_score_extractor_from_blast(const string &line) {
 }
 
 
-void topHits(std::string filename, int maxHits){
-  int count=0;
-  int location;
-  std::ifstream input(filename.c_str());
-  std::string tmp = filename + "_tmp";
-  std::string current;
-  std::string prevorfid;
-  std::string currorfid;
-  std::ofstream output(tmp.c_str());
+void topHits(const std::string &filename, int maxHits){
+	int count=0;
+	std::ifstream input(filename.c_str());
+	std::string current;
+	std::string prevorfid = "";
+	std::ofstream output((filename + "_tmp").c_str());
 
-  prevorfid = "";
+	while(getline(input, current)) {
+		std::size_t location = current.find_first_of("\t");
+		std::string currorfid = current.substr(0,location);
 
-  while(getline(input, current)) {
-    location = current.find_first_of("\t");
-    currorfid = current.substr(0,location);
+		if(!(currorfid.compare(prevorfid) == 0 || prevorfid.size()==0 ) )
+			count=0;
 
-    if(!(currorfid.compare(prevorfid) == 0 || prevorfid.size()==0 ) )
-      count=0;
+		if(count <  maxHits) {
+			output << current << endl;
+		}
 
-    if(count <  maxHits) {
-      output << current << endl;
-    }
-
-    count++;
-    prevorfid = currorfid;
-  }
-  std::rename(tmp.c_str(), filename.c_str());
+		count++;
+		prevorfid = currorfid;
+	}
+	std::rename((filename + "_tmp").c_str(), filename.c_str());
 }
 
 void topHitsVector(std::vector<std::string> &outputVector, int maxHits){
   int count=0;
-  int location;
   std::string prevorfid = "";
-  std::string currorfid;
 
   for(int i=0; i<outputVector.size(); i++){
     std::string current = outputVector[i];
-    location = current.find_first_of("\t");
-    currorfid = current.substr(0,location);
+	  std::size_t location = current.find_first_of("\t");
+	  std::string currorfid = current.substr(0,location);
 
     if(!(currorfid.compare(prevorfid) == 0 || prevorfid.size()==0 ) )
       count=0;

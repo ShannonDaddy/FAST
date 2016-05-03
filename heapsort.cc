@@ -3,14 +3,6 @@
 
 using namespace std;
 
-void print_heap(vector<pair<int, Line *> >& A) {
-  unsigned int j;
-  for (j = 0; j<A.size(); j++) {
-    cout << "(" << A[j].first << ", " << A[j].second << ") ";
-  }
-  cout << "\n";
-}
-
 void heapify(vector<pair<int, Line *> >& A, int i, int S) {
   while (true) {
     int l = (2*i) + 1;

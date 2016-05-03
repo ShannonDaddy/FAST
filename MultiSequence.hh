@@ -31,7 +31,7 @@ class MultiSequence{
   void initForAppending( indexT padSizeIn );
 
   //// re-initialize, but keep the last sequence if it is unfinished
-  //void reinitForAppending();
+  void reinitForAppending();
 
   // read seqCount finished sequences, and their names, from binary files
   void fromFiles( const std::string& baseName, indexT seqCount,

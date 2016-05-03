@@ -1,14 +1,12 @@
 #include <iostream>
 #include <stack>
-#include <stdlib.h>
 #include <dirent.h>
 #include <fstream>
 #include <sys/stat.h>
 #include "tempfiles.hh"
-#include <assert.h>
 using namespace std;
 
-string TEMPFILES::nextFileName() {
+string TempFiles::nextFileName() {
   stack<unsigned int>  names;
   char buf[100];
   string fullpath(this->tempdir + "/" + this->basedir);
@@ -51,30 +49,30 @@ string TEMPFILES::nextFileName() {
   return fullpath;  
 }
 
-unsigned int TEMPFILES::size() {
+unsigned int TempFiles::size() {
   return filenames.size();
 }
 
-string TEMPFILES::filename(unsigned int i)  {
+string TempFiles::filename(unsigned int i)  {
   return string("file") + toString(i) ;
 }
 
-string TEMPFILES::dirname(unsigned int i)  {
+string TempFiles::dirname(unsigned int i)  {
   return string("dir") + toString(i);
 }
 
-string TEMPFILES::toString(unsigned int i ) {
+string TempFiles::toString(unsigned int i ) {
   char buf[100];
   sprintf(buf, "%d",i);
   return string(buf);  
 }
 
 
-vector<string> TEMPFILES::getFileNames(){
+vector<string> TempFiles::getFileNames(){
   return this->filenames;
 }
 
-void TEMPFILES::clear(){
+void TempFiles::clear(){
   char path[500];
   string fullpath(this->tempdir + "/" + this->basedir);
   strcpy(path, fullpath.c_str());
@@ -83,7 +81,7 @@ void TEMPFILES::clear(){
   this->filenames.clear();
 }
 
-void TEMPFILES::remove_dir(char *path){
+void TempFiles::remove_dir(char *path){
   struct dirent *entry = NULL;
   DIR *dir = NULL;
 
@@ -113,3 +111,9 @@ void TEMPFILES::remove_dir(char *path){
   closedir(dir);
   remove(path);
 }
+
+TempFiles::TempFiles(const std::string &_tempdir,
+                     const std::string &_basedir) : tempdir(_tempdir),
+                                                    basedir(_basedir),
+                                                    count(0),
+                                                    S(1000) {}

@@ -14,10 +14,6 @@ Make sure the cutoff is in line with how LAST does it.
 
 void generateDifference(const std::string &filename){}
 
-Problem is the buckets. Why are the buckets so much smaller then we think they should be?
-prefixLength : prj
-SubsetSeeds : prj
-
 Make the buckets work, then we need to test them.
 
 Scenario when there is only one volume
