@@ -1,35 +1,5 @@
 #include "externalsort.hh"
 
-// Generate random string for output in order to allow mutiple LAST+ binaries to run simultaneously on a single machine.
-// Check if the directory structure already exists. If it does we need to generate a new randstr
-
-std::vector<std::string> merge_some_files(const std::vector<std::string> &mergelist,
-                                          std::vector<TempFiles> &directories,
-                                          const string &tmpdir){
-
-	// Recursively merge in batches of 200 until all the remaining files can be fit into one batch
-	std::size_t rounds = mergelist.size() / 200 + 1;
-
-	TempFiles fileptr(tmpdir, generate_directory_name(tmpdir) + "LASTtemp0");
-	directories.push_back(fileptr);
-	fileptr.clear();
-
-	for(int i=0; i<=rounds-1; i++){
-		std::vector<std::string>::const_iterator it = mergelist.begin() + i*200;
-		std::string next_name = fileptr.nextFileName();
-		if(i == rounds-1){
-			std::vector<std::string> batch(it, mergelist.end());
-			//print_vector(batch);
-			merge_sorted_files(batch, next_name, tmpdir);
-		}else{
-			std::vector<std::string> batch(it, mergelist.begin() + (i+1)*200);
-			//print_vector(batch);
-			merge_sorted_files(batch, next_name, tmpdir);
-		}
-	}
-	return fileptr.getFileNames();
-}
-
 /* Sort the input sequences and divide them into blocks */
 void disk_sort_file(const string &outputdir,
                     const string &tobe_sorted_file_name,
@@ -37,26 +7,65 @@ void disk_sort_file(const string &outputdir,
                     const std::vector<std::string> &mergelist) {
 
 	std::size_t num_files = mergelist.size();
-	std::vector<std::string> files;
-	std::vector<TempFiles> directories;
-
-	/*
-     std::cout << "NUM FILES : " << mergelist.size() << std::endl;
-     std::cout << "NUM ROUNDS : " << mergelist.size()/200+1 << std::endl;
-     */
-
-	if(num_files > 200){
-		while(num_files > 200){
-			files = merge_some_files(mergelist, directories, outputdir);
+	const std::size_t BATCHSIZE = 200;
+	if ( num_files > BATCHSIZE ) {
+		// There may be so many files that num/200 > 200 so we need to iterate until we
+		// have merged them to roughly 200 files
+		while ( num_files > BATCHSIZE ) {
+			std::vector<std::string> files = mergeFilesInBatches(mergelist, outputdir);
 			num_files = files.size();
+			merge_sorted_files(files, tobe_sorted_file_name, outputdir);
 		}
-		merge_sorted_files( files, tobe_sorted_file_name, outputdir );
-	}else{
+	} else {
 		merge_sorted_files( mergelist, tobe_sorted_file_name, outputdir );
 	}
+}
 
-	for(int i=0; i<directories.size(); i++){
-		directories[i].clear();
+// Generate random string for output in order to allow mutiple LAST+ binaries to run simultaneously on a single machine.
+// Check if the directory structure already exists. If it does we need to generate a new randstr
+
+std::vector<std::string> mergeFilesInBatches(const std::vector<std::string> &mergelist,
+                                             const string &tmpdir){
+
+	// Recursively merge in batches of 200 until all the remaining files can be fit into one batch
+	TempFiles fileptr(tmpdir, generate_directory_name(tmpdir) + "LASTtemp0");
+	fileptr.clear();
+
+	std::size_t rounds = mergelist.size() / 200 + 1;
+	for(std::size_t i=0; i<=rounds-1; i++){
+		std::vector<std::string>::const_iterator it = mergelist.begin() + i*200;
+		if(i == rounds-1){
+			std::vector<std::string> batch(it, mergelist.end());
+			merge_sorted_files(batch, fileptr.nextFileName(), tmpdir);
+			removeFiles(batch);
+		} else {
+			std::vector<std::string> batch(it, mergelist.begin() + (i+1)*200);
+			merge_sorted_files(batch, fileptr.nextFileName(), tmpdir);
+			removeFiles(batch);
+		}
+	}
+	return fileptr.getFileNames();
+}
+
+void merge_sorted_files(const vector<string> &filenames,
+                        const string &sorted_file_name,
+                        const string &tmpdir) {
+
+	vector<istream_iterator<Line> > f_its;
+	vector<ifstream *> ifstream_for_filenames;
+	vector<pair<int, Line *> > values;
+	Line *curr_lines = new Line[f_its.size()];
+
+	openFileHandlers(filenames, f_its,
+	                 ifstream_for_filenames, values,
+	                 curr_lines);
+
+	heapSort(sorted_file_name, values, f_its, curr_lines);
+
+	delete[] curr_lines;
+	vector<ifstream *>::iterator it = ifstream_for_filenames.begin();
+	for(; it != ifstream_for_filenames.end(); ++it){
+		delete *it;
 	}
 }
 
@@ -65,7 +74,7 @@ void heapSort(const string &sorted_file_name,
               vector<istream_iterator<Line> > &f_its,
               Line *curr_lines){
 
-	int S = f_its.size();
+	std::size_t S = f_its.size();
 	build_heap(S, values);
 
 	// Open the output file
@@ -86,11 +95,7 @@ void heapSort(const string &sorted_file_name,
 		// Add the next sequence to the top of the heap
 		if (f_its[iter_id] != empty_it) {
 			curr_lines[iter_id] = *(f_its[iter_id]);
-			pair<int, Line *> mod_line;
-			mod_line.first = iter_id;
-			mod_line.second = curr_lines + iter_id;
-
-			values[0] = mod_line;
+			values[0] = make_pair(iter_id, curr_lines + iter_id);
 		} else {
 			values[0] = values[S - 1];
 			S = S - 1;
@@ -133,24 +138,11 @@ void openFileHandlers(const vector<string> &filenames,
 	}
 }
 
-void merge_sorted_files(const vector<string> &filenames,
-                        const string &sorted_file_name,
-                        const string &tmpdir) {
-
-	vector<istream_iterator<Line> > f_its;
-	vector<ifstream *> ifstream_for_filenames;
-	vector<pair<int, Line *> > values;
-	Line *curr_lines = new Line[f_its.size()];
-
-	openFileHandlers(filenames, f_its,
-	                 ifstream_for_filenames, values,
-	                 curr_lines);
-
-	heapSort(sorted_file_name, values, f_its, curr_lines);
-
-	delete[] curr_lines;
-	vector<ifstream *>::iterator it = ifstream_for_filenames.begin();
-	for(; it != ifstream_for_filenames.end(); ++it){
-		delete *it;
+void removeFiles(const std::vector<std::string> &batch){
+	std::vector<std::string>::const_iterator it = batch.begin();
+	for( ; it != batch.end(); ++it) {
+		if ( remove(it->c_str()) != 0 ) {
+			cerr << "Error deleting file " << *it << "\n";
+		}
 	}
 }

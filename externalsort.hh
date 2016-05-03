@@ -29,12 +29,24 @@ void disk_sort_file(const string &outputdir,
                     const string &sorted_file_name,
                     const std::vector<std::string> &mergelist);
 
-std::vector<std::string> merge_some_files(const std::vector<std::string> &mergelist, 
-                                          std::vector<TempFiles> &directories,
-                                          const string &tmpdir);
+std::vector<std::string> mergeFilesInBatches(const std::vector<std::string> &mergelist,
+                                             const string &tmpdir);
 
 void merge_sorted_files(const vector<string> &filenames,
                         const string &sorted_file_name,
                         const string &tmpdir);
+
+void openFileHandlers(const vector<string> &filenames,
+                      vector<istream_iterator<Line> > &f_its,
+                      vector<ifstream *> &ifstream_for_filenames,
+                      vector<pair<int, Line *> > &values,
+                      Line *curr_lines);
+
+void heapSort(const string &sorted_file_name,
+              vector<pair<int, Line *> > &values,
+              vector<istream_iterator<Line> > &f_its,
+              Line *curr_lines);
+
+void removeFiles(const std::vector<std::string> &batch);
 
 #endif // _EXTERNAL_SORT

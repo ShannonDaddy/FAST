@@ -49,7 +49,7 @@ string TempFiles::nextFileName() {
   return fullpath;  
 }
 
-unsigned int TempFiles::size() {
+std::size_t TempFiles::size() {
   return filenames.size();
 }
 

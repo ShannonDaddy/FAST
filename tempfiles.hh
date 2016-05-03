@@ -17,9 +17,8 @@ private:
 	string toString(unsigned int i);
 	void remove_dir(char *path);
 	void setFanOut(unsigned int i ) {  S = i; }
-	vector<string> filenames;
 
-	vector<string> names;
+	vector<string> filenames;
 	std::string tempdir;
 	std::string basedir ;
 	unsigned int count;
@@ -31,6 +30,6 @@ public:
 
 	string nextFileName() ;
 	void clear();
-	unsigned int size();
+	std::size_t size();
 	vector<string> getFileNames();
 };

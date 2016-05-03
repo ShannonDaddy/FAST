@@ -3,7 +3,7 @@
 
 using namespace std;
 
-void heapify(vector<pair<int, Line *> >& A, int i, int S) {
+void heapify(vector<pair<int, Line *> >& A, int i, const std::size_t S) {
   while (true) {
     int l = (2*i) + 1;
     int r = l + 1;
@@ -45,10 +45,10 @@ void heapify(vector<pair<int, Line *> >& A, int i, int S) {
   }
 }
 
-void build_heap(int S, vector<pair<int, Line *> >& A) {
-  int i = floor(S/2);
-  while (i >= 0) {
-    heapify(A, i, S);
-    i--;
-  }
+void build_heap(const std::size_t S, vector<pair<int, Line *> >& A) {
+	int i = floor(S/2);
+	while (i >= 0) {
+		heapify(A, i, S);
+		i--;
+	}
 }

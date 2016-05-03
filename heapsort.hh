@@ -11,7 +11,7 @@ using namespace std;
 Heap-sort a vector of key-value pairs in descending order of their values.
 */
 
-void heapify(vector< pair<int, Line *> >& A, int i, int S);
-void build_heap(int S, vector<pair<int, Line *> >& A);
+void heapify(vector< pair<int, Line *> >& A, int i, const std::size_t S);
+void build_heap(std::size_t S, vector<pair<int, Line *> >& A);
 
 #endif   // __HEAPSORT
