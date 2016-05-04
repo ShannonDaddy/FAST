@@ -11,6 +11,7 @@
 #include <iterator>  // ostream_iterator
 
 #include <cmath>
+#include <list>
 #include "lastex.hh"
 #include "gumbel_params/sls_pvalues.hpp"
 #include "semaphores.hh"
@@ -69,12 +70,14 @@ static void writeSignedDifference( size_t x, size_t y, std::ostream& os ){
 }
 
 void Alignment::write(
-           double scoreCutoff, double evalueCutoff,
-           const MultiSequence& reference, const MultiSequence& query,
-		       char strand, bool isTranslated, const Alphabet& alph,
-           int format, std::vector<std::string> *outputVector,
-           LastEvaluer evaluer,
-           const AlignmentExtras& extras ) const{
+	double scoreCutoff, double evalueCutoff,
+	const MultiSequence& reference, const MultiSequence& query,
+	char strand, bool isTranslated, const Alphabet& alph,
+	int format,
+	//std::vector<std::string> *outputVector,
+	std::list<std::string> *outputVector,
+	LastEvaluer evaluer,
+	const AlignmentExtras& extras ) const{
 
   assert( !blocks.empty() );
 
@@ -91,10 +94,13 @@ void Alignment::write(
 
 //!!
 void Alignment::writeBlastOutput(
-              double scoreCutoff, double evalueCutoff, const MultiSequence& reference, const MultiSequence& query,
-              char strand, bool isTranslated, const Alphabet& alph,
-			        const AlignmentExtras& extras, std::vector<std::string> *outputVector,
-              LastEvaluer evaluer) const{
+	double scoreCutoff, double evalueCutoff, const MultiSequence& reference,
+	const MultiSequence& query,
+	char strand, bool isTranslated, const Alphabet& alph,
+	const AlignmentExtras& extras,
+	//std::vector<std::string> *outputVector,
+	std::list<std::string> *outputVector,
+	LastEvaluer evaluer) const{
 
   std::stringstream outputStream;
   outputStream.precision(5);
@@ -258,8 +264,9 @@ size_t Alignment::countGaps(std::string& sequence) const {
 }
 
 void Alignment::writeTab( const MultiSequence& reference, const MultiSequence& query,
-			  char strand, bool isTranslated, const AlignmentExtras& extras, std::vector<std::string>
-                          *outputVector ) const{
+                          char strand, bool isTranslated, const AlignmentExtras& extras,
+	//                      std::vector<std::string> *outputVector ) const{
+	                      std::list<std::string> *outputVector ) const{
 
   std::stringstream outputStream;
 
@@ -313,8 +320,10 @@ void Alignment::writeTab( const MultiSequence& reference, const MultiSequence& q
 }
 
 void Alignment::writeMaf( const MultiSequence& reference, const MultiSequence& query,
-			  char strand, bool isTranslated, const Alphabet& alph, const AlignmentExtras& extras,
-        std::vector<std::string> *outputVector ) const{
+                          char strand, bool isTranslated, const Alphabet& alph,
+                          const AlignmentExtras& extras,
+	//                      std::vector<std::string> *outputVector ) const{
+	                      std::list<std::string> *outputVector ) const{
 
   double fullScore = extras.fullScore;
   const std::vector<uchar>& columnAmbiguityCodes = extras.columnAmbiguityCodes;

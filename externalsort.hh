@@ -26,7 +26,6 @@ typedef unsigned long long countT;
 
 void disk_sort_file(const string &outputdir,
                     const string &tobe_sorted_file_name,
-                    const string &sorted_file_name,
                     const std::vector<std::string> &mergelist);
 
 std::vector<std::string> mergeFilesInBatches(const std::vector<std::string> &mergelist,

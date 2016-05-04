@@ -46,6 +46,7 @@
 #include "utilities.hh"
 #include "LastEvaluer.hh"
 #include <sstream>
+#include <list>
 
 #define ERR(x) throw std::runtime_error(x)
 //#define LOG(x) if( args->verbosity > 0 ) std::cerr << "lastal: " << x << '\n'
@@ -107,8 +108,10 @@ struct threadData{
 	std::queue<MultiSequence*> *queryQueue;
 	std::vector< std::vector<countT> > *matchCounts;  // used if outputType == 0
 
-	std::vector<std::string> *outputVector;
-	std::queue< std::vector<std::string>* > *outputVectorQueue;
+	//std::vector<std::string> *outputVector;
+	std::list<std::string> *outputVector;
+	//std::queue< std::vector<std::string>* > *outputVectorQueue;
+	std::queue< std::list<std::string>* > outputVectorQueue;
 
 	int identifier;
 	int round;

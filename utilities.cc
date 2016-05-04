@@ -107,22 +107,23 @@ void topHits(const std::string &filename, int maxHits){
 	std::rename((filename + "_tmp").c_str(), filename.c_str());
 }
 
-void topHitsVector(std::vector<std::string> &outputVector, int maxHits){
-  int count=0;
-  std::string prevorfid = "";
+void topHitsVector(std::list<std::string> &outputVector, int maxHits){
+	int count=0;
+	std::string prevorfid = "";
 
-  for(int i=0; i<outputVector.size(); i++){
-    std::string current = outputVector[i];
-	  std::size_t location = current.find_first_of("\t");
-	  std::string currorfid = current.substr(0,location);
+	std::list<std::string>::iterator it = outputVector.begin();
+	for( ; it != outputVector.end(); ++it){
+		std::string current = *it;
+		std::size_t location = current.find_first_of("\t");
+		std::string currorfid = current.substr(0,location);
 
-    if(!(currorfid.compare(prevorfid) == 0 || prevorfid.size()==0 ) )
-      count=0;
+		if(!(currorfid.compare(prevorfid) == 0 || prevorfid.size()==0 ) )
+			count=0;
 
-    if(count >=  maxHits) 
-      outputVector[i] = "";
+		if(count >=  maxHits)
+			*it = "";
 
-    count++;
-    prevorfid = currorfid;
-  }
+		count++;
+		prevorfid = currorfid;
+	}
 }

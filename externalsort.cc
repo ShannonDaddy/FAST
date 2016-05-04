@@ -3,19 +3,25 @@
 /* Sort the input sequences and divide them into blocks */
 void disk_sort_file(const string &outputdir,
                     const string &tobe_sorted_file_name,
-                    const string &sorted_file_name,
                     const std::vector<std::string> &mergelist) {
+
+	// Nothing to merge, rename from tmp dir over to the intended location and exit
+	if(mergelist.size() <= 1) {
+		std::rename( mergelist.back().c_str(), tobe_sorted_file_name.c_str() );
+		return;
+	}
 
 	std::size_t num_files = mergelist.size();
 	const std::size_t BATCHSIZE = 200;
 	if ( num_files > BATCHSIZE ) {
 		// There may be so many files that num/200 > 200 so we need to iterate until we
 		// have merged them to roughly 200 files
+		std::vector<std::string> files;
 		while ( num_files > BATCHSIZE ) {
-			std::vector<std::string> files = mergeFilesInBatches(mergelist, outputdir);
+			files = mergeFilesInBatches(mergelist, outputdir);
 			num_files = files.size();
-			merge_sorted_files(files, tobe_sorted_file_name, outputdir);
 		}
+		merge_sorted_files(files, tobe_sorted_file_name, outputdir);
 	} else {
 		merge_sorted_files( mergelist, tobe_sorted_file_name, outputdir );
 	}
@@ -23,7 +29,6 @@ void disk_sort_file(const string &outputdir,
 
 // Generate random string for output in order to allow mutiple LAST+ binaries to run simultaneously on a single machine.
 // Check if the directory structure already exists. If it does we need to generate a new randstr
-
 std::vector<std::string> mergeFilesInBatches(const std::vector<std::string> &mergelist,
                                              const string &tmpdir){
 

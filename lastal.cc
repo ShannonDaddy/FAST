@@ -10,7 +10,8 @@ std::queue<int> idInputQueue;
 std::queue<MultiSequence*> inputQueue;
 
 std::queue<int> idOutputQueue;
-std::queue< std::vector< std::string >* > outputQueue;
+//std::queue< std::vector< std::string >* > outputQueue;
+std::queue< std::list< std::string >* > outputQueue;
 
 SEM_T readerSema;
 SEM_T writerSema;
@@ -108,9 +109,10 @@ void threadData::prepareThreadData(int identifier){
     matchCounts = new std::vector< std::vector<countT> >();
   }
 
-  outputVectorQueue = new std::queue< std::vector<std::string>*>();
+  //outputVectorQueue = new std::queue< std::vector<std::string>*>();
   for (int j=0; j<2; j++){
-    outputVectorQueue->push(new std::vector<std::string>() );
+    //outputVectorQueue->push(new std::vector<std::string>() );
+	  outputVectorQueue.push(new std::list<std::string>() );
   }
 
   gappedXdropAligner = new GappedXdropAligner();
@@ -771,9 +773,6 @@ std::istream& appendFromFasta(std::istream &in, MultiSequence *query) {
         // Need to reset
         //std::cerr << "Caught the exception" << std::endl;
     }
-
-
-
   }
 
   return in;
@@ -801,7 +800,6 @@ void initializeThreads() {
     threadData *data = new threadData();
     threadDatas[i] = data;
   }
-  pthread_t thread;
 }
 
 void initializeSemaphores() {
@@ -855,65 +853,77 @@ void initializeSemaphores() {
 
 void *writerFunction(void *arguments){
 
-  int id;
-  bool state;
-  std::vector< std::string >* current;
-  //std::ofstream outFileStream;
-  //std::ostream &out = openOut(args->outFile, outFileStream);
+	// Create a TEMPFILES class to deal with all of the filenames generated.
+	std::string randstr = generate_directory_name(args->outputdir);
+	listptr = new  TempFiles( args->outputdir, randstr + "LASTtemp0");
+	const std::size_t OUTPUTSIZE = 5000000; // hold up to 5m strings in memory
+	// This should translate from anywhere between 300mb-1gb of memory. That's trivial in the grand
+	// scheme of things. A flag to lower it will be available but this makes things significantly
+	// faster on the disk
 
-  // Create a TEMPFILES class to deal with all of the filenames generated.
-  std::string randstr = generate_directory_name(args->outputdir);
-  // listptr is a global structure so it can be dealt with after the writer thread collapses
-  listptr = new TempFiles( args->outputdir, randstr + "LASTtemp0");
-  //listptr->clear();
+	std::list<std::string> output_list;
+	while (1) {
+		SEM_WAIT(writerSema);
 
-  while (1) {
-    SEM_WAIT(writerSema);
+		SEM_WAIT(inputOutputQueueSema);
 
-    SEM_WAIT(inputOutputQueueSema);
-    current = outputQueue.front();
-    outputQueue.pop();
-    id = idOutputQueue.front();
-    idOutputQueue.pop();
-    SEM_POST(inputOutputQueueSema);
+		std::list< std::string >* current = outputQueue.front();
+		outputQueue.pop();
+		int id = idOutputQueue.front();
+		idOutputQueue.pop();
+		SEM_POST(inputOutputQueueSema);
 
-    threadData *data = threadDatas[id];
+		threadData *data = threadDatas[id];
 
-    SEM_WAIT(ioSema);
-    if(current->size() > 0){
-      // Filestreams in C++ do not need to be closed manually RAII will cover this
-      std::ofstream out(listptr->nextFileName().c_str());
-      for (int j=0; j < current->size(); j++) {
-        if(current->at(j) != ""){
-          out << current->at(j);
-        }
-      }
-    }
-    SEM_POST(ioSema);
-    current->clear();
+		SEM_WAIT(ioSema);
 
-    SEM_WAIT(inputOutputQueueSema);
-    data->outputVectorQueue->push(current);
-    doneSequences++;
-    SEM_POST(inputOutputQueueSema);
-    SEM_POST(data->writeSema);
+		// Code snippet for linked list merging two sorted linked lists
+		output_list.merge(*current);
+		if(output_list.size() > OUTPUTSIZE){
+			std::ofstream out(listptr->nextFileName().c_str());
+			std::list<std::string>::iterator it = output_list.begin();
+			std::list<std::string>::iterator it2 = output_list.end();
+			for ( ; it!=it2; ++it) {
+				if(*it != ""){
+					out << *it;
+				}
+			}
+			output_list.clear();
+		}
 
-    SEM_WAIT(roundCheckSema);
-    if (roundDone && readSequences == doneSequences && readSequences){
-      SEM_POST(roundSema);
-      if (volume+1 == volumes){
-        SEM_POST(terminationSema);
-        break;
-      }
-    }
-    SEM_POST(roundCheckSema);
-  }
+		SEM_POST(ioSema);
+		current->clear();
+
+		SEM_WAIT(inputOutputQueueSema);
+		data->outputVectorQueue.push(current);
+		doneSequences++;
+		SEM_POST(inputOutputQueueSema);
+		SEM_POST(data->writeSema);
+
+		SEM_WAIT(roundCheckSema);
+		if (roundDone && readSequences == doneSequences && readSequences){
+			SEM_POST(roundSema);
+			if (volume+1 == volumes){
+
+				// Flush any remaining annotations to a file
+				std::ofstream out(listptr->nextFileName().c_str());
+				std::list<std::string>::iterator it = output_list.begin();
+				std::list<std::string>::iterator it2 = output_list.end();
+				for ( ; it!=it2; ++it) {
+					if(*it != ""){
+						out << *it;
+					}
+				}
+
+				SEM_POST(terminationSema);
+				break;
+			}
+		}
+		SEM_POST(roundCheckSema);
+	}
 }
 
 void readerFunction( std::istream& in ) {
-
-  int id;
-  MultiSequence *current;
 
   if (volumes == 1) {
     readIndex(args->lastdbName, refSequences);
@@ -942,10 +952,10 @@ void readerFunction( std::istream& in ) {
     while(!in.eof() ) {
       SEM_WAIT(readerSema);
       SEM_WAIT(inputOutputQueueSema);
-      id = idInputQueue.front();
+      int id = idInputQueue.front();
       idInputQueue.pop();
       threadData *data = threadDatas[id];
-      current = inputQueue.front();
+      MultiSequence *current = inputQueue.front();
       inputQueue.pop();
       SEM_POST(inputOutputQueueSema);
 
@@ -1003,8 +1013,8 @@ void *threadFunction(void *__threadData){
     SEM_WAIT(data->readSema);
     SEM_WAIT(data->writeSema);
 
-    data->outputVector = data->outputVectorQueue->front();
-    data->outputVectorQueue->pop();
+    data->outputVector = data->outputVectorQueue.front();
+    data->outputVectorQueue.pop();
     data->query = data->queryQueue->front();
     data->queryQueue->pop();
 
@@ -1012,7 +1022,7 @@ void *threadFunction(void *__threadData){
 
     data->query->reinitForAppending();
 
-    sort(data->outputVector->begin(), data->outputVector->end(), compare_blast);
+    data->outputVector->sort(compare_blast);
     if (args->topHits < 1000 ){ // Arbitrary number of "infinite"
       topHitsVector(*(data->outputVector), args->topHits);
     }
@@ -1091,10 +1101,10 @@ void lastal(int argc, char **argv) {
 
 	if(args->outputFormat == 2){
 		LOG("Beginning sorting operation")
+		LOG("Number of files to merge: " << listptr->size())
 		//now sort the LAST output on the disk
 		disk_sort_file(args->outputdir,
 		               args->outFile,
-		               args->outFile + "sort",
 		               listptr->getFileNames());
 		LOG("Completed sorting operation")
 

@@ -13,6 +13,7 @@
 #include <vector>
 #include <iosfwd>
 #include <iostream>
+#include <list>
 
 #include "LastEvaluer.hh"
 
@@ -78,7 +79,9 @@ namespace cbrc{
         double scoreCutoff, double evalueCutoff,
         const MultiSequence& reference, const MultiSequence& query,
         char strand, bool isTranslated, const Alphabet& alph,
-        int format, std::vector<std::string> *outputVector,
+        int format,
+        //std::vector<std::string> *outputVector,
+        std::list<std::string> *outputVector,
         LastEvaluer evaluer,
         const AlignmentExtras& extras = AlignmentExtras() ) const;
 
@@ -112,20 +115,23 @@ namespace cbrc{
         const Alphabet& alph, AlignmentExtras& extras,
         double gamma, int outputType );
 
-    void writeTab( const MultiSequence& reference, const MultiSequence& query,
-        char strand, bool isTranslated, const AlignmentExtras& extras, std::vector<std::string>
-                   *outputVector ) const;
+	  void writeTab( const MultiSequence& reference, const MultiSequence& query,
+	                 char strand, bool isTranslated, const AlignmentExtras& extras,
+	                 std::list<std::string> *outputVector ) const;
 
     void writeBlastOutput(
         double scoreCutoff, double evalueCutoff,
         const MultiSequence& reference, const MultiSequence& query,
         char strand, bool isTranslated, const Alphabet& alph,
-        const AlignmentExtras& extras, std::vector<std::string> *outputVector,
+        const AlignmentExtras& extras,
+        //std::vector<std::string> *outputVector,
+        std::list<std::string> *outputVector,
         LastEvaluer evaluer) const;
 
-    void writeMaf( const MultiSequence& reference, const MultiSequence& query,
-        char strand, bool isTranslated, const Alphabet& alph, const AlignmentExtras& extras,
-        std::vector<std::string> *outputVector ) const;
+	  void writeMaf( const MultiSequence& reference, const MultiSequence& query,
+	                 char strand, bool isTranslated, const Alphabet& alph,
+	                 const AlignmentExtras& extras,
+	                 std::list<std::string> *outputVector ) const;
 
     size_t numColumns( size_t frameSize ) const;
 
