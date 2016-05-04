@@ -59,8 +59,12 @@ LastalArguments::LastalArguments() :
   evalueCutoff(1.0e-6),
   threadNum(1),
   outputdir("/tmp"),
-	topHits(10){}
-
+	topHits(10),
+	inputSize(10000),
+	outputSize(5000000){}
+	// This should translate from anywhere between 300mb-1gb of memory. That's trivial in the grand
+	// scheme of things. A flag to lower it will be available but this makes things significantly
+	// faster on the disk
 
 void LastalArguments::fromArgs( int argc, char** argv, bool optionsOnly ){
 
@@ -81,7 +85,9 @@ FAST Functionality:\n\
 -P: Optional number of threads (" + stringify(threadNum) + ")\n\
 -K: Optional number of top hits wanted (" + stringify(topHits) + ")\n\
 -X: Temporary directory path for sorting files \n\
--o: output file\n\
+-o: Output file \n\
+-I:	Sequences per thread per batch (" + stringify(inputSize) + ")\n\
+-O:	Sequences per output batch (" + stringify(outputSize) + ")\n\
 \n\
 Inherited LAST Functionality:\n\
 Score options (default settings):\n\
@@ -139,7 +145,7 @@ FAST home page: github.com/hallamlab/FAST\n\
   optind = 1;  // allows us to scan arguments more than once(???)
   int c;
   const char optionString[] =
-      "ho:u:s:f:r:q:p:a:b:A:B:c:Fx:y:z:d:e:Q:T:m:l:n:C:k:i:w:t:g:G:vVj:S:E:P:K:X:";
+      "ho:u:s:f:r:q:p:a:b:A:B:c:Fx:y:z:d:e:Q:T:m:l:n:C:k:i:w:t:g:G:vVj:S:E:P:K:X:I:O:";
   while( (c = getopt(argc, argv, optionString)) != -1 ){
     switch(c){
     case 'h':
@@ -284,12 +290,18 @@ FAST home page: github.com/hallamlab/FAST\n\
     case 'P':
       unstringify(threadNum, optarg);
       break;
-	  case 'K': //Top k for parsing the output file
+	case 'K': //Top k for parsing the output file
 		  unstringify(topHits, optarg);
       break;
     case 'X':
       outputdir = optarg;
       break;
+	case 'I':
+	  unstringify( inputSize, optarg );
+	  break;
+	case 'O':
+	  unstringify( outputSize, optarg );
+	  break;
     case '?':
       ERR( "bad option" );
     }

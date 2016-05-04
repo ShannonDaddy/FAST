@@ -736,7 +736,7 @@ std::istream& appendFromFasta(std::istream &in, MultiSequence *query) {
 
   int count = 0;
 
-  while(count < INPUT_SIZE && !in.eof() ){
+  while(count < args->inputSize && !in.eof() ){
 
     try{
 
@@ -856,10 +856,6 @@ void *writerFunction(void *arguments){
 	// Create a TEMPFILES class to deal with all of the filenames generated.
 	std::string randstr = generate_directory_name(args->outputdir);
 	listptr = new  TempFiles( args->outputdir, randstr + "LASTtemp0");
-	const std::size_t OUTPUTSIZE = 5000000; // hold up to 5m strings in memory
-	// This should translate from anywhere between 300mb-1gb of memory. That's trivial in the grand
-	// scheme of things. A flag to lower it will be available but this makes things significantly
-	// faster on the disk
 
 	std::list<std::string> output_list;
 	while (1) {
@@ -879,7 +875,7 @@ void *writerFunction(void *arguments){
 
 		// Code snippet for linked list merging two sorted linked lists
 		output_list.merge(*current);
-		if(output_list.size() > OUTPUTSIZE){
+		if(output_list.size() > args->outputSize){
 			std::ofstream out(listptr->nextFileName().c_str());
 			std::list<std::string>::iterator it = output_list.begin();
 			std::list<std::string>::iterator it2 = output_list.end();
