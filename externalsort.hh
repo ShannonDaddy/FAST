@@ -25,23 +25,23 @@ using namespace std;
 typedef unsigned long long countT;
 
 void disk_sort_file(const string &outputdir,
-                    const string &tobe_sorted_file_name,
+                    const string &outputFile,
                     const std::vector<std::string> &mergelist);
 
 std::vector<std::string> mergeFilesInBatches(const std::vector<std::string> &mergelist,
                                              const string &tmpdir);
 
 void merge_sorted_files(const vector<string> &filenames,
-                        const string &sorted_file_name,
+                        const string &outputFile,
                         const string &tmpdir);
 
 void openFileHandlers(const vector<string> &filenames,
                       vector<istream_iterator<Line> > &f_its,
-                      vector<ifstream *> &ifstream_for_filenames,
+                      vector<ifstream *> &ifstreams,
                       vector<pair<int, Line *> > &values,
                       Line *curr_lines);
 
-void heapSort(const string &sorted_file_name,
+void heapSort(const string &sortedFile,
               vector<pair<int, Line *> > &values,
               vector<istream_iterator<Line> > &f_its,
               Line *curr_lines);

@@ -202,9 +202,9 @@ void makeQualityScorers() {
             &lp2[0], isPhred2, offset2,
             alph->canonical, false);
       if (args->outputType > 3) {
-        const OneQualityScoreMatrix &m = (args->maskLowercase < 3) ?
+        const OneQualityScoreMatrix &oqsm = (args->maskLowercase < 3) ?
           *oneQualityScoreMatrix : *oneQualityScoreMatrixMasked;
-        oneQualityExpMatrix->init(m, args->temperature);
+        oneQualityExpMatrix->init(oqsm, args->temperature);
       }
     } else if (args->inputFormat == sequenceFormat::prb) {
       bool isMatchMismatch = (args->matrixFile.empty() && args->matchScore > 0);
@@ -851,6 +851,39 @@ void initializeSemaphores() {
 #endif
 }
 
+void mergeAndOrPrintLists(std::list<std::string> &output_list, std::list<std::string> *current){
+	// Code snippet for linked list merging two sorted linked lists
+	output_list.merge(*current);
+	if(output_list.size() > args->outputSize){
+		std::string name = listptr->nextFileName();
+		std::ofstream out(name.c_str());
+		std::list<std::string>::iterator it = output_list.begin();
+		std::list<std::string>::iterator it2 = output_list.end();
+		for ( ; it!=it2; ++it) {
+			if(*it != ""){
+				out << *it;
+			}
+		}
+		output_list.clear();
+	}
+	current->clear();
+}
+
+void writeRemainingAnnotations(std::list<std::string> &output_list){
+	if(!output_list.empty()) {
+		// Flush any remaining annotations to a file
+		std::string name = listptr->nextFileName();
+		std::ofstream out(name.c_str());
+		std::list<std::string>::iterator it = output_list.begin();
+		std::list<std::string>::iterator it2 = output_list.end();
+		for (; it != it2; ++it) {
+			if (*it != "") {
+				out << *it;
+			}
+		}
+	}
+}
+
 void *writerFunction(void *arguments){
 
 	// Create a TEMPFILES class to deal with all of the filenames generated.
@@ -860,35 +893,19 @@ void *writerFunction(void *arguments){
 	std::list<std::string> output_list;
 	while (1) {
 		SEM_WAIT(writerSema);
-
 		SEM_WAIT(inputOutputQueueSema);
-
 		std::list< std::string >* current = outputQueue.front();
 		outputQueue.pop();
 		int id = idOutputQueue.front();
 		idOutputQueue.pop();
+		threadData *data = threadDatas[id];
 		SEM_POST(inputOutputQueueSema);
 
-		threadData *data = threadDatas[id];
-
 		SEM_WAIT(ioSema);
-
-		// Code snippet for linked list merging two sorted linked lists
-		output_list.merge(*current);
-		if(output_list.size() > args->outputSize){
-			std::ofstream out(listptr->nextFileName().c_str());
-			std::list<std::string>::iterator it = output_list.begin();
-			std::list<std::string>::iterator it2 = output_list.end();
-			for ( ; it!=it2; ++it) {
-				if(*it != ""){
-					out << *it;
-				}
-			}
-			output_list.clear();
-		}
-
+		// Writes the list out if the merged list is over the limit
+		// Clears the current annotation list so it can take more
+		mergeAndOrPrintLists(output_list, current);
 		SEM_POST(ioSema);
-		current->clear();
 
 		SEM_WAIT(inputOutputQueueSema);
 		data->outputVectorQueue.push(current);
@@ -899,24 +916,15 @@ void *writerFunction(void *arguments){
 		SEM_WAIT(roundCheckSema);
 		if (roundDone && readSequences == doneSequences && readSequences){
 			SEM_POST(roundSema);
-			if (volume+1 == volumes){
-
-				// Flush any remaining annotations to a file
-				std::ofstream out(listptr->nextFileName().c_str());
-				std::list<std::string>::iterator it = output_list.begin();
-				std::list<std::string>::iterator it2 = output_list.end();
-				for ( ; it!=it2; ++it) {
-					if(*it != ""){
-						out << *it;
-					}
-				}
-
+			if (volume+1 == volumes ){
+				writeRemainingAnnotations(output_list);
 				SEM_POST(terminationSema);
 				break;
 			}
 		}
 		SEM_POST(roundCheckSema);
 	}
+	return 0;
 }
 
 void readerFunction( std::istream& in ) {
@@ -1097,7 +1105,7 @@ void lastal(int argc, char **argv) {
 
 	if(args->outputFormat == 2){
 		LOG("Beginning sorting operation")
-		LOG("Number of files to merge: " << listptr->size())
+		LOG("Number of files to merge: " << listptr->size() << " ")
 		//now sort the LAST output on the disk
 		disk_sort_file(args->outputdir,
 		               args->outFile,
@@ -1120,21 +1128,30 @@ void lastal(int argc, char **argv) {
 
 int main(int argc, char **argv) {
 
-  try {
-    lastal(argc, argv);
-    return EXIT_SUCCESS;
-  } catch (const std::bad_alloc &e) {
-    std::stringstream stream;
-    stream << "lastal: memory exception\n";
-    stream << e.what() << "\n";
-    std::cerr << stream.str();
-    return EXIT_FAILURE;
-  } catch (const std::exception &e) {
-    std::stringstream stream;
-    stream << "lastal: " << e.what() << '\n';
-    std::cerr << stream.str();
-    return EXIT_FAILURE;
-  } catch (int i) {
-    return i;
-  }
+	try {
+		lastal(argc, argv);
+		return EXIT_SUCCESS;
+	} catch (const std::bad_alloc &e) {
+		std::stringstream stream;
+		stream << "lastal: memory exception\n";
+		stream << e.what() << "\n";
+		std::cerr << stream.str();
+		listptr->clear();
+		delete listptr;
+		return EXIT_FAILURE;
+	} catch (const std::exception &e) {
+		std::stringstream stream;
+		stream << "lastal: " << e.what() << '\n';
+		std::cerr << stream.str();
+		listptr->clear();
+		delete listptr;
+		return EXIT_FAILURE;
+	} catch (int i) {
+		std::stringstream stream;
+		stream << "lastal: " << i << '\n';
+		std::cerr << stream.str();
+		listptr->clear();
+		delete listptr;
+		return i;
+	}
 }

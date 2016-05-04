@@ -1,5 +1,3 @@
-// FastaLine.hh                                                    -*-C++-*-
-
 #ifndef INCLUDED_FASTA_Line
 #define INCLUDED_FASTA_Line
 #include <string>
@@ -9,25 +7,15 @@
 using namespace std;
 
 class Line {
-    // This attribute class...
-
-    // DATA
-
-    // FRIENDS
     friend std::istream& operator>>(std::istream&, Line&);
 
   public:
     std::string orfid;      // name of the Line
     std::string line;  // sequence of 'A', 'C', 'G', and 'T' characters
-		double evalue;
+	double evalue;
     double bitscore;
-    // CREATORS
+
     explicit Line();
-        // Create a new 'Line' object having the (default) attribute values:
-        //..
-        //  name()     == "";
-        //  sequence() == "";
-        //..
 
     Line(const std::string& orfid, const std::string& line);
         // Create a new 'Line' object having the specified 'name' and
@@ -36,9 +24,6 @@ class Line {
     Line(const Line& original);
         // Create a new 'Line' object having the same value as the specified
         // 'original' object.
-
-    //! ~Line() = default;
-        // Destroy this object.
 
     // MANIPULATORS
     Line& operator=(const Line& rhs);
@@ -53,9 +38,9 @@ class Line {
         // Set the 'sequence' attribute of this object to the specified
         // 'value'.
 
-		void setEvalue(const double& value);
+	void setEvalue(double value);
 
-    void setBitscore(const double& value);
+    void setBitscore(double value);
 
     // ACCESSORS
     const std::string& getOrfId() const;
@@ -98,117 +83,6 @@ std::ostream& operator<<(std::ostream& stream, const Line& rhs);
     // Output the value of the specified 'rhs' object to the specified
     // 'stream', and return a reference providing modifiable access to
     // 'stream'.
-
-// ============================================================================
-//                        INLINE FUNCTION DEFINITIONS
-// ============================================================================
-
-                                // ------------
-                                // class Line
-                                // ------------
-
-// CREATORS
-inline Line::Line()
-: orfid()
-, evalue()
-, bitscore()
-, line()
-{
-}
-
-// inline
-// Line::Line(const std::string& name, const std::string& sequence)
-// : orfid(name)
-// , evalue(evalue_extractor_from_blast(sequence))
-// , line(sequence)
-// {
-// }
-
-inline
-Line::Line(const std::string& name, const std::string& sequence)
-: orfid(name)
-, evalue(evalue_extractor_from_blast(sequence))
-, bitscore(bit_score_extractor_from_blast(sequence))
-, line(sequence)
-{
-}
-
-// inline
-// Line::Line(const Line& original)
-// : orfid(original.orfid)
-// , evalue(original.evalue)
-// , line(original.line)
-// {
-// }
-
-inline
-Line::Line(const Line& original)
-: orfid(original.orfid)
-, evalue(original.evalue)
-, bitscore(original.bitscore)
-, line(original.line)
-{
-}
-
-// MANIPULATORS
-inline
-Line& Line::operator=(const Line& rhs)
-{
-    orfid  = rhs.orfid;
-    evalue = rhs.evalue;
-    bitscore = rhs.bitscore;
-    line   = rhs.line;
-
-    return *this;
-}
-
-
-inline
-void Line::setOrfId(const std::string& value)
-{
-    orfid.assign(value.begin(), value.end());
-}
-
-inline
-void Line::setLine(const std::string& value)
-{
-    line.assign(value.begin(), value.end());
-}
-
-inline
-void Line::setEvalue(const double& value)
-{
-	evalue = value;
-}
-
-inline
-void Line::setBitscore(const double& value)
-{
-	bitscore = value;
-}
-
-// ACCESSORS
-inline const std::string& Line::getOrfId() const
-{
-    return orfid;
-}
-
-inline const std::string& Line::getLine() const
-{
-    return line;
-}
-
-
-// FREE OPERATORS
-inline bool operator==(const Line& lhs, const Line& rhs)
-{
-    return lhs.getOrfId()  == rhs.getOrfId() && lhs.getLine() == rhs.getLine();
-}
-
-inline bool operator!=(const Line& lhs, const Line& rhs)
-{
-    return lhs.getOrfId() != rhs.getOrfId() || lhs.getLine() != rhs.getLine();
-}
 
 // close package namespace
 
