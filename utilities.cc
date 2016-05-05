@@ -92,17 +92,16 @@ void topHits(const std::string &filename, int maxHits){
 
 	while(getline(input, current)) {
 		std::size_t location = current.find_first_of("\t");
-		std::string currorfid = current.substr(0,location);
 
-		if(!(currorfid.compare(prevorfid) == 0 || prevorfid.size()==0 ) )
+		if( !( prevorfid.compare(0, location, current) == 0 || prevorfid.size() == 0 ) )
 			count=0;
 
 		if(count <  maxHits) {
-			output << current << endl;
+			output << current << "\n";
 		}
 
 		count++;
-		prevorfid = currorfid;
+		prevorfid.assign(current, 0, location);
 	}
 	std::rename((filename + "_tmp").c_str(), filename.c_str());
 }
@@ -113,17 +112,15 @@ void topHitsVector(std::list<std::string> &outputVector, int maxHits){
 
 	std::list<std::string>::iterator it = outputVector.begin();
 	for( ; it != outputVector.end(); ++it){
-		std::string current = *it;
-		std::size_t location = current.find_first_of("\t");
-		std::string currorfid = current.substr(0,location);
+		std::size_t location = it->find_first_of("\t");
 
-		if(!(currorfid.compare(prevorfid) == 0 || prevorfid.size()==0 ) )
+		if( !( it->compare(0, location, *it) == 0 || prevorfid.size() == 0 ) )
 			count=0;
 
 		if(count >=  maxHits)
 			*it = "";
 
 		count++;
-		prevorfid = currorfid;
+		prevorfid.assign(*it, 0, location);
 	}
 }

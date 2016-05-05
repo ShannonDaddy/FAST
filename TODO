@@ -1,3 +1,4 @@
+FASTDB
 1) Make it so that it reads the oldest database volume, checks if we have spare room in it and
 incrementally add to that volume.
 --> Choose to either increase the size of a database partition (ex. all database parititions were are
@@ -17,3 +18,14 @@ void generateDifference(const std::string &filename){}
 Make the buckets work, then we need to test them.
 
 Scenario when there is only one volume
+
+FASTAL
+Remove all the extra initialization from temporary variables.
+
+Moving everything over to character buffers with tons of pointers will make the program faster. We
+dont need all these variables that are being reallocated constantly.
+Remove all the instances of stringstreams, they are pretty terribly slow with all the reallocation and
+ logic.
+
+The write functions are behemoths. They involve a lot of senseless copying as well, it could
+refactored and optimized.

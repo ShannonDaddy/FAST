@@ -10,7 +10,6 @@ std::queue<int> idInputQueue;
 std::queue<MultiSequence*> inputQueue;
 
 std::queue<int> idOutputQueue;
-//std::queue< std::vector< std::string >* > outputQueue;
 std::queue< std::list< std::string >* > outputQueue;
 
 SEM_T readerSema;
@@ -35,20 +34,6 @@ countT maxRefSequences = 0;
 TempFiles *listptr;
 
 void createStructures(std::string &matrixFile){
-
-	/*
-  if (args.maskLowercase > 0)
-    oneQualityScoreMatrixMasked = new OneQualityScoreMatrix();
-  if (args.maskLowercase < 3)
-    oneQualityScoreMatrix = new OneQualityScoreMatrix();
-  if (args.outputType > 3) {
-    oneQualityExpMatrix = new OneQualityExpMatrix();
-  }
-
-  if (args.inputFormat == sequenceFormat::prb) {
-    qualityPssmMaker = new QualityPssmMaker();
-  }
-	 */
 
   readOuterPrj(args.lastdbName + ".prj", volumes, refSequences, refLetters);
 
@@ -125,6 +110,7 @@ void threadData::prepareThreadData(int identifier){
   this->identifier = identifier;
 
   round = 0;
+  done = false;
 
 #ifdef __APPLE__
   char name[40];
@@ -996,8 +982,9 @@ void *threadFunction(void *__threadData){
     data->matchCounts.resize(data->query->finishedSequences());
   }
 
-  while (1) {
+  while ( true ) {
     SEM_WAIT(data->readSema);
+    if(data->done) break;
     SEM_WAIT(data->writeSema);
 
     data->outputVector = data->outputVectorQueue.front();
@@ -1025,6 +1012,24 @@ void *threadFunction(void *__threadData){
     SEM_POST(writerSema);
   }
   return (void *) 0;
+}
+
+void cleanup(){
+	for (int j = 0; j < args.threadNum; j++) {
+		for(int k=0; k<2; k++) {
+			threadDatas[j]->done = true;
+			SEM_POST(threadDatas[j]->readSema);
+			pthread_join(threads[j], NULL);
+		}
+	}
+	LOG("All threads joined")
+
+	text.closeFiles();
+	for (size_t x = 0; x < numOfIndexes; x++) {
+		suffixArrays[x].closeFiles();
+	}
+	delete[] suffixArrays;
+	LOG("Database closed")
 }
 
 void lastal(int argc, char **argv) {
@@ -1078,11 +1083,7 @@ void lastal(int argc, char **argv) {
     readerFunction(in);
   }
 
-  text.closeFiles();
-  for (size_t x = 0; x < numOfIndexes; x++) {
-    suffixArrays[x].closeFiles();
-  }
-  delete[] suffixArrays;
+  cleanup();
 
 	if(args.outputFormat == 2){
 		LOG("Beginning sorting operation")

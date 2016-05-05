@@ -82,7 +82,7 @@ namespace cbrc{
         int format,
         //std::vector<std::string> *outputVector,
         std::list<std::string> *outputVector,
-        LastEvaluer evaluer,
+        const LastEvaluer &evaluer,
         const AlignmentExtras& extras = AlignmentExtras() ) const;
 
     // data:
@@ -126,7 +126,7 @@ namespace cbrc{
         const AlignmentExtras& extras,
         //std::vector<std::string> *outputVector,
         std::list<std::string> *outputVector,
-        LastEvaluer evaluer) const;
+        const LastEvaluer &evaluer) const;
 
 	  void writeMaf( const MultiSequence& reference, const MultiSequence& query,
 	                 char strand, bool isTranslated, const Alphabet& alph,

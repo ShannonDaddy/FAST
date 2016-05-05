@@ -76,7 +76,7 @@ void Alignment::write(
 	int format,
 	//std::vector<std::string> *outputVector,
 	std::list<std::string> *outputVector,
-	LastEvaluer evaluer,
+	const LastEvaluer &evaluer,
 	const AlignmentExtras& extras ) const{
 
   assert( !blocks.empty() );
@@ -92,20 +92,14 @@ void Alignment::write(
   }
 }
 
-//!!
+const char* tab = "\t";
 void Alignment::writeBlastOutput(
 	double scoreCutoff, double evalueCutoff, const MultiSequence& reference,
 	const MultiSequence& query,
 	char strand, bool isTranslated, const Alphabet& alph,
 	const AlignmentExtras& extras,
-	//std::vector<std::string> *outputVector,
 	std::list<std::string> *outputVector,
-	LastEvaluer evaluer) const{
-
-  std::stringstream outputStream;
-  outputStream.precision(5);
-
-  double fullScore = extras.fullScore;
+	const LastEvaluer &evaluer) const{
 
   size_t alnBeg1 = beg1();
   size_t alnEnd1 = end1();
@@ -132,8 +126,6 @@ void Alignment::writeBlastOutput(
   const int bw = std::max( numDigits(b1), numDigits(b2) );
   const int rw = std::max( numDigits(r1), numDigits(r2) );
   const int sw = std::max( numDigits(s1), numDigits(s2) );
-
-  const char* tab = "\t";
 
   size_t identities = 0;
   size_t mismatches = 0;
@@ -179,8 +171,6 @@ void Alignment::writeBlastOutput(
     mismatches = alignLength - gaps - identityCount;
   }
 
-  //double evalue = evalueForSequences(score,s1, s2);
-
   double bitscore = 0;
   double bit_evalue = 0;
 
@@ -194,7 +184,7 @@ void Alignment::writeBlastOutput(
     bit_evalue = epa*area;
     bitscore = round(bitscore);
   } else {
-    double evalue = evalueForSequences(score,s1, s2);
+    //double evalue = evalueForSequences(score,s1, s2);
     double lambda = getLambda();
     double k = getK();
     double area = getArea();
@@ -203,13 +193,8 @@ void Alignment::writeBlastOutput(
     bitscore = round(bitscore);
   }
 
-/*
-    double lambda = getLambda();
-    double k = getK();
-    double area = getArea();
-    bitscore = (lambda*score-log(k))/log(2);
-    bit_evalue = area*pow(2,-bitscore);
-*/
+	std::stringstream outputStream;
+	outputStream.precision(5);
 
   if(bitscore >= scoreCutoff && bit_evalue <= evalueCutoff){
 
