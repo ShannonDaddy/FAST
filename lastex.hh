@@ -10,7 +10,10 @@
 
 double evalueForSequences( int score, double seqLen1, double seqLen2 );
 
-void initializeEvalueCalculator(cbrc::LastexArguments args, cbrc::ScoreMatrix socreMatrix, SequenceStatistics _stats1, SequenceStatistics __stats2);
+void initializeEvalueCalculator(const cbrc::LastexArguments &args,
+                                const cbrc::ScoreMatrix &socreMatrix,
+                                const SequenceStatistics &_stats1,
+                                const SequenceStatistics &__stats2);
 
 void makeEvaluer();
 

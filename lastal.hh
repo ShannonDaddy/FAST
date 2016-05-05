@@ -49,10 +49,10 @@
 #include <list>
 
 #define ERR(x) throw std::runtime_error(x)
-//#define LOG(x) if( args->verbosity > 0 ) std::cerr << "lastal: " << x << '\n'
+//#define LOG(x) if( args.verbosity > 0 ) std::cerr << "lastal: " << x << '\n'
 
 #define LOG(x) \
-  if( args->verbosity > 0 ){ \
+  if( args.verbosity > 0 ){ \
     std::stringstream stream; \
     stream << "lastal: " << x << "\n"; \
     std::cerr << stream.str(); \
@@ -65,30 +65,30 @@ typedef unsigned long long countT;
 
 namespace {
 
-	LastalArguments *args;
-	LambdaCalculator *lambdaCalculator;
+	LastalArguments args;
+	LambdaCalculator lambdaCalculator;
 	int minScoreGapless;
 	int isCaseSensitiveSeeds = -1;  // initialize it to an "error" value
 	unsigned numOfIndexes = 1;  // assume this value, if unspecified
 	sequenceFormat::Enum referenceFormat = sequenceFormat::fasta;
 	SubsetSuffixArray *suffixArrays;
-	MultiSequence *text;
+	MultiSequence text;
 	indexT minSeedLimit;
 
 	LastEvaluer evaluer;
 
-	Alphabet *alph;
-	Alphabet *queryAlph;  // for translated alignment
-	GeneticCode *geneticCode;
+	Alphabet alph;
+	Alphabet queryAlph;  // for translated alignment
+	GeneticCode geneticCode;
 
 	GeneralizedAffineGapCosts gapCosts;
-	ScoreMatrix *scoreMatrix;
-	OneQualityScoreMatrix *oneQualityScoreMatrix;
-	OneQualityScoreMatrix *oneQualityScoreMatrixMasked;
-	OneQualityExpMatrix *oneQualityExpMatrix;
-	QualityPssmMaker *qualityPssmMaker;
-	TwoQualityScoreMatrix *twoQualityScoreMatrix;
-	TwoQualityScoreMatrix *twoQualityScoreMatrixMasked;
+	ScoreMatrix scoreMatrix;
+	OneQualityScoreMatrix oneQualityScoreMatrix;
+	OneQualityScoreMatrix oneQualityScoreMatrixMasked;
+	OneQualityExpMatrix oneQualityExpMatrix;
+	QualityPssmMaker qualityPssmMaker;
+	TwoQualityScoreMatrix twoQualityScoreMatrix;
+	TwoQualityScoreMatrix twoQualityScoreMatrixMasked;
 }
 
 namespace Phase{ 
@@ -98,17 +98,15 @@ namespace Phase{
 
 struct threadData{
 
-	GappedXdropAligner *gappedXdropAligner;
+	GappedXdropAligner gappedXdropAligner;
 	Centroid *centroid;
 
 	MultiSequence *query;
   
-	std::queue<MultiSequence*> *queryQueue;
-	std::vector< std::vector<countT> > *matchCounts;  // used if outputType == 0
+	std::queue<MultiSequence*> queryQueue;
+	std::vector< std::vector<countT> > matchCounts;  // used if outputType == 0
 
-	//std::vector<std::string> *outputVector;
 	std::list<std::string> *outputVector;
-	//std::queue< std::vector<std::string>* > *outputVectorQueue;
 	std::queue< std::list<std::string>* > outputVectorQueue;
 
 	int identifier;
@@ -151,35 +149,35 @@ struct Dispatcher{
 	const TwoQualityScoreMatrix& t;
 	int d;  // the maximum score drop
 	int z;
-	Alphabet *aa;
+	Alphabet aa;
 
 
-	Dispatcher( Phase::Enum e, MultiSequence *text, MultiSequence *query,
-	            ScoreMatrix *scoreMatrix, TwoQualityScoreMatrix *twoQualityScoreMatrix,
-	            TwoQualityScoreMatrix *twoQualityScoreMatrixMasked,
-	            sequenceFormat::Enum referenceFormat, Alphabet *alph) :
+	Dispatcher( Phase::Enum e, const MultiSequence &text, MultiSequence *query,
+	            const ScoreMatrix &scoreMatrix, const TwoQualityScoreMatrix &twoQualityScoreMatrix,
+	            const TwoQualityScoreMatrix &twoQualityScoreMatrixMasked,
+	            sequenceFormat::Enum referenceFormat, const Alphabet &alph) :
 
-		reference  ( text->seqReader() ),
+		reference  ( text.seqReader() ),
 		query  ( query->seqReader() ),
-		i  ( text->qualityReader() ),
+		i  ( text.qualityReader() ),
 		j  ( query->qualityReader() ),
 		p  ( query->pssmReader() ),
-		m  ( (e < args->maskLowercase) ?
-		     scoreMatrix->caseSensitive : scoreMatrix->caseInsensitive ),
-		t  ( (e < args->maskLowercase) ?
-		     *twoQualityScoreMatrixMasked : *twoQualityScoreMatrix ),
-		d  ( (e == Phase::gapless) ? args->maxDropGapless :
-		     (e == Phase::gapped ) ? args->maxDropGapped : args->maxDropFinal ),
-		z  ( (args->inputFormat == sequenceFormat::fasta) ? 0 :
+		m  ( (e < args.maskLowercase) ?
+		     scoreMatrix.caseSensitive : scoreMatrix.caseInsensitive ),
+		t  ( (e < args.maskLowercase) ?
+		     twoQualityScoreMatrixMasked : twoQualityScoreMatrix ),
+		d  ( (e == Phase::gapless) ? args.maxDropGapless :
+		     (e == Phase::gapped ) ? args.maxDropGapped : args.maxDropFinal ),
+		z  ( (args.inputFormat == sequenceFormat::fasta) ? 0 :
 		     (referenceFormat  == sequenceFormat::fasta) ? 1 : 2 ),
-		aa ( aa = alph ){}
+		aa ( alph ){}
 
 	// Shrink the SegmentPair to its longest run of identical matches.
 	// This trims off possibly unreliable parts of the gapless alignment.
 	// It may not be the best strategy for protein alignment with subset
 	// seeds: there could be few or no identical matches...
 	void shrinkToLongestIdenticalRun(SegmentPair &sp) {
-		sp.maxIdenticalRun(reference, query, aa->canonical);
+		sp.maxIdenticalRun(reference, query, aa.canonical);
 		sp.score = gaplessScore(sp.beg1(), sp.end1(), sp.beg2());
 	}
 

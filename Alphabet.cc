@@ -114,6 +114,29 @@ void Alphabet::makeComplement(){
   }
 }
 
+
+Alphabet& Alphabet::operator = (const Alphabet &rhs){
+
+	if(this != &rhs){
+		memcpy(encode, rhs.encode, capacity);
+		memcpy(decode, rhs.decode, capacity);
+		memcpy(canonical, rhs.canonical, capacity);
+		memcpy(complement, rhs.complement, capacity);
+	}
+
+	return *this;
+}
+
+Alphabet::Alphabet( const Alphabet &rhs ){
+
+	if(this != &rhs){
+		memcpy(encode, rhs.encode, capacity);
+		memcpy(decode, rhs.decode, capacity);
+		memcpy(canonical, rhs.canonical, capacity);
+		memcpy(complement, rhs.complement, capacity);
+	}
+}
+
 std::ostream& cbrc::operator<<( std::ostream& s, const Alphabet& a ){
   return s << a.letters;
 }

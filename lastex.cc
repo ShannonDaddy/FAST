@@ -503,8 +503,10 @@ void evaluateAlignments( const std::string& matrixString ){
 
 /********************* BYPASS ***********************************/
 
-void initializeEvalueCalculator(LastexArguments _args, cbrc::ScoreMatrix _scoreMatrix, 
-      SequenceStatistics _stats1, SequenceStatistics _stats2) {
+void initializeEvalueCalculator(const LastexArguments &_args,
+                                const cbrc::ScoreMatrix &_scoreMatrix,
+                                const SequenceStatistics &_stats1,
+                                const SequenceStatistics &_stats2) {
      stats1 = _stats1;
      stats2 = _stats2;
      scoreMatrix = _scoreMatrix;
