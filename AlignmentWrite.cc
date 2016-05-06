@@ -216,13 +216,22 @@ void Alignment::writeBlastOutput(
   }
 }
 
+const int diff = 'a' - 'A';
 size_t Alignment::countIdentities(std::string& referenceString, std::string& queryString) const{
     assert(referenceString.length() == queryString.length());
 
-    size_t count = 0;
-    for (size_t i=0;i<referenceString.length();i++){
-        if(referenceString[i] == queryString[i]) count++;
-    }
+	size_t count = 0;
+	for (size_t i=0;i<referenceString.length();i++){
+		// Matches characters regardless of case
+		if( referenceString[i] == queryString[i] ||
+		    referenceString[i] + diff == queryString[i] ||
+		    referenceString[i] - diff == queryString[i])
+			count++;
+			/*
+		if( referenceString[i] == queryString[i] )
+			count++;
+			 */
+	}
     return count;
 }
 
@@ -365,26 +374,11 @@ void Alignment::writeMaf( const MultiSequence& reference, const MultiSequence& q
 
   writeTopSeq( reference.seqReader(), alph, frameSize2, dest );
 
-//!! Why are we removing the newlines?
-/*
-<<<<<<< HEAD
-  std::string tmp(line);
-  tmp.erase(std::remove(tmp.begin(), tmp.end(), '\n'), tmp.end());
-  tmp.erase(std::remove(tmp.begin(), tmp.end(), 7), tmp.end());
-  output += tmp + "\n";
-  
-  if( reference.qualsPerLetter() > 0 ){
-=======
-*/
-  //!!os.write( line, lineLen );
-
   if( reference.qualsPerLetter() > 0 ) {
     dest = sprintChar( line, 'q' );
     dest += nw + 1;
     dest = sprintLeft( dest, "", bw + 1 + rw + 3 + sw );
     writeTopQual( reference.qualityReader(), reference.qualsPerLetter(), dest );
-
-    //os.write( line, lineLen );
   }
 
   dest = sprintChar( line, 's' );
@@ -405,8 +399,6 @@ void Alignment::writeMaf( const MultiSequence& reference, const MultiSequence& q
     dest += nw + 1;
     dest = sprintLeft( dest, "", bw + 1 + rw + 3 + sw );
     writeBotQual( query.qualityReader(), query.qualsPerLetter(), dest );
-
-    //!!os.write( line, lineLen );
   }
 
   if( columnAmbiguityCodes.size() > 0 ){
