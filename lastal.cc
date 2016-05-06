@@ -1032,6 +1032,25 @@ void cleanup(){
 	LOG("Database closed")
 }
 
+void sortAndParseFiles(){
+	if(args.outputFormat == 2){
+		LOG("Beginning sorting operation")
+		LOG("Number of files to merge: " << listptr->size() << " ")
+		//now sort the LAST output on the disk
+		disk_sort_file(args.outputdir,
+		               args.outFile,
+		               listptr->getFileNames());
+		LOG("Completed sorting operation")
+
+		// parse the top k hits from the file
+		if (args.topHits < 1000 ){
+			LOG("Parsing top k hits")
+			topHits(args.outFile, args.topHits);
+			LOG("Completed parsing top k hits")
+		}
+	}
+}
+
 void lastal(int argc, char **argv) {
 
   args.fromArgs(argc, argv);
@@ -1085,26 +1104,11 @@ void lastal(int argc, char **argv) {
 
   cleanup();
 
-	if(args.outputFormat == 2){
-		LOG("Beginning sorting operation")
-		LOG("Number of files to merge: " << listptr->size() << " ")
-		//now sort the LAST output on the disk
-		disk_sort_file(args.outputdir,
-		               args.outFile,
-		               listptr->getFileNames());
-		LOG("Completed sorting operation")
+  sortAndParseFiles();
+  LOG("Completed alignment operations, exiting")
 
-		// parse the top k hits from the file
-		if (args.topHits < 1000 ){
-			LOG("Parsing top k hits")
-			topHits(args.outFile, args.topHits);
-			LOG("Completed parsing top k hits")
-		}
-	}
-	LOG("Completed alignment operations, exiting")
-  
-	listptr->clear();
-	delete listptr;
+  listptr->clear();
+  delete listptr;
 }
 
 
@@ -1118,22 +1122,28 @@ int main(int argc, char **argv) {
 		stream << "lastal: memory exception\n";
 		stream << e.what() << "\n";
 		std::cerr << stream.str();
-		listptr->clear();
-		delete listptr;
+		if(listptr != NULL){
+			listptr->clear();
+			delete listptr;
+		}
 		return EXIT_FAILURE;
 	} catch (const std::exception &e) {
 		std::stringstream stream;
 		stream << "lastal: " << e.what() << '\n';
 		std::cerr << stream.str();
-		listptr->clear();
-		delete listptr;
+		if(listptr != NULL){
+			listptr->clear();
+			delete listptr;
+		}
 		return EXIT_FAILURE;
 	} catch (int i) {
 		std::stringstream stream;
 		stream << "lastal: " << i << '\n';
 		std::cerr << stream.str();
-		listptr->clear();
-		delete listptr;
+		if(listptr != NULL){
+			listptr->clear();
+			delete listptr;
+		}
 		return i;
 	}
 }

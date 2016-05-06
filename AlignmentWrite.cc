@@ -93,6 +93,7 @@ void Alignment::write(
 }
 
 const char* tab = "\t";
+const double LN2 = 0.69314718056;
 void Alignment::writeBlastOutput(
 	double scoreCutoff, double evalueCutoff, const MultiSequence& reference,
 	const MultiSequence& query,
@@ -184,11 +185,10 @@ void Alignment::writeBlastOutput(
     bit_evalue = epa*area;
     bitscore = round(bitscore);
   } else {
-    //double evalue = evalueForSequences(score,s1, s2);
     double lambda = getLambda();
     double k = getK();
     double area = getArea();
-    bitscore = (lambda*score-log(k))/log(2);
+    bitscore = (lambda*score-log(k))/LN2;
     bit_evalue = area*pow(2,-bitscore);
     bitscore = round(bitscore);
   }
@@ -198,8 +198,8 @@ void Alignment::writeBlastOutput(
 
   if(bitscore >= scoreCutoff && bit_evalue <= evalueCutoff){
 
-    outputStream << query.seqName(w2) << tab
-       << reference.seqName(w1) << tab
+    outputStream << n2 << tab
+       << n1 << tab
        << identities << tab
        << alignLength << tab
        << mismatches << tab

@@ -313,7 +313,6 @@ FAST home page: github.com/hallamlab/FAST\n\
     ERR( "Given a root path for -X that doesn't exist. Cannot create temporary files, exiting");
   }
 
-
   if( maskLowercase == 1 && inputFormat == 5 )
     ERR( "can't combine option -u 1 with option -Q 5" );
 
@@ -344,6 +343,19 @@ FAST home page: github.com/hallamlab/FAST\n\
     ERR( "please give me a database name and sequence file(s)\n\n" + usage );
   lastdbName = argv[optind++];
   inputStart = optind;
+
+	struct stat database;
+	// If the database exists, the outer prj will exist as well.
+	int e2 = stat( (lastdbName + ".prj").c_str(), &database);
+	if(e2 == -1){
+		ERR( "Given a path for the database that doesn't exist. Exiting");
+	}
+
+	struct stat inputName;
+	int e3 = stat(argv[inputStart], &inputName);
+	if(e3 == -1){
+		ERR( "Given a path for an input file that doesn't. Exiting");
+	}
 }
 
 void LastalArguments::fromLine( const std::string& line, bool optionsOnly ){
