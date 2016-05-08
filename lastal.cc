@@ -821,7 +821,8 @@ void initializeSemaphores() {
 #endif
 }
 
-void mergeAndOrPrintLists(std::list<std::string> &output_list, std::list<std::string> *current){
+void mergeAndOrPrintLists(std::list<std::string> &output_list,
+                          std::list<std::string> *current){
 	// Code snippet for linked list merging two sorted linked lists
 	output_list.merge(*current);
 	if(output_list.size() > args.outputSize){
@@ -860,6 +861,11 @@ void *writerFunction(void *arguments){
 	std::string randstr = generate_directory_name(args.outputdir);
 	listptr = new  TempFiles( args.outputdir, randstr + "LASTtemp0");
 
+	ofstream out;
+	if(args.topHits == 0){
+		out.open(args.outFile.c_str());
+	}
+
 	std::list<std::string> output_list;
 	while (1) {
 		SEM_WAIT(writerSema);
@@ -874,7 +880,18 @@ void *writerFunction(void *arguments){
 		SEM_WAIT(ioSema);
 		// Writes the list out if the merged list is over the limit
 		// Clears the current annotation list so it can take more
-		mergeAndOrPrintLists(output_list, current);
+		if(args.topHits > 0) {
+			mergeAndOrPrintLists(output_list, current);
+		} else {
+			std::list<std::string>::iterator it = current->begin();
+			std::list<std::string>::iterator it2 = current->end();
+			for ( ; it!=it2; ++it) {
+				if(*it != ""){
+					out << *it;
+				}
+			}
+			current->clear();
+		}
 		SEM_POST(ioSema);
 
 		SEM_WAIT(inputOutputQueueSema);
@@ -887,7 +904,9 @@ void *writerFunction(void *arguments){
 		if (roundDone && readSequences == doneSequences && readSequences){
 			SEM_POST(roundSema);
 			if (volume+1 == volumes ){
-				writeRemainingAnnotations(output_list);
+				if(args.topHits > 0) {
+					writeRemainingAnnotations(output_list);
+				}
 				SEM_POST(terminationSema);
 				break;
 			}
@@ -996,10 +1015,12 @@ void *threadFunction(void *__threadData){
 
     data->query->reinitForAppending();
 
-    data->outputVector->sort(compare_blast);
-    if (args.topHits < 1000 ){ // Arbitrary number of "infinite"
-      topHitsVector(*(data->outputVector), args.topHits);
-    }
+	  if(args.topHits > 0) {
+		  data->outputVector->sort(compare_blast);
+		  if (args.topHits < 1000) { // Arbitrary number of "infinite"
+			  topHitsVector(*(data->outputVector), args.topHits);
+		  }
+	  }
 
     SEM_WAIT(inputOutputQueueSema);
     idInputQueue.push(data->identifier);
@@ -1033,7 +1054,7 @@ void cleanup(){
 }
 
 void sortAndParseFiles(){
-	if(args.outputFormat == 2){
+	if(args.outputFormat == 2 ){
 		LOG("Beginning sorting operation")
 		LOG("Number of files to merge: " << listptr->size() << " ")
 		//now sort the LAST output on the disk
@@ -1104,7 +1125,9 @@ void lastal(int argc, char **argv) {
 
   cleanup();
 
-  sortAndParseFiles();
+	if(args.topHits > 0) {
+		sortAndParseFiles();
+	}
   LOG("Completed alignment operations, exiting")
 
   listptr->clear();
