@@ -19,8 +19,8 @@
 
 #include "ScoreMatrixRow.hh"
 
-#include "alp/sls_alignment_evaluer.hpp"
-#include "alp/sls_falp_alignment_evaluer.hpp"
+#include "sls_alignment_evaluer.hpp"
+#include "sls_falp_alignment_evaluer.hpp"
 
 namespace cbrc {
 
