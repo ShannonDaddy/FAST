@@ -2,8 +2,6 @@
 
 #include "LastEvaluer.hh"
 
-#include "GeneticCode.hh"
-
 #include <algorithm>
 #include <cstring>
 

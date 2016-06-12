@@ -1,5 +1,4 @@
 #include "heapsort.hh"
-#include <iostream>
 
 using namespace std;
 

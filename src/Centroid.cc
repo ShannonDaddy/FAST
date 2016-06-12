@@ -3,11 +3,8 @@
 
 #include "Centroid.hh"
 #include "GappedXdropAlignerInl.hh"
-#include <algorithm>
-#include <cassert>
 #include <cmath> // for exp
 #include <cfloat>   // for DBL_MAX
-#include <cstdlib>  // for abs
 #include <iomanip>
 
 #define CI(type) std::vector<type>::const_iterator  // added by MCF

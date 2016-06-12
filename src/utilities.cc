@@ -1,5 +1,5 @@
+#include <sys/stat.h>
 #include "utilities.hh"
-#include "lastal.hh"
 
 char *split_n_pick(const string  &strn,  char *buf, char d, unsigned n) {
   strcpy(buf, strn.c_str());

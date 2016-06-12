@@ -5,8 +5,6 @@
 #include "qualityScoreUtil.hh"
 
 #include <algorithm>  // min
-#include <cassert>
-#include <cmath>
 //#include <iostream>  // for debugging
 #include <numeric>  // inner_product
 

@@ -4,9 +4,7 @@
 #include "stringify.hh"
 #include <unistd.h>  // getopt
 #include <iostream>
-#include <sstream>
 #include <vector>
-#include <stdexcept>
 #include <cstring>  // strtok
 #include <cstdlib>  // EXIT_SUCCESS
 //#include <iostream>  // for debugging

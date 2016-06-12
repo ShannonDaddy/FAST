@@ -6,7 +6,6 @@
 
 #include <cstring>  // strerror
 #include <cerrno>
-#include <stdexcept>
 
 // File mapping requires non-standard-C++ library functions.  I think
 // this code will not work on all platforms, e.g. windows.  Hopefully,

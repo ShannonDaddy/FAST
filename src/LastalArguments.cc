@@ -5,12 +5,9 @@
 #include <unistd.h>  // getopt
 #include <algorithm>  // max
 #include <iostream>
-#include <sstream>
 #include <vector>
-#include <stdexcept>
 #include <cmath>  // log
 #include <cstring>  // strtok
-#include <cstdlib>  // EXIT_SUCCESS
 #include <sys/stat.h>
 
 #define ERR(x) throw std::runtime_error(x)
