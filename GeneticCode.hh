@@ -18,10 +18,6 @@ class GeneticCode
  private:
   typedef unsigned char uchar;
 
-  //!! I dont know why this is even being called... It's not used anywhere yet the mechanisms complain about it!
-  //GeneticCode( GeneticCode &c );
-  //!! I dont know why he decided to make the assignment operator private. Maybe to prevent bad copying? Everything here is stack
-  //!! allocated so I don't see the issue to be honest...
   //const GeneticCode & operator=( const GeneticCode &c );
   std::string			AAs;
   std::string			Base[3];
@@ -42,9 +38,10 @@ class GeneticCode
   virtual void 			fromFile( const std::string& codeTable );
   virtual void 			fromString( const std::string& s );
   virtual void			codeTableSet( const Alphabet& aaAlph, const Alphabet& dnaAlph );
-  virtual void 			translate( const uchar* beg,
-                                           const uchar* end,
-					   uchar* dest );
+
+    virtual void translate(const uchar *beg,
+                           const uchar *end,
+                           uchar *dest);
 
   static const char* standard;  // the standard genetic code
 };
@@ -54,7 +51,7 @@ inline size_t aaToDna( size_t aaCoordinate, size_t frameSize ){
   if( frameSize == 0 ) return aaCoordinate;  // for non-translated sequences
   size_t frame = aaCoordinate / frameSize;
   size_t offset = aaCoordinate % frameSize;
-  return frame + offset * 3;
+        return frame + offset * 3;
 }
 
 // Convert a DNA coordinate to an amino-acid (translated) coordinate
@@ -66,9 +63,9 @@ inline size_t dnaToAa( size_t dnaCoordinate, size_t frameSize ){
 }
 
 // Convert begin and end coordinates to a size and a frameshift
-inline void sizeAndFrameshift( size_t beg, size_t end,
-			       size_t frameSize,  // 0 means not translated
-			       size_t& size, size_t& frameshift ){
+    inline void sizeAndFrameshift(size_t beg, size_t end,
+                                  size_t frameSize,  // 0 means not translated
+                                  size_t &size, size_t &frameshift) {
   if( frameSize ){  // if it's a translated sequence:
     size_t dnaBeg = aaToDna( beg, frameSize );
     size_t dnaEnd = aaToDna( end, frameSize );

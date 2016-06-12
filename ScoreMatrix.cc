@@ -5,10 +5,7 @@
 #include <sstream>
 #include <iomanip>
 #include <algorithm>  // min, max
-#include <stdexcept>
 #include <cassert>
-#include <cctype>  // toupper, tolower
-#include <cstddef>  // size_t
 //#include <iostream>  // for debugging
 
 #define ERR(x) throw std::runtime_error(x)

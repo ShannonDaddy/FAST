@@ -1,15 +1,9 @@
 #include "lastex.hh"
 
 
-#include <cctype>  // isdigit
 #include <cmath>
-#include <cstdlib>  // EXIT_SUCCESS, EXIT_FAILURE
-#include <fstream>
 #include <iomanip>  // setw
-#include <iostream>
 #include <numeric>  // accumulate
-#include <sstream>
-#include <stdexcept>
 
 #define ERR(x) throw std::runtime_error(x)
 #define WARN(x) std::cerr << "lastex: warning: " << x << '\n'

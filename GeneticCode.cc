@@ -2,10 +2,8 @@
 
 #include "GeneticCode.hh"
 #include "Alphabet.hh"
-#include <cctype>  // toupper, tolower, islower
 #include <fstream>
 #include <sstream>
-#include <stdexcept>
 //#include <iostream>  // for debugging
 
 namespace cbrc{

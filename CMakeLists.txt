@@ -46,119 +46,98 @@ set(LASTDB_SOURCE_FILES
         DatabaseWriter.h
         DatabaseVolume.cpp
         DatabaseVolume.hh
-        Globals.hh)
+        Globals.hh
+        )
 
 set(LASTAL_SOURCE_FILES
         externalsort.hh
-        externalsort.cc
-        utilities.hh
-        utilities.cc
-        heapsort.cc
-        heapsort.hh
-        linereader.hh
-        linereader.cc
-        Alphabet.cc
-        Alphabet.hh
-        MultiSequence.cc
-        MultiSequence.hh
-        fileMap.hh
-        io.hh
-        CyclicSubsetSeed.cc
-        SubsetSuffixArray.cc
-        SubsetSuffixArray.hh
-        VectorOrMmap.hh
-        LastalArguments.cc
-        LastalArguments.hh
-        SequenceFormat.hh
-        io.cc
-        fileMap.cc
-        ScoreMatrix.cc
-        ScoreMatrix.hh
-        DiagonalTable.cc
-        DiagonalTable.hh
-        SegmentPair.cc
         Alignment.cc
-        Alphabet.hh
-        GeneralizedAffineGapCosts.hh
-        GeneticCode.hh
-        GappedXdropAligner.cc
-        ScoreMatrixRow.hh
-        SegmentPairPot.cc
-        SegmentPairPot.hh
-        SubsetSuffixArray.cc
-        SubsetSuffixArray.hh
-        CyclicSubsetSeed.hh
-        VectorOrMmap.hh
-        Mmap.hh
-        fileMap.hh
+        Alignment.hh
         AlignmentPot.cc
         AlignmentPot.hh
-        Alignment.hh
-        GeneralizedAffineGapCosts.cc
+        AlignmentWrite.cc
+        Alphabet.cc
+        Alphabet.hh
         Centroid.cc
         Centroid.hh
+        CyclicSubsetSeed.cc
+        CyclicSubsetSeed.hh
+        DiagonalTable.cc
+        DiagonalTable.hh
+        externalsort.cc
+        fileMap.cc
+        fileMap.hh
+        gaplessPssmXdrop.cc
+        gaplessPssmXdrop.hh
+        gaplessTwoQualityXdrop.cc
+        gaplessTwoQualityXdrop.hh
+        gaplessXdrop.cc
+        gaplessXdrop.hh
+        GappedXdropAligner.cc
         GappedXdropAligner.hh
-        GeneralizedAffineGapCosts.hh
-        SegmentPair.hh
+        GappedXdropAligner2qual.cc
+        GappedXdropAligner3frame.cc
+        GappedXdropAligner3framePssm.cc
         GappedXdropAlignerInl.hh
+        GappedXdropAlignerPssm.cc
+        GeneralizedAffineGapCosts.cc
+        GeneralizedAffineGapCosts.hh
+        GeneticCode.cc
+        GeneticCode.hh
+        heapsort.cc
+        heapsort.hh
+        io.cc
+        io.hh
+        lambda_calculator.cc
+        lambda_calculator.hh
         LambdaCalculator.cc
         LambdaCalculator.hh
-        lambda_calculator.hh
-        lambda_calculator.cc
-        TwoQualityScoreMatrix.cc
-        TwoQualityScoreMatrix.hh
+        lastal.cc
+        LastalArguments.cc
+        LastalArguments.hh
+        LastEvaluer.cc
+        LastEvaluer.hh
+        lastex.cc
+        LastexArguments.cc
+        LastexArguments.hh
+        linereader.cc
+        linereader.hh
+        lubksb.cc
+        ludcmp.cc
+        Mmap.hh
+        MultiSequence.cc
+        MultiSequence.hh
+        MultiSequenceQual.cc
+        nrutil.cc
+        nrutil.hh
         OneQualityScoreMatrix.cc
         OneQualityScoreMatrix.hh
         QualityPssmMaker.cc
         QualityPssmMaker.hh
         qualityScoreUtil.hh
-        GeneticCode.cc
-        gaplessXdrop.cc
-        gaplessXdrop.hh
-        io.cc io.hh
-        gaplessPssmXdrop.cc
-        gaplessPssmXdrop.hh
-        gaplessTwoQualityXdrop.cc
-        AlignmentWrite.cc
-        stringify.hh
-        MultiSequenceQual.cc
-        MultiSequence.hh
-        GappedXdropAlignerPssm.cc
-        GappedXdropAligner2qual.cc
-        GappedXdropAligner3frame.cc
-        lastal.cc
-        LastalArguments.hh
-        SequenceFormat.hh
-        SubsetSuffixArray.hh
-        CyclicSubsetSeed.hh
-        Mmap.hh
-        AlignmentPot.hh
-        SegmentPairPot.hh
+        ScoreMatrix.cc
         ScoreMatrix.hh
-        DiagonalTable.hh
-        gaplessTwoQualityXdrop.hh
-        nrutil.hh
-        nrutil.cc
-        ludcmp.cc
-        lubksb.cc
-        LastexArguments.cc
-        lastex.cc
-        LastexArguments.hh
-        version.hh
-        utils.hh
-        utils.cc
-        Alphabet.cc
-        Alphabet.hh
-        MultiSequence.hh
-        MultiSequence.cc
-        io.hh
-        io.cc
+        ScoreMatrixRow.hh
+        SegmentPair.cc
+        SegmentPair.hh
+        SegmentPairPot.cc
+        SegmentPairPot.hh
         semaphores.hh
+        SequenceFormat.hh
+        stringify.hh
+        SubsetSuffixArray.cc
+        SubsetSuffixArray.hh
         tempfiles.cc
         tempfiles.hh
-        LastEvaluer.hh
-        LastEvaluer.cc
-        GappedXdropAligner3framePssm.cc
+        TwoQualityScoreMatrix.cc
+        TwoQualityScoreMatrix.hh
+        utilities.cc
+        utilities.hh
+        utils.cc
+        utils.hh
+        VectorOrMmap.hh
+        VectorOrMmap.hh
+        version.hh
         )
 
 file(GLOB ALP

@@ -5,16 +5,9 @@
 #include "MultiSequence.hh"
 #include "Alphabet.hh"
 
-#include <iomanip>
-#include <algorithm>
-#include <cassert>
 #include <iterator>  // ostream_iterator
 
-#include <cmath>
-#include <list>
 #include "lastex.hh"
-#include "gumbel_params/sls_pvalues.hpp"
-#include "semaphores.hh"
 
 // make C++ tolerable:
 #define CI(type) std::vector<type>::const_iterator

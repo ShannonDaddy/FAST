@@ -3,11 +3,8 @@
 #include "Alignment.hh"
 #include "Alphabet.hh"
 #include "Centroid.hh"
-#include "GappedXdropAligner.hh"
 #include "GeneticCode.hh"
-#include "GeneralizedAffineGapCosts.hh"
 #include "TwoQualityScoreMatrix.hh"
-#include <cassert>
 
 // make C++ tolerable:
 #define IT(type) std::vector<type>::iterator
