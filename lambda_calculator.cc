@@ -5,7 +5,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include <vector>
 #include "lambda_calculator.hh"
 #include "ludcmp.hh"
 #define min(A,B) ((A) > (B) ? (B) : (A) )

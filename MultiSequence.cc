@@ -2,13 +2,7 @@
 
 #include "MultiSequence.hh"
 #include "io.hh"
-#include <sstream>
-#include <algorithm>  // upper_bound
-#include <cassert>
-#include <cctype>  // isspace
 #include <iterator>  // istreambuf_iterator
-#include <iostream>
-#include <algorithm> //reverse
 
 using namespace cbrc;
 

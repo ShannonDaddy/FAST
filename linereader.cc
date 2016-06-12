@@ -1,10 +1,7 @@
 // FastaLine.cc                                                   -*-C++-*-
 
 #include "linereader.hh"
-#include "utilities.hh"
 
-#include <cassert>
-#include <iostream>
 #include <iomanip>
 
 // CREATORS

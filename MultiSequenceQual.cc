@@ -1,9 +1,6 @@
 // Copyright 2009, 2010, 2011, 2013 Martin C. Frith
 
 #include "MultiSequence.hh"
-#include "stringify.hh"
-#include <algorithm>  // max_element
-#include <cctype>  // toupper
 #include <limits>  // numeric_limits
 
 // make C++ tolerable:

@@ -2,10 +2,7 @@
 
 #include "Alphabet.hh"
 #include <istream>
-#include <ostream>
 #include <algorithm>
-#include <stdexcept>
-#include <cctype>  // toupper, tolower
 #include <iostream>
 #include <cstring>
 

@@ -1,7 +1,6 @@
 // Copyright 2008 Michiaki Hamada
 
 #include "LambdaCalculator.hh"
-#include <vector>
 #include <cassert>
 
 #include "lambda_calculator.hh"
