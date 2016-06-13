@@ -10,6 +10,7 @@
 #include "SubsetSuffixArray.hh"
 
 typedef unsigned indexT;
+
 /*
  * File which holds the incomplete database volume until it's ready to be flushed
  */
@@ -17,47 +18,47 @@ class DatabaseVolume {
 public:
 //private:
 
-	std::size_t endsSize;
-	std::size_t nameEndsSize;
-	indexT endsCoordinate;
-	indexT nameEndsCoordinate;
+    std::size_t endsSize;
+    std::size_t nameEndsSize;
+    indexT endsCoordinate;
+    indexT nameEndsCoordinate;
 
-	std::size_t indexTotal;
+    std::size_t indexTotal;
 
-	PrjFiles *prj;
+    PrjFiles *prj;
 
-	std::string databaseName;
+    std::string databaseName;
 
-	std::ofstream sspfile;
-	std::ofstream tisfile;
-	std::ofstream sdsfile;
-	std::ofstream desfile;
-	std::ofstream quafile;
-	std::ofstream suffile;
-	std::ofstream bckfile;
+    std::ofstream sspfile;
+    std::ofstream tisfile;
+    std::ofstream sdsfile;
+    std::ofstream desfile;
+    std::ofstream quafile;
+    std::ofstream suffile;
+    std::ofstream bckfile;
 
 public:
-	bool isFinished(unsigned nextBatchEnds,
-	                unsigned nextBatchNameEnds ) const;
+    bool isFinished(unsigned nextBatchEnds,
+                    unsigned nextBatchNameEnds) const;
 
-	void writePooledMultiSequence( const MultiSequence &multi,
-	                               const LastdbArguments &args,
-	                               unsigned endsLastCoordinate,
-	                               unsigned nameEndsLastCoordinate );
+    void writePooledMultiSequence(const MultiSequence &multi,
+                                  const LastdbArguments &args,
+                                  unsigned endsLastCoordinate,
+                                  unsigned nameEndsLastCoordinate);
 
-	void writePooledSubsetSuffixArray( const SubsetSuffixArray &sa ) ;
+    void writePooledSubsetSuffixArray(const SubsetSuffixArray &sa);
 
-	void buildBuckets();
+    void buildBuckets();
 
-	void writeBucketFile(const SubsetSuffixArray &sa);
+    void writeBucketFile(const SubsetSuffixArray &sa);
 
-	DatabaseVolume(sequenceFormat::Enum inputFormat,
-	               const std::string &dbname,
-	               unsigned _volumes,
-	               unsigned _numOfIndexes,
-	               unsigned alphSize);
+    DatabaseVolume(sequenceFormat::Enum inputFormat,
+                   const std::string &dbname,
+                   unsigned _volumes,
+                   unsigned _numOfIndexes,
+                   unsigned alphSize);
 
-	~DatabaseVolume();
+    ~DatabaseVolume();
 };
 
 #endif //THREADEDLAST_DATABASEVOLUME_HH

@@ -7,64 +7,67 @@
 
 #include "lastdb.hh"
 
-class DatabaseThread{
+class DatabaseThread {
 
-		friend class DatabaseVolume;
+    friend class DatabaseVolume;
 
 //private:
 public:
-		pthread_t thread;
+    pthread_t thread;
 
-		MultiSequence multi;
-		SubsetSuffixArray indexes[maxNumOfIndexes];
+    MultiSequence multi;
+    SubsetSuffixArray indexes[maxNumOfIndexes];
 
-		unsigned numOfIndexes;
-		// Constantly flushed for each volume chunks prj portion
-		countT sequenceCount;
-		// Keep track of all of the sequences used for the final prj file.
-		countT sequenceTotals;
-		// Constantly flushed for each volume chunks prj portion
-		std::vector<countT> letterCounts;
-		// Keep track of all of the letters used for the final prj file.
-		std::vector<countT> letterTotals;
+    unsigned numOfIndexes;
+    // Constantly flushed for each volume chunks prj portion
+    countT sequenceCount;
+    // Keep track of all of the sequences used for the final prj file.
+    countT sequenceTotals;
+    // Constantly flushed for each volume chunks prj portion
+    std::vector<countT> letterCounts;
+    // Keep track of all of the letters used for the final prj file.
+    std::vector<countT> letterTotals;
 
-		int rank;
-		SuffixArraySorter *sorter;
+    int rank;
+    SuffixArraySorter *sorter;
 
-		void formatdb(const LastdbArguments &args,
-		              const Alphabet &alph);
+    void formatdb(const LastdbArguments &args,
+                  const Alphabet &alph);
 
-		void makeVolume(const LastdbArguments& args,
-		                const Alphabet& alph);
+    void makeVolume(const LastdbArguments &args,
+                    const Alphabet &alph);
 
-		std::istream& readFasta(unsigned numOfIndexes,
-		                        const LastdbArguments& args,
-		                        const Alphabet& alph,
-		                        std::istream& in );
+    std::istream &readFasta(unsigned numOfIndexes,
+                            const LastdbArguments &args,
+                            const Alphabet &alph,
+                            std::istream &in);
 
-		void accumulateAndFlushPrj();
+    void accumulateAndFlushPrj();
 
-		void accumulateAndFlushMulti(const LastdbArguments &args);
+    void accumulateAndFlushMulti(const LastdbArguments &args);
 
-		void accumulateAndFlushSuffixArrays(int x);
+    void accumulateAndFlushSuffixArrays(int x);
 
-		void createSuffixArrays(int x);
+    void createSuffixArrays(int x);
 
-		void replaceVolumeObject();
+    void replaceVolumeObject();
 
-		void estimateBucketSize();
+    void estimateBucketSize();
 
-		static void* threadEntry(void *_args);
+    static void *threadEntry(void *_args);
 
 //public:
-		void startThread();
-		void joinThread();
+    void startThread();
 
-		DatabaseThread(int s, int count);
-		~DatabaseThread();
+    void joinThread();
+
+    DatabaseThread(int s, int count);
+
+    ~DatabaseThread();
 };
 
 void initializeSemaphores();
+
 void destroySemaphores();
 
 #endif //THREADEDLAST_DATABASETHREAD_HH

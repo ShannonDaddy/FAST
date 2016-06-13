@@ -40,38 +40,38 @@
 
 namespace cbrc {
 
-typedef unsigned char uchar;
+    typedef unsigned char uchar;
 
-class QualityPssmMaker {
- public:
-  void init(const ScoreMatrixRow *scoreMatrix,
-            int numNormalLetters,  // 4 for DNA
-            double lambda,  // scale factor for scoreMatrix
-            bool isMatchMismatchMatrix,
-            int matchScore,
-            int mismatchScore,  // score not cost!
-            int qualityOffset,  // typically 64
-            const uchar* toUnmasked);  // maps letters to unmasked letters
+    class QualityPssmMaker {
+    public:
+        void init(const ScoreMatrixRow *scoreMatrix,
+                  int numNormalLetters,  // 4 for DNA
+                  double lambda,  // scale factor for scoreMatrix
+                  bool isMatchMismatchMatrix,
+                  int matchScore,
+                  int mismatchScore,  // score not cost!
+                  int qualityOffset,  // typically 64
+                  const uchar *toUnmasked);  // maps letters to unmasked letters
 
-  void make(const uchar *sequenceBeg,
-            const uchar *sequenceEnd,
-            const uchar *qualityBeg,
-            int *pssmBeg,
-            bool isApplyMasking) const;
+        void make(const uchar *sequenceBeg,
+                  const uchar *sequenceEnd,
+                  const uchar *qualityBeg,
+                  int *pssmBeg,
+                  bool isApplyMasking) const;
 
- private:
-  static const int qualityCapacity = 128;
+    private:
+        static const int qualityCapacity = 128;
 
-  const ScoreMatrixRow *scoreMatrix;
-  int numNormalLetters;
-  double lambda;
-  bool isMatchMismatchMatrix;
-  const uchar* toUnmasked;
+        const ScoreMatrixRow *scoreMatrix;
+        int numNormalLetters;
+        double lambda;
+        bool isMatchMismatchMatrix;
+        const uchar *toUnmasked;
 
-  double qualityToProbCorrect[qualityCapacity];
-  int qualityToMatchScore[qualityCapacity];
-  double expMatrix[scoreMatrixRowSize][scoreMatrixRowSize];
-};
+        double qualityToProbCorrect[qualityCapacity];
+        int qualityToMatchScore[qualityCapacity];
+        double expMatrix[scoreMatrixRowSize][scoreMatrixRowSize];
+    };
 
 }
 

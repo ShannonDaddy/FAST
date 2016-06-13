@@ -15,27 +15,30 @@
 
 #ifndef DIAGONALTABLE_HH
 #define DIAGONALTABLE_HH
+
 #include <utility>  // pair
 #include <vector>
 
-namespace cbrc{
+namespace cbrc {
 
-struct DiagonalTable{
-  //typedef std::size_t indexT;
-  typedef unsigned indexT;
-  typedef std::pair<indexT, indexT> pairT;
+    struct DiagonalTable {
+        //typedef std::size_t indexT;
+        typedef unsigned indexT;
+        typedef std::pair<indexT, indexT> pairT;
 
-  enum { BINS = 256 };  // use a power-of-two for faster modulus (maybe)
-                        // 256 is much faster than 65536 in my tests
+        enum {
+            BINS = 256
+        };  // use a power-of-two for faster modulus (maybe)
+        // 256 is much faster than 65536 in my tests
 
-  // is this position on this diagonal already covered by an alignment?
-  bool isCovered( indexT sequentialPos, indexT randomPos );
+        // is this position on this diagonal already covered by an alignment?
+        bool isCovered(indexT sequentialPos, indexT randomPos);
 
-  // add an alignment endpoint to the table:
-  void addEndpoint( indexT sequentialPos, indexT randomPos );
+        // add an alignment endpoint to the table:
+        void addEndpoint(indexT sequentialPos, indexT randomPos);
 
-  std::vector<pairT> hits[BINS];
-};
+        std::vector<pairT> hits[BINS];
+    };
 
 }  // end namespace cbrc
 #endif  // DIAGONALTABLE_HH

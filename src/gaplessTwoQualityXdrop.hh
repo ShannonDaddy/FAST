@@ -11,52 +11,52 @@
 
 namespace cbrc {
 
-typedef unsigned char uchar;
+    typedef unsigned char uchar;
 
-class TwoQualityScoreMatrix;
+    class TwoQualityScoreMatrix;
 
-int forwardGaplessTwoQualityXdropScore(const uchar *seq1,
-                                       const uchar *qual1,
-                                       const uchar *seq2,
-                                       const uchar *qual2,
-                                       const TwoQualityScoreMatrix &m,
-                                       int maxScoreDrop);
+    int forwardGaplessTwoQualityXdropScore(const uchar *seq1,
+                                           const uchar *qual1,
+                                           const uchar *seq2,
+                                           const uchar *qual2,
+                                           const TwoQualityScoreMatrix &m,
+                                           int maxScoreDrop);
 
-int reverseGaplessTwoQualityXdropScore(const uchar *seq1,
-                                       const uchar *qual1,
-                                       const uchar *seq2,
-                                       const uchar *qual2,
-                                       const TwoQualityScoreMatrix &m,
-                                       int maxScoreDrop);
+    int reverseGaplessTwoQualityXdropScore(const uchar *seq1,
+                                           const uchar *qual1,
+                                           const uchar *seq2,
+                                           const uchar *qual2,
+                                           const TwoQualityScoreMatrix &m,
+                                           int maxScoreDrop);
 
-const uchar *forwardGaplessTwoQualityXdropEnd(const uchar *seq1,
-                                              const uchar *qual1,
-                                              const uchar *seq2,
-                                              const uchar *qual2,
-                                              const TwoQualityScoreMatrix &m,
-                                              int score);
+    const uchar *forwardGaplessTwoQualityXdropEnd(const uchar *seq1,
+                                                  const uchar *qual1,
+                                                  const uchar *seq2,
+                                                  const uchar *qual2,
+                                                  const TwoQualityScoreMatrix &m,
+                                                  int score);
 
-const uchar *reverseGaplessTwoQualityXdropEnd(const uchar *seq1,
-                                              const uchar *qual1,
-                                              const uchar *seq2,
-                                              const uchar *qual2,
-                                              const TwoQualityScoreMatrix &m,
-                                              int score);
+    const uchar *reverseGaplessTwoQualityXdropEnd(const uchar *seq1,
+                                                  const uchar *qual1,
+                                                  const uchar *seq2,
+                                                  const uchar *qual2,
+                                                  const TwoQualityScoreMatrix &m,
+                                                  int score);
 
-bool isOptimalGaplessTwoQualityXdrop(const uchar *seq1,
-                                     const uchar *seq1end,
-                                     const uchar *qual1,
-                                     const uchar *seq2,
-                                     const uchar *qual2,
-                                     const TwoQualityScoreMatrix &m,
-                                     int maxScoreDrop);
+    bool isOptimalGaplessTwoQualityXdrop(const uchar *seq1,
+                                         const uchar *seq1end,
+                                         const uchar *qual1,
+                                         const uchar *seq2,
+                                         const uchar *qual2,
+                                         const TwoQualityScoreMatrix &m,
+                                         int maxScoreDrop);
 
-int gaplessTwoQualityAlignmentScore(const uchar *seq1,
-                                    const uchar *seq1end,
-                                    const uchar *qual1,
-                                    const uchar *seq2,
-                                    const uchar *qual2,
-                                    const TwoQualityScoreMatrix &m);
+    int gaplessTwoQualityAlignmentScore(const uchar *seq1,
+                                        const uchar *seq1end,
+                                        const uchar *qual1,
+                                        const uchar *seq2,
+                                        const uchar *qual2,
+                                        const TwoQualityScoreMatrix &m);
 
 }
 

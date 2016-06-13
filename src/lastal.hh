@@ -65,186 +65,212 @@ typedef unsigned long long countT;
 
 namespace {
 
-	LastalArguments args;
-	LambdaCalculator lambdaCalculator;
-	int minScoreGapless;
-	int isCaseSensitiveSeeds = -1;  // initialize it to an "error" value
-	unsigned numOfIndexes = 1;  // assume this value, if unspecified
-	sequenceFormat::Enum referenceFormat = sequenceFormat::fasta;
-	SubsetSuffixArray *suffixArrays;
-	MultiSequence text;
-	indexT minSeedLimit;
+    LastalArguments args;
+    LambdaCalculator lambdaCalculator;
+    int minScoreGapless;
+    int isCaseSensitiveSeeds = -1;  // initialize it to an "error" value
+    unsigned numOfIndexes = 1;  // assume this value, if unspecified
+    sequenceFormat::Enum referenceFormat = sequenceFormat::fasta;
+    SubsetSuffixArray *suffixArrays;
+    MultiSequence text;
+    indexT minSeedLimit;
 
-	LastEvaluer evaluer;
+    LastEvaluer evaluer;
 
-	Alphabet alph;
-	Alphabet queryAlph;  // for translated alignment
-	GeneticCode geneticCode;
+    Alphabet alph;
+    Alphabet queryAlph;  // for translated alignment
+    GeneticCode geneticCode;
 
-	GeneralizedAffineGapCosts gapCosts;
-	ScoreMatrix scoreMatrix;
-	OneQualityScoreMatrix oneQualityScoreMatrix;
-	OneQualityScoreMatrix oneQualityScoreMatrixMasked;
-	OneQualityExpMatrix oneQualityExpMatrix;
-	QualityPssmMaker qualityPssmMaker;
-	TwoQualityScoreMatrix twoQualityScoreMatrix;
-	TwoQualityScoreMatrix twoQualityScoreMatrixMasked;
+    GeneralizedAffineGapCosts gapCosts;
+    ScoreMatrix scoreMatrix;
+    OneQualityScoreMatrix oneQualityScoreMatrix;
+    OneQualityScoreMatrix oneQualityScoreMatrixMasked;
+    OneQualityExpMatrix oneQualityExpMatrix;
+    QualityPssmMaker qualityPssmMaker;
+    TwoQualityScoreMatrix twoQualityScoreMatrix;
+    TwoQualityScoreMatrix twoQualityScoreMatrixMasked;
 }
 
-namespace Phase{ 
+namespace Phase {
 
-	enum Enum{ gapless, gapped, final };
+    enum Enum {
+        gapless, gapped, final
+    };
 }
 
-struct threadData{
+struct threadData {
 
-	GappedXdropAligner gappedXdropAligner;
-	Centroid *centroid;
+    GappedXdropAligner gappedXdropAligner;
+    Centroid *centroid;
 
-	MultiSequence *query;
-  
-	std::queue<MultiSequence*> queryQueue;
-	std::vector< std::vector<countT> > matchCounts;  // used if outputType == 0
+    MultiSequence *query;
 
-	std::list<std::string> *outputVector;
-	std::queue< std::list<std::string>* > outputVectorQueue;
+    std::queue<MultiSequence *> queryQueue;
+    std::vector<std::vector<countT> > matchCounts;  // used if outputType == 0
 
-	int identifier;
-	int round;
-	bool done;
+    std::list<std::string> *outputVector;
+    std::queue<std::list<std::string> *> outputVectorQueue;
 
-	SEM_T readSema;
-	SEM_T writeSema;
+    int identifier;
+    int round;
+    bool done;
 
-	// Find query matches to the suffix array, and do gapless extensions
-	void alignGapless( SegmentPairPot& gaplessAlns, char strand );
-	// Do gapped extensions of the gapless alignments
-	void alignGapped( AlignmentPot& gappedAlns, SegmentPairPot& gaplessAlns, Phase::Enum phase );
-	// Print the gapped alignments, after optionally calculating match
-	// probabilities and re-aligning using the gamma-centroid algorithm
-	void alignFinish( const AlignmentPot& gappedAlns, char strand );
-	void makeQualityPssm( bool isApplyMasking );
-	// Scan one batch of query sequences against one database volume
-	void scan( char strand );
-	// Scan one batch of query sequences against one database volume,
-	// after optionally translating the query
-	void translateAndScan( char strand );
-	void reverseComplementPssm();
-	void reverseComplementQuery();
-	// Scan one batch of query sequences against all database volumes
-	void scanAllVolumes();
-	void prepareThreadData(int identifier );
-	void countMatches( char strand );
-	// Write match counts for each query sequence
-	void writeCounts(std::ostream& out);
+    SEM_T readSema;
+    SEM_T writeSema;
+
+    // Find query matches to the suffix array, and do gapless extensions
+    void alignGapless(SegmentPairPot &gaplessAlns, char strand);
+
+    // Do gapped extensions of the gapless alignments
+    void alignGapped(AlignmentPot &gappedAlns, SegmentPairPot &gaplessAlns, Phase::Enum phase);
+
+    // Print the gapped alignments, after optionally calculating match
+    // probabilities and re-aligning using the gamma-centroid algorithm
+    void alignFinish(const AlignmentPot &gappedAlns, char strand);
+
+    void makeQualityPssm(bool isApplyMasking);
+
+    // Scan one batch of query sequences against one database volume
+    void scan(char strand);
+
+    // Scan one batch of query sequences against one database volume,
+    // after optionally translating the query
+    void translateAndScan(char strand);
+
+    void reverseComplementPssm();
+
+    void reverseComplementQuery();
+
+    // Scan one batch of query sequences against all database volumes
+    void scanAllVolumes();
+
+    void prepareThreadData(int identifier);
+
+    void countMatches(char strand);
+
+    // Write match counts for each query sequence
+    void writeCounts(std::ostream &out);
 };
 
-struct Dispatcher{
+struct Dispatcher {
 
-	const uchar* reference;  // the reference sequence
-	const uchar* query;  // the query sequence
-	const uchar* i;  // the reference quality data
-	const uchar* j;  // the query quality data
-	const ScoreMatrixRow* p;  // the query PSSM
-	const ScoreMatrixRow* m;  // the score matrix
-	const TwoQualityScoreMatrix& t;
-	int d;  // the maximum score drop
-	int z;
-	Alphabet aa;
+    const uchar *reference;  // the reference sequence
+    const uchar *query;  // the query sequence
+    const uchar *i;  // the reference quality data
+    const uchar *j;  // the query quality data
+    const ScoreMatrixRow *p;  // the query PSSM
+    const ScoreMatrixRow *m;  // the score matrix
+    const TwoQualityScoreMatrix &t;
+    int d;  // the maximum score drop
+    int z;
+    Alphabet aa;
 
 
-	Dispatcher( Phase::Enum e, const MultiSequence &text, MultiSequence *query,
-	            const ScoreMatrix &scoreMatrix, const TwoQualityScoreMatrix &twoQualityScoreMatrix,
-	            const TwoQualityScoreMatrix &twoQualityScoreMatrixMasked,
-	            sequenceFormat::Enum referenceFormat, const Alphabet &alph) :
+    Dispatcher(Phase::Enum e, const MultiSequence &text, MultiSequence *query,
+               const ScoreMatrix &scoreMatrix, const TwoQualityScoreMatrix &twoQualityScoreMatrix,
+               const TwoQualityScoreMatrix &twoQualityScoreMatrixMasked,
+               sequenceFormat::Enum referenceFormat, const Alphabet &alph) :
 
-		reference  ( text.seqReader() ),
-		query  ( query->seqReader() ),
-		i  ( text.qualityReader() ),
-		j  ( query->qualityReader() ),
-		p  ( query->pssmReader() ),
-		m  ( (e < args.maskLowercase) ?
-		     scoreMatrix.caseSensitive : scoreMatrix.caseInsensitive ),
-		t  ( (e < args.maskLowercase) ?
-		     twoQualityScoreMatrixMasked : twoQualityScoreMatrix ),
-		d  ( (e == Phase::gapless) ? args.maxDropGapless :
-		     (e == Phase::gapped ) ? args.maxDropGapped : args.maxDropFinal ),
-		z  ( (args.inputFormat == sequenceFormat::fasta) ? 0 :
-		     (referenceFormat  == sequenceFormat::fasta) ? 1 : 2 ),
-		aa ( alph ){}
+            reference(text.seqReader()),
+            query(query->seqReader()),
+            i(text.qualityReader()),
+            j(query->qualityReader()),
+            p(query->pssmReader()),
+            m((e < args.maskLowercase) ?
+              scoreMatrix.caseSensitive : scoreMatrix.caseInsensitive),
+            t((e < args.maskLowercase) ?
+              twoQualityScoreMatrixMasked : twoQualityScoreMatrix),
+            d((e == Phase::gapless) ? args.maxDropGapless :
+              (e == Phase::gapped) ? args.maxDropGapped : args.maxDropFinal),
+            z((args.inputFormat == sequenceFormat::fasta) ? 0 :
+              (referenceFormat == sequenceFormat::fasta) ? 1 : 2),
+            aa(alph) { }
 
-	// Shrink the SegmentPair to its longest run of identical matches.
-	// This trims off possibly unreliable parts of the gapless alignment.
-	// It may not be the best strategy for protein alignment with subset
-	// seeds: there could be few or no identical matches...
-	void shrinkToLongestIdenticalRun(SegmentPair &sp) {
-		sp.maxIdenticalRun(reference, query, aa.canonical);
-		sp.score = gaplessScore(sp.beg1(), sp.end1(), sp.beg2());
-	}
+    // Shrink the SegmentPair to its longest run of identical matches.
+    // This trims off possibly unreliable parts of the gapless alignment.
+    // It may not be the best strategy for protein alignment with subset
+    // seeds: there could be few or no identical matches...
+    void shrinkToLongestIdenticalRun(SegmentPair &sp) {
+        sp.maxIdenticalRun(reference, query, aa.canonical);
+        sp.score = gaplessScore(sp.beg1(), sp.end1(), sp.beg2());
+    }
 
-	int forwardGaplessScore( indexT x, indexT y ) const{
-		if( z==0 ) return forwardGaplessXdropScore( reference+x, query+y, m, d );
-		if( z==1 ) return forwardGaplessPssmXdropScore( reference+x, p+y, d );
-		return forwardGaplessTwoQualityXdropScore( reference+x, i+x, query+y, j+y, t, d );
-	}
+    int forwardGaplessScore(indexT x, indexT y) const {
+        if (z == 0) return forwardGaplessXdropScore(reference + x, query + y, m, d);
+        if (z == 1) return forwardGaplessPssmXdropScore(reference + x, p + y, d);
+        return forwardGaplessTwoQualityXdropScore(reference + x, i + x, query + y, j + y, t, d);
+    }
 
-	int reverseGaplessScore( indexT x, indexT y ) const{
-		if( z==0 ) return reverseGaplessXdropScore( reference+x, query+y, m, d );
-		if( z==1 ) return reverseGaplessPssmXdropScore( reference+x, p+y, d );
-		return reverseGaplessTwoQualityXdropScore( reference+x, i+x, query+y, j+y, t, d );
-	}
+    int reverseGaplessScore(indexT x, indexT y) const {
+        if (z == 0) return reverseGaplessXdropScore(reference + x, query + y, m, d);
+        if (z == 1) return reverseGaplessPssmXdropScore(reference + x, p + y, d);
+        return reverseGaplessTwoQualityXdropScore(reference + x, i + x, query + y, j + y, t, d);
+    }
 
-	indexT forwardGaplessEnd( indexT x, indexT y, int s ) const{
-		if( z==0 ) return forwardGaplessXdropEnd( reference+x, query+y, m, s ) - reference;
-		if( z==1 ) return forwardGaplessPssmXdropEnd( reference+x, p+y, s ) - reference;
-		return forwardGaplessTwoQualityXdropEnd( reference+x, i+x, query+y, j+y, t, s ) - reference;
-	}
+    indexT forwardGaplessEnd(indexT x, indexT y, int s) const {
+        if (z == 0) return forwardGaplessXdropEnd(reference + x, query + y, m, s) - reference;
+        if (z == 1) return forwardGaplessPssmXdropEnd(reference + x, p + y, s) - reference;
+        return forwardGaplessTwoQualityXdropEnd(reference + x, i + x, query + y, j + y, t, s) - reference;
+    }
 
-	indexT reverseGaplessEnd( indexT x, indexT y, int s ) const{
-		if( z==0 ) return reverseGaplessXdropEnd( reference+x, query+y, m, s ) - reference;
-		if( z==1 ) return reverseGaplessPssmXdropEnd( reference+x, p+y, s ) - reference;
-		return reverseGaplessTwoQualityXdropEnd( reference+x, i+x, query+y, j+y, t, s ) - reference;
-	}
+    indexT reverseGaplessEnd(indexT x, indexT y, int s) const {
+        if (z == 0) return reverseGaplessXdropEnd(reference + x, query + y, m, s) - reference;
+        if (z == 1) return reverseGaplessPssmXdropEnd(reference + x, p + y, s) - reference;
+        return reverseGaplessTwoQualityXdropEnd(reference + x, i + x, query + y, j + y, t, s) - reference;
+    }
 
-	bool isOptimalGapless( indexT x, indexT e, indexT y ) const{
-		if( z==0 ) return isOptimalGaplessXdrop( reference+x, reference+e, query+y, m, d );
-		if( z==1 ) return isOptimalGaplessPssmXdrop( reference+x, reference+e, p+y, d );
-		return isOptimalGaplessTwoQualityXdrop( reference+x, reference+e, i+x, query+y, j+y, t, d );
-	}
+    bool isOptimalGapless(indexT x, indexT e, indexT y) const {
+        if (z == 0) return isOptimalGaplessXdrop(reference + x, reference + e, query + y, m, d);
+        if (z == 1) return isOptimalGaplessPssmXdrop(reference + x, reference + e, p + y, d);
+        return isOptimalGaplessTwoQualityXdrop(reference + x, reference + e, i + x, query + y, j + y, t, d);
+    }
 
-	int gaplessScore( indexT x, indexT e, indexT y ) const{
-		if( z==0 ) return gaplessAlignmentScore( reference+x, reference+e, query+y, m );
-		if( z==1 ) return gaplessPssmAlignmentScore( reference+x, reference+e, p+y );
-		return gaplessTwoQualityAlignmentScore( reference+x, reference+e, i+x, query+y, j+y, t );
-	}
+    int gaplessScore(indexT x, indexT e, indexT y) const {
+        if (z == 0) return gaplessAlignmentScore(reference + x, reference + e, query + y, m);
+        if (z == 1) return gaplessPssmAlignmentScore(reference + x, reference + e, p + y);
+        return gaplessTwoQualityAlignmentScore(reference + x, reference + e, i + x, query + y, j + y, t);
+    }
 };
 
-void readOuterPrj( const std::string& fileName, unsigned& volumes,
-                   countT& refSequences, countT& refLetters );
+void readOuterPrj(const std::string &fileName, unsigned &volumes,
+                  countT &refSequences, countT &refLetters);
+
 // Read a per-volume .prj file, with info about a database volume
-void readInnerPrj( const std::string& fileName, indexT& seqCount, indexT& seqLen );
+void readInnerPrj(const std::string &fileName, indexT &seqCount, indexT &seqLen);
+
 // Read one database volume
-void readVolume( unsigned volumeNumber );
-void readIndex( const std::string& baseName, indexT seqCount );
-std::istream& appendFromFasta( std::istream& in, MultiSequence *query );
+void readVolume(unsigned volumeNumber);
+
+void readIndex(const std::string &baseName, indexT seqCount);
+
+std::istream &appendFromFasta(std::istream &in, MultiSequence *query);
 
 void *writerFunction(void *arguments);
-void readerFunction( std::istream& in );
+
+void readerFunction(std::istream &in);
+
 void *threadFunction(void *__threadData);
-void writeHeader( std::ostream& out );
+
+void writeHeader(std::ostream &out);
+
 void initializeThreads();
+
 void initializeSemaphores();
+
 void initializeEvalueCalulator(const std::string dbPrjFile, ScoreMatrix *scoreMatrix,
                                std::string dbfilePrj);
 
 void createStructures(std::string &matrixFile);
+
 // Set up a scoring matrix, based on the user options
-void makeScoreMatrix( const std::string& matrixFile) ;
+void makeScoreMatrix(const std::string &matrixFile);
+
 void makeQualityScorers();
+
 // Calculate statistical parameters for the alignment scoring scheme
 // Meaningless for PSSMs, unless they have the same scale as the score matrix
 void calculateScoreStatistics();
 
-void lastal( int argc, char** argv );
+void lastal(int argc, char **argv);
 
 #endif

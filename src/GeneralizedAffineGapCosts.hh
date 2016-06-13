@@ -19,32 +19,35 @@
 #ifndef GENERALIZEDAFFINEGAPCOSTS_HH
 #define GENERALIZEDAFFINEGAPCOSTS_HH
 
-namespace cbrc{
+namespace cbrc {
 
-struct GeneralizedAffineGapCosts{
-  int delExist;
-  int delExtend;
-  int insExist;
-  int insExtend;
-  int pairExtend;
+    struct GeneralizedAffineGapCosts {
+        int delExist;
+        int delExtend;
+        int insExist;
+        int insExtend;
+        int pairExtend;
 
-  void assign( int a, int b, int A, int B, int c )
-  { delExist = a; delExtend = b; insExist = A; insExtend = B; pairExtend = c; }
+        void assign(int a, int b, int A, int B, int c) {
+            delExist = a;
+            delExtend = b;
+            insExist = A;
+            insExtend = B;
+            pairExtend = c;
+        }
 
-  bool isSymmetric() const
-  { return insExist == delExist && insExtend == delExtend; }
+        bool isSymmetric() const { return insExist == delExist && insExtend == delExtend; }
 
-  // Will standard affine gaps always suffice for maximal alignment scores?
-  bool isAffine() const
-  { return isSymmetric() && pairExtend >= delExist + 2 * delExtend; }
+        // Will standard affine gaps always suffice for maximal alignment scores?
+        bool isAffine() const { return isSymmetric() && pairExtend >= delExist + 2 * delExtend; }
 
-  // Return the score of a gap with the given sizes in a pair of
-  // sequences, considering that it might be either one "generalized"
-  // gap or two neighbouring "affine" gaps.
-  // Here, gapSize2=0 would be a deletion, and gapSize1=0 would be an
-  // insertion.
-  int cost( int gapSize1, int gapSize2 ) const;
-};
+        // Return the score of a gap with the given sizes in a pair of
+        // sequences, considering that it might be either one "generalized"
+        // gap or two neighbouring "affine" gaps.
+        // Here, gapSize2=0 would be a deletion, and gapSize1=0 would be an
+        // insertion.
+        int cost(int gapSize1, int gapSize2) const;
+    };
 
 }
 

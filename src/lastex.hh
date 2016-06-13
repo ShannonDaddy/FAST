@@ -1,5 +1,6 @@
 #ifndef __LASTEX__
 #define __LASTEX__
+
 #include "LastexArguments.hh"
 #include "ScoreMatrix.hh"
 #include "Alphabet.hh"
@@ -8,7 +9,7 @@
 #include "utils.hh"
 
 
-double evalueForSequences( int score, double seqLen1, double seqLen2 );
+double evalueForSequences(int score, double seqLen1, double seqLen2);
 
 void initializeEvalueCalculator(const cbrc::LastexArguments &args,
                                 const cbrc::ScoreMatrix &socreMatrix,
@@ -17,9 +18,9 @@ void initializeEvalueCalculator(const cbrc::LastexArguments &args,
 
 void makeEvaluer();
 
-void __makeScoreMatrix( const std::string& matrixFile );
+void __makeScoreMatrix(const std::string &matrixFile);
 
-SequenceStatistics readStats( const std::string& fileName );
+SequenceStatistics readStats(const std::string &fileName);
 
 double getLambda();
 

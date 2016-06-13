@@ -36,74 +36,75 @@
 
 namespace cbrc {
 
-typedef unsigned char uchar;
+    typedef unsigned char uchar;
 
 // The "indexer" reduces memory usage.  Which hopefully makes things
 // more cache-friendly.
-class TwoQualityMatrixIndexer {
- public:
-  static const int qualityCapacity = 128;
-  static const int numNormalLetters = 4;
-  static const int numQualityLetters = numNormalLetters * 2;  // normal+masked
-  static const int numSymbols = numQualityLetters * qualityCapacity;
-  static const int minQuality = 32;
+    class TwoQualityMatrixIndexer {
+    public:
+        static const int qualityCapacity = 128;
+        static const int numNormalLetters = 4;
+        static const int numQualityLetters = numNormalLetters * 2;  // normal+masked
+        static const int numSymbols = numQualityLetters * qualityCapacity;
+        static const int minQuality = 32;
 
-  void init(const uchar *toUnmasked);
+        void init(const uchar *toUnmasked);
 
-  int operator()(int letter1, int letter2, int quality1, int quality2) const {
-    int i = indexMap[subindex(letter1, quality1)];
-    int j = indexMap[subindex(letter2, quality2)];
-    return i * numSymbols + j;
-  }
+        int operator()(int letter1, int letter2, int quality1, int quality2) const {
+            int i = indexMap[subindex(letter1, quality1)];
+            int j = indexMap[subindex(letter2, quality2)];
+            return i * numSymbols + j;
+        }
 
- private:
-  std::vector<int> indexMap;
+    private:
+        std::vector<int> indexMap;
 
-  static int subindex(int letter, int quality)
-  { return quality * scoreMatrixRowSize + letter; }
-};
+        static int subindex(int letter, int quality) { return quality * scoreMatrixRowSize + letter; }
+    };
 
-class TwoQualityScoreMatrix {
-  friend class TwoQualityExpMatrix;
+    class TwoQualityScoreMatrix {
+        friend class TwoQualityExpMatrix;
 
- public:
-  void init(const ScoreMatrixRow *scoreMatrix,
-            double lambda,  // scale factor for scoreMatrix
-            const double *letterProbs1,  // scoreMatrix probs for 1st sequence
-            const double *letterProbs2,  // scoreMatrix probs for 2nd sequence
-            bool isPhred1,
-            int qualityOffset1,
-            bool isPhred2,
-            int qualityOffset2,
-            const uchar *toUnmasked,  // maps letters to unmasked letters
-            bool isApplyMasking);
+    public:
+        void init(const ScoreMatrixRow *scoreMatrix,
+                  double lambda,  // scale factor for scoreMatrix
+                  const double *letterProbs1,  // scoreMatrix probs for 1st sequence
+                  const double *letterProbs2,  // scoreMatrix probs for 2nd sequence
+                  bool isPhred1,
+                  int qualityOffset1,
+                  bool isPhred2,
+                  int qualityOffset2,
+                  const uchar *toUnmasked,  // maps letters to unmasked letters
+                  bool isApplyMasking);
 
-  // Tests whether init has been called:
-  operator const void *() const { return data.empty() ? 0 : this; }
+        // Tests whether init has been called:
+        operator const void *() const { return data.empty() ? 0 : this; }
 
-  int operator()(int letter1, int letter2, int quality1, int quality2) const
-  { return data[indexer(letter1, letter2, quality1, quality2)]; }
+        int operator()(int letter1, int letter2, int quality1, int quality2) const {
+            return data[indexer(letter1, letter2, quality1, quality2)];
+        }
 
- private:
-  std::vector<int> data;
-  TwoQualityMatrixIndexer indexer;
-};
+    private:
+        std::vector<int> data;
+        TwoQualityMatrixIndexer indexer;
+    };
 
 // This class stores: exp(score(x, y, i, j) / temperature)
-class TwoQualityExpMatrix {
- public:
-  void init(const TwoQualityScoreMatrix &m, double temperature);
+    class TwoQualityExpMatrix {
+    public:
+        void init(const TwoQualityScoreMatrix &m, double temperature);
 
-  // Tests whether init has been called:
-  operator const void *() const { return data.empty() ? 0 : this; }
+        // Tests whether init has been called:
+        operator const void *() const { return data.empty() ? 0 : this; }
 
-  double operator()(int letter1, int letter2, int quality1, int quality2) const
-  { return data[indexer(letter1, letter2, quality1, quality2)]; }
+        double operator()(int letter1, int letter2, int quality1, int quality2) const {
+            return data[indexer(letter1, letter2, quality1, quality2)];
+        }
 
- private:
-  std::vector<double> data;
-  TwoQualityMatrixIndexer indexer;
-};
+    private:
+        std::vector<double> data;
+        TwoQualityMatrixIndexer indexer;
+    };
 
 }
 

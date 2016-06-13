@@ -18,40 +18,40 @@
 using namespace cbrc;
 
 void readPrjFile(
-		const std::string &dbname,
-		const LastdbArguments &args,
-		const Alphabet &alph,
-		countT &sequenceCount,
-		std::vector<countT> &letterTotals,
-		unsigned &volumeNumber);
+        const std::string &dbname,
+        const LastdbArguments &args,
+        const Alphabet &alph,
+        countT &sequenceCount,
+        std::vector<countT> &letterTotals,
+        unsigned &volumeNumber);
 
 void generateDifference(const std::string &filename,
                         const std::string &dbname);
 
-void makeAlphabet( Alphabet& alph,
-                   const LastdbArguments& args );
+void makeAlphabet(Alphabet &alph,
+                  const LastdbArguments &args);
 
-bool isDubiousDna( const Alphabet& alph,
-                   const MultiSequence& multi );
+bool isDubiousDna(const Alphabet &alph,
+                  const MultiSequence &multi);
 
-unsigned makeSubsetSeeds( SubsetSuffixArray indexes[],
-                          const LastdbArguments& args,
-                          const Alphabet& alph );
+unsigned makeSubsetSeeds(SubsetSuffixArray indexes[],
+                         const LastdbArguments &args,
+                         const Alphabet &alph);
 
-void writePrjFile( const std::string& fileName,
-                   const LastdbArguments& args,
-                   const Alphabet& alph,
-                   countT sequenceCount,
-                   const std::vector<countT>& letterCounts,
-                   unsigned volumes,
-                   unsigned numOfIndexes );
+void writePrjFile(const std::string &fileName,
+                  const LastdbArguments &args,
+                  const Alphabet &alph,
+                  countT sequenceCount,
+                  const std::vector<countT> &letterCounts,
+                  unsigned volumes,
+                  unsigned numOfIndexes);
 
 void writeOuterPrj(unsigned numOfIndexes);
 
 void renameFiles();
 
-indexT maxLettersPerVolume( const LastdbArguments& args,
-                            unsigned numOfIndexes );
+indexT maxLettersPerVolume(const LastdbArguments &args,
+                           unsigned numOfIndexes);
 
 void createThreads();
 

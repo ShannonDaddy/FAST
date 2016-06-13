@@ -8,18 +8,18 @@
 #include <pthread.h>
 
 class DatabaseWriter {
-		private:
-		pthread_t thread;
+private:
+    pthread_t thread;
 
-		static void* threadEntry(void *args);
+    static void *threadEntry(void *args);
 
-		void threadFunction();
+    void threadFunction();
 
-		void startThread();
+    void startThread();
 
-		void joinThread();
+    void joinThread();
 
-		DatabaseWriter();
+    DatabaseWriter();
 };
 
 

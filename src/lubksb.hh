@@ -3,6 +3,6 @@
 #ifndef __LUBKSB_
 #define __LUBKSB_
 
-void lubksb(double **a,int n,int *indx,double b[]);
+void lubksb(double **a, int n, int *indx, double b[]);
 
 #endif

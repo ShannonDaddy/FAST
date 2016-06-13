@@ -14,39 +14,41 @@
 
 #include <vector>
 
-namespace cbrc{
+namespace cbrc {
 
-class LambdaCalculator{
-  enum { MAT = 64 };
+    class LambdaCalculator {
+        enum {
+            MAT = 64
+        };
 
- public:
-  LambdaCalculator() { setBad(); }
+    public:
+        LambdaCalculator() { setBad(); }
 
-  //void calculate( int matrix[MAT][MAT], int alphSize );
-  void calculate( int **matrix, int alphSize );
+        //void calculate( int matrix[MAT][MAT], int alphSize );
+        void calculate(int **matrix, int alphSize);
 
-  // Put us in the bad/undefined state.
-  void setBad();
+        // Put us in the bad/undefined state.
+        void setBad();
 
-  // Are we in the bad/undefined state?
-  bool isBad() const { return (lambda_ < 0); }
+        // Are we in the bad/undefined state?
+        bool isBad() const { return (lambda_ < 0); }
 
-  // The scale factor.  In the bad/undefined state, it is negative.
-  double lambda() const { return lambda_; }
+        // The scale factor.  In the bad/undefined state, it is negative.
+        double lambda() const { return lambda_; }
 
-  // The probabilities of letters corresponding to matrix rows (1st index).
-  // In the bad/undefined state, it is an empty vector.
-  const std::vector<double>& letterProbs1() const { return letterProbs1_; }
+        // The probabilities of letters corresponding to matrix rows (1st index).
+        // In the bad/undefined state, it is an empty vector.
+        const std::vector<double> &letterProbs1() const { return letterProbs1_; }
 
-  // The probabilities of letters corresponding to matrix columns (2nd index).
-  // In the bad/undefined state, it is an empty vector.
-  const std::vector<double>& letterProbs2() const { return letterProbs2_; }
+        // The probabilities of letters corresponding to matrix columns (2nd index).
+        // In the bad/undefined state, it is an empty vector.
+        const std::vector<double> &letterProbs2() const { return letterProbs2_; }
 
- private:
-  double lambda_;
-  std::vector<double> letterProbs1_;
-  std::vector<double> letterProbs2_;
-};
+    private:
+        double lambda_;
+        std::vector<double> letterProbs1_;
+        std::vector<double> letterProbs2_;
+    };
 
 }  // end namespace
 

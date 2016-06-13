@@ -12,60 +12,60 @@
 
 #define ERR(x) throw std::runtime_error(x)
 
-static void badopt( char opt, const char* arg ){
-  ERR( std::string("bad option value: -") + opt + ' ' + arg );
+static void badopt(char opt, const char *arg) {
+    ERR(std::string("bad option value: -") + opt + ' ' + arg);
 }
 
-namespace cbrc{
+namespace cbrc {
 
-LastalArguments::LastalArguments() :
-  outFile("-"),
-  outputFormat(2), 
-  outputType(3),
-  strand(-1),  // depends on the alphabet
-  globality(0),
-  maskLowercase(-1),  // depends on the lowercase option used with lastdb
-  minScoreGapped(-1),  // depends on the alphabet
-  minScoreGapless(-1),  // depends on minScoreGapped and the outputType
-  matchScore(-1),  // depends on the alphabet
-  mismatchCost(-1),  // depends on the alphabet
-  gapExistCost(-1),  // depends on the alphabet
-  gapExtendCost(-1),  // depends on the alphabet
-  insExistCost(-1),  // depends on gapExistCost
-  insExtendCost(-1),  // depends on gapExtendCost
-  gapPairCost(100000),  // I want it to be infinity, but avoid overflow
-  frameshiftCost(-1),  // this means: ordinary, non-translated alignment
-  matrixFile(""),
-  maxDropGapped(-1),  // depends on minScoreGapped & maxDropGapless
-  maxDropGapless(-1),  // depends on the score matrix
-  maxDropFinal(-1),  // depends on maxDropGapped
-  inputFormat(sequenceFormat::fasta),
-  minHitDepth(0),  // depends on the outputType
-  oneHitMultiplicity(10),
-  maxGaplessAlignmentsPerQueryPosition(0),  // depends on oneHitMultiplicity
-  cullingLimitForGaplessAlignments(0),
-  queryStep(1),
-  batchSize(0),  // depends on the outputType, and voluming
-  maxRepeatDistance(1000),  // sufficiently conservative?
-  temperature(-1),  // depends on the score matrix
-  gamma(1),
-  geneticCodeFile(""),
-  verbosity(0),
-  version(0),
-  scoreCutoff(20),
-  evalueCutoff(1.0e-6),
-  threadNum(1),
-  outputdir("/tmp"),
-	topHits(10),
-	inputSize(10000),
-	outputSize(5000000){}
-	// This should translate from anywhere between 300mb-1gb of memory. That's trivial in the grand
-	// scheme of things. A flag to lower it will be available but this makes things significantly
-	// faster on the disk
+    LastalArguments::LastalArguments() :
+            outFile("-"),
+            outputFormat(2),
+            outputType(3),
+            strand(-1),  // depends on the alphabet
+            globality(0),
+            maskLowercase(-1),  // depends on the lowercase option used with lastdb
+            minScoreGapped(-1),  // depends on the alphabet
+            minScoreGapless(-1),  // depends on minScoreGapped and the outputType
+            matchScore(-1),  // depends on the alphabet
+            mismatchCost(-1),  // depends on the alphabet
+            gapExistCost(-1),  // depends on the alphabet
+            gapExtendCost(-1),  // depends on the alphabet
+            insExistCost(-1),  // depends on gapExistCost
+            insExtendCost(-1),  // depends on gapExtendCost
+            gapPairCost(100000),  // I want it to be infinity, but avoid overflow
+            frameshiftCost(-1),  // this means: ordinary, non-translated alignment
+            matrixFile(""),
+            maxDropGapped(-1),  // depends on minScoreGapped & maxDropGapless
+            maxDropGapless(-1),  // depends on the score matrix
+            maxDropFinal(-1),  // depends on maxDropGapped
+            inputFormat(sequenceFormat::fasta),
+            minHitDepth(0),  // depends on the outputType
+            oneHitMultiplicity(10),
+            maxGaplessAlignmentsPerQueryPosition(0),  // depends on oneHitMultiplicity
+            cullingLimitForGaplessAlignments(0),
+            queryStep(1),
+            batchSize(0),  // depends on the outputType, and voluming
+            maxRepeatDistance(1000),  // sufficiently conservative?
+            temperature(-1),  // depends on the score matrix
+            gamma(1),
+            geneticCodeFile(""),
+            verbosity(0),
+            version(0),
+            scoreCutoff(20),
+            evalueCutoff(1.0e-6),
+            threadNum(1),
+            outputdir("/tmp"),
+            topHits(10),
+            inputSize(10000),
+            outputSize(5000000) { }
+    // This should translate from anywhere between 300mb-1gb of memory. That's trivial in the grand
+    // scheme of things. A flag to lower it will be available but this makes things significantly
+    // faster on the disk
 
-void LastalArguments::fromArgs( int argc, char** argv, bool optionsOnly ){
+    void LastalArguments::fromArgs(int argc, char **argv, bool optionsOnly) {
 
-  std::string usage = "\
+        std::string usage = "\
 Find local sequence alignments.\n\
 \n\
 Usage Examples:\n\
@@ -73,7 +73,7 @@ Protein - Protein (blastp): fastal [options] -o outputFile amino-acid-fastdb \
 amino-acid-fasta-sequence-file(s)\n\
 DNA - DNA         (blastn): fastal [options] -o outputFile DNA-fastdb DNA-fasta-sequence-file(s)\n\
 Suggested Usage           : fastal -P number_of_cores -o outputFile fastdb fasta-sequence-file(s)";
-  std::string help = usage + "\n\
+        std::string help = usage + "\n\
 \n\
 FAST Functionality:\n\
 -V: Version information\n\
@@ -107,439 +107,440 @@ Cosmetic options (default settings):\n\
 -h: show all options and their default settings\n\
 -v: be verbose: write messages about what fastal is doing\n\
 -f: output format: 0=tabular, 1=maf 2=BLAST-like ("
-    + stringify(outputFormat) + ")\n\
+                           + stringify(outputFormat) + ")\n\
 \n\
 Miscellaneous options (default settings):\n\
 -s: strand: 0=reverse, 1=forward, 2=both (2 for DNA, 1 for protein)\n\
 -T: type of alignment: 0=local, 1=overlap ("
-    + stringify(globality) + ")\n\
+                           + stringify(globality) + ")\n\
 -m: maximum initial matches per query position ("
-    + stringify(oneHitMultiplicity) + ")\n\
+                           + stringify(oneHitMultiplicity) + ")\n\
 -l: length threshold for initial matches (1 if -j0, else infinity)\n\
 -n: maximum gapless alignments per query position (infinity if m=0, else m)\n\
 -k: step-size along the query sequence ("
-    + stringify(queryStep) + ")\n\
+                           + stringify(queryStep) + ")\n\
 -i: query batch size (8 KiB, unless there are multiple fastdb volumes)\n\
 -u: mask lowercase during extensions: 0=never, 1=gapless,\n\
     2=gapless+gapped but not final, 3=always (2 if fastdb -c and Q<5, else 0)\n\
 -w: supress repeats inside exact matches, offset by this distance or less ("
-    + stringify(maxRepeatDistance) + ")\n\
+                           + stringify(maxRepeatDistance) + ")\n\
 -G: genetic code file\n\
 -t: 'temperature' for calculating probabilities (1/lambda)\n\
 -g: 'gamma' parameter for gamma-centroid and LAMA ("
-    + stringify(gamma) + ")\n\
+                           + stringify(gamma) + ")\n\
 -j: output type: 0=match counts, 1=gapless, 2=redundant gapped, 3=gapped,\n\
                  4=column ambiguity estimates, 5=gamma-centroid, 6=LAMA ("
-    + stringify(outputType) + ")\n\
+                           + stringify(outputType) + ")\n\
 -Q: input format: 0=fasta, 1=fastq-sanger, 2=fastq-solexa, 3=fastq-illumina,\n\
                   4=prb, 5=PSSM ("
-    + stringify(inputFormat) + ")\n\
+                           + stringify(inputFormat) + ")\n\
 \n\
 Report bugs to:  github.com/hallamlab/FAST/issues\n\
 FAST home page: github.com/hallamlab/FAST\n\
 ";
 
-  optind = 1;  // allows us to scan arguments more than once(???)
-  int c;
-  const char optionString[] =
-      "ho:u:s:f:r:q:p:a:b:A:B:c:Fx:y:z:d:e:Q:T:m:l:n:C:k:i:w:t:g:G:vVj:S:E:P:K:X:I:O:";
-  while( (c = getopt(argc, argv, optionString)) != -1 ){
-    switch(c){
-    case 'h':
-      std::cout << help;
-      throw EXIT_SUCCESS;
-    case 'o':
-      outFile = optarg;
-      break;
-    case 'u':
-      unstringify( maskLowercase, optarg );
-      if( maskLowercase < 0 || maskLowercase > 3 ) badopt( c, optarg );
-      break;
-    case 's':
-      unstringify( strand, optarg );
-      if( strand < 0 || strand > 2 ) badopt( c, optarg );
-      break;
-    case 'f':
-      unstringify( outputFormat, optarg );
-      if( outputFormat < 0 || outputFormat > 2 ) badopt( c, optarg );
-      break;
+        optind = 1;  // allows us to scan arguments more than once(???)
+        int c;
+        const char optionString[] =
+                "ho:u:s:f:r:q:p:a:b:A:B:c:Fx:y:z:d:e:Q:T:m:l:n:C:k:i:w:t:g:G:vVj:S:E:P:K:X:I:O:";
+        while ((c = getopt(argc, argv, optionString)) != -1) {
+            switch (c) {
+                case 'h':
+                    std::cout << help;
+                    throw EXIT_SUCCESS;
+                case 'o':
+                    outFile = optarg;
+                    break;
+                case 'u':
+                    unstringify(maskLowercase, optarg);
+                    if (maskLowercase < 0 || maskLowercase > 3) badopt(c, optarg);
+                    break;
+                case 's':
+                    unstringify(strand, optarg);
+                    if (strand < 0 || strand > 2) badopt(c, optarg);
+                    break;
+                case 'f':
+                    unstringify(outputFormat, optarg);
+                    if (outputFormat < 0 || outputFormat > 2) badopt(c, optarg);
+                    break;
 
-    case 'r':
-      unstringify( matchScore, optarg );
-      if( matchScore <= 0 ) badopt( c, optarg );
-      break;
-    case 'q':
-      unstringify( mismatchCost, optarg );
-      if( mismatchCost < 0 ) badopt( c, optarg );  // allow 0 for Fujibuchi-san
-      break;
-    case 'p':
-      matrixFile = optarg;
-      break;
-    case 'a':
-      unstringify( gapExistCost, optarg );
-      if( gapExistCost < 0 ) badopt( c, optarg );
-      break;
-    case 'b':
-      unstringify( gapExtendCost, optarg );
-      if( gapExtendCost <= 0 ) badopt( c, optarg );
-      break;
-    case 'A':
-      unstringify( insExistCost, optarg );
-      if( insExistCost < 0 ) badopt( c, optarg );
-      break;
-    case 'B':
-      unstringify( insExtendCost, optarg );
-      if( insExtendCost <= 0 ) badopt( c, optarg );
-      break;
-    case 'c':
-      unstringify( gapPairCost, optarg );
-      if( gapPairCost <= 0 ) badopt( c, optarg );
-      break;
-    case 'F':
-      //unstringify( frameshiftCost, optarg );
-      //if( frameshiftCost <= 0 ) badopt( c, optarg );
-      frameshiftCost = 15;
-      break;
-    case 'x':
-      unstringify( maxDropGapped, optarg );
-      if( maxDropGapped < 0 ) badopt( c, optarg );
-      break;
-    case 'y':
-      unstringify( maxDropGapless, optarg );
-      if( maxDropGapless < 0 ) badopt( c, optarg );
-      break;
-    case 'z':
-      unstringify( maxDropFinal, optarg );
-      if( maxDropFinal < 0 ) badopt( c, optarg );
-      break;
-    case 'd':
-      unstringify( minScoreGapless, optarg );
-      if( minScoreGapless < 0 ) badopt( c, optarg );
-      break;
-    case 'e':
-      unstringify( minScoreGapped, optarg );
-      if( minScoreGapped < 0 ) badopt( c, optarg );
-      break;
+                case 'r':
+                    unstringify(matchScore, optarg);
+                    if (matchScore <= 0) badopt(c, optarg);
+                    break;
+                case 'q':
+                    unstringify(mismatchCost, optarg);
+                    if (mismatchCost < 0) badopt(c, optarg);  // allow 0 for Fujibuchi-san
+                    break;
+                case 'p':
+                    matrixFile = optarg;
+                    break;
+                case 'a':
+                    unstringify(gapExistCost, optarg);
+                    if (gapExistCost < 0) badopt(c, optarg);
+                    break;
+                case 'b':
+                    unstringify(gapExtendCost, optarg);
+                    if (gapExtendCost <= 0) badopt(c, optarg);
+                    break;
+                case 'A':
+                    unstringify(insExistCost, optarg);
+                    if (insExistCost < 0) badopt(c, optarg);
+                    break;
+                case 'B':
+                    unstringify(insExtendCost, optarg);
+                    if (insExtendCost <= 0) badopt(c, optarg);
+                    break;
+                case 'c':
+                    unstringify(gapPairCost, optarg);
+                    if (gapPairCost <= 0) badopt(c, optarg);
+                    break;
+                case 'F':
+                    //unstringify( frameshiftCost, optarg );
+                    //if( frameshiftCost <= 0 ) badopt( c, optarg );
+                    frameshiftCost = 15;
+                    break;
+                case 'x':
+                    unstringify(maxDropGapped, optarg);
+                    if (maxDropGapped < 0) badopt(c, optarg);
+                    break;
+                case 'y':
+                    unstringify(maxDropGapless, optarg);
+                    if (maxDropGapless < 0) badopt(c, optarg);
+                    break;
+                case 'z':
+                    unstringify(maxDropFinal, optarg);
+                    if (maxDropFinal < 0) badopt(c, optarg);
+                    break;
+                case 'd':
+                    unstringify(minScoreGapless, optarg);
+                    if (minScoreGapless < 0) badopt(c, optarg);
+                    break;
+                case 'e':
+                    unstringify(minScoreGapped, optarg);
+                    if (minScoreGapped < 0) badopt(c, optarg);
+                    break;
 
-    case 'Q':
-      unstringify( inputFormat, optarg );
-      break;
-    case 'T':
-      unstringify( globality, optarg );
-      if( globality < 0 || globality > 1 ) badopt( c, optarg );
-      break;
-    case 'm':
-      unstringify( oneHitMultiplicity, optarg );
-      break;
-    case 'l':
-      unstringify( minHitDepth, optarg );
-      if( minHitDepth <= 0 ) badopt( c, optarg );
-      break;
-    case 'n':
-      unstringify( maxGaplessAlignmentsPerQueryPosition, optarg );
-      if( maxGaplessAlignmentsPerQueryPosition <= 0 ) badopt( c, optarg );
-      break;
-    case 'C':
-      unstringify( cullingLimitForGaplessAlignments, optarg );
-      break;
-    case 'k':
-      unstringify( queryStep, optarg );
-      if( queryStep <= 0 ) badopt( c, optarg );
-      break;
-    case 'i':
-      unstringifySize( batchSize, optarg );
-      if( batchSize <= 0 ) badopt( c, optarg );  // 0 means "not specified"
-      break;
-    case 'w':
-      unstringify( maxRepeatDistance, optarg );
-      break;
-    case 't':
-      unstringify( temperature, optarg );
-      if( temperature <= 0 ) badopt( c, optarg );
-      break;
-    case 'g':
-      unstringify( gamma, optarg );
-      if( gamma <= 0 ) badopt( c, optarg );
-      break;
-    case 'G':
-      geneticCodeFile = optarg;
-      break;
-    case 'v':
-      ++verbosity;
-      break;
-    case 'j':
-      unstringify( outputType, optarg );
-      if( outputType < 0 || outputType > 7 ) badopt( c, optarg );
-      break;
+                case 'Q':
+                    unstringify(inputFormat, optarg);
+                    break;
+                case 'T':
+                    unstringify(globality, optarg);
+                    if (globality < 0 || globality > 1) badopt(c, optarg);
+                    break;
+                case 'm':
+                    unstringify(oneHitMultiplicity, optarg);
+                    break;
+                case 'l':
+                    unstringify(minHitDepth, optarg);
+                    if (minHitDepth <= 0) badopt(c, optarg);
+                    break;
+                case 'n':
+                    unstringify(maxGaplessAlignmentsPerQueryPosition, optarg);
+                    if (maxGaplessAlignmentsPerQueryPosition <= 0) badopt(c, optarg);
+                    break;
+                case 'C':
+                    unstringify(cullingLimitForGaplessAlignments, optarg);
+                    break;
+                case 'k':
+                    unstringify(queryStep, optarg);
+                    if (queryStep <= 0) badopt(c, optarg);
+                    break;
+                case 'i':
+                    unstringifySize(batchSize, optarg);
+                    if (batchSize <= 0) badopt(c, optarg);  // 0 means "not specified"
+                    break;
+                case 'w':
+                    unstringify(maxRepeatDistance, optarg);
+                    break;
+                case 't':
+                    unstringify(temperature, optarg);
+                    if (temperature <= 0) badopt(c, optarg);
+                    break;
+                case 'g':
+                    unstringify(gamma, optarg);
+                    if (gamma <= 0) badopt(c, optarg);
+                    break;
+                case 'G':
+                    geneticCodeFile = optarg;
+                    break;
+                case 'v':
+                    ++verbosity;
+                    break;
+                case 'j':
+                    unstringify(outputType, optarg);
+                    if (outputType < 0 || outputType > 7) badopt(c, optarg);
+                    break;
 
-      //!!
-    case 'V':
-      std::cout <<  "FAST 1.0 based on LAST " <<
-#include "version.hh" 
-      << std::endl;
-      break;
-    case 'S':
-      unstringify(scoreCutoff, optarg );
-      break;
-    case 'E':
-      unstringify( evalueCutoff, optarg );
-      break;
-    case 'P':
-      unstringify(threadNum, optarg);
-      break;
-	case 'K': //Top k for parsing the output file
-		  unstringify(topHits, optarg);
-      break;
-    case 'X':
-      outputdir = optarg;
-      break;
-	case 'I':
-	  unstringify( inputSize, optarg );
-	  break;
-	case 'O':
-	  unstringify( outputSize, optarg );
-	  break;
-    case '?':
-      ERR( "bad option" );
+                    //!!
+                case 'V':
+                    std::cout << "FAST 1.0 based on LAST " <<
+
+                    #include "version.hh"
+                    << std::endl;
+                    break;
+                case 'S':
+                    unstringify(scoreCutoff, optarg);
+                    break;
+                case 'E':
+                    unstringify(evalueCutoff, optarg);
+                    break;
+                case 'P':
+                    unstringify(threadNum, optarg);
+                    break;
+                case 'K': //Top k for parsing the output file
+                    unstringify(topHits, optarg);
+                    break;
+                case 'X':
+                    outputdir = optarg;
+                    break;
+                case 'I':
+                    unstringify(inputSize, optarg);
+                    break;
+                case 'O':
+                    unstringify(outputSize, optarg);
+                    break;
+                case '?':
+                    ERR("bad option");
+            }
+        }
+
+        struct stat potential_directory_stat;
+        int error_code = stat(outputdir.c_str(), &potential_directory_stat);
+        if (error_code == -1) {
+            ERR("Given a root path for -X that doesn't exist. Cannot create temporary files, exiting");
+        }
+
+        if (maskLowercase == 1 && inputFormat == 5)
+            ERR("can't combine option -u 1 with option -Q 5");
+
+        if (maskLowercase == 2 && inputFormat == 5)
+            ERR("can't combine option -u 2 with option -Q 5");
+
+        if (isTranslated() && inputFormat > 0)
+            ERR("can't combine option -F with option -Q > 0");
+
+        if (isTranslated() && outputType > 3)
+            ERR("can't combine option -F with option -j > 3");
+
+        if (isTranslated() && outputType == 0)
+            ERR("can't combine option -F with option -j 0");
+
+        if (isTranslated() && globality == 1)
+            ERR("can't combine option -F with option -T 1");
+
+        if (globality == 1 && outputType == 1)
+            ERR("can't combine option -T 1 with option -j 1");
+
+        if (outFile == "-") {
+            ERR("Please specify the name of the output file using the -o flag");
+        }
+
+        if (optionsOnly) return;
+        if (optind >= argc)
+            ERR("please give me a database name and sequence file(s)\n\n" + usage);
+        lastdbName = argv[optind++];
+        inputStart = optind;
+
+        struct stat database;
+        // If the database exists, the outer prj will exist as well.
+        int e2 = stat((lastdbName + ".prj").c_str(), &database);
+        if (e2 == -1) {
+            ERR("Given a path for the database that doesn't exist. Exiting");
+        }
+
+        struct stat inputName;
+        int e3 = stat(argv[inputStart], &inputName);
+        if (e3 == -1) {
+            ERR("Given a path for an input file that doesn't. Exiting");
+        }
     }
-  }
 
-  struct stat potential_directory_stat;
-  int error_code = stat(outputdir.c_str(), &potential_directory_stat);
-  if(error_code == -1){
-    ERR( "Given a root path for -X that doesn't exist. Cannot create temporary files, exiting");
-  }
+    void LastalArguments::fromLine(const std::string &line, bool optionsOnly) {
+        std::vector<char> args(line.begin(), line.end());
+        args.push_back(0);  // don't forget the NUL terminator!
+        std::vector<char *> argv;
+        char *i = std::strtok(&args[0], " \t");
+        argv.push_back(i);
+        while (i != NULL) {
+            i = std::strtok(NULL, " \t");
+            argv.push_back(i);
+        }
+        fromArgs(argv.size() - 1, &argv[0], optionsOnly);
+    }
 
-  if( maskLowercase == 1 && inputFormat == 5 )
-    ERR( "can't combine option -u 1 with option -Q 5" );
+    void LastalArguments::fromStream(std::istream &is, bool optionsOnly) {
+        std::string trigger = "#last";
+        for (std::string line; std::getline(is, line); /* noop */ )
+            if (line.compare(0, trigger.size(), trigger) == 0)
+                fromLine(line, optionsOnly);
+    }
 
-  if( maskLowercase == 2 && inputFormat == 5 )
-    ERR( "can't combine option -u 2 with option -Q 5" );
+    void LastalArguments::fromString(const std::string &s, bool optionsOnly) {
+        std::istringstream iss(s);
+        fromStream(iss, optionsOnly);
+    }
 
-  if( isTranslated() && inputFormat > 0 )
-    ERR( "can't combine option -F with option -Q > 0" );
+    void LastalArguments::setDefaultsFromAlphabet(bool isDna, bool isProtein,
+                                                  bool isCaseSensitiveSeeds,
+                                                  bool isVolumes) {
+        if (strand < 0) strand = (isDna || isTranslated()) ? 2 : 1;
 
-  if( isTranslated() && outputType > 3 )
-    ERR( "can't combine option -F with option -j > 3" );
+        if (outputType < 2 && minScoreGapped < 0) minScoreGapped = minScoreGapless;
 
-  if( isTranslated() && outputType == 0 )
-    ERR( "can't combine option -F with option -j 0" );
+        if (isProtein) {
+            // default match & mismatch scores: Blosum62 matrix
+            if (matchScore < 0 && mismatchCost >= 0) matchScore = 1;  // idiot-proof
+            if (mismatchCost < 0 && matchScore >= 0) mismatchCost = 1;  // idiot-proof
+            if (gapExistCost < 0) gapExistCost = 11;
+            if (gapExtendCost < 0) gapExtendCost = 2;
+            if (minScoreGapped < 0) minScoreGapped = 100;
+        }
+        else if (!isQuality(inputFormat)) {
+            if (matchScore < 0) matchScore = 1;
+            if (mismatchCost < 0) mismatchCost = 1;
+            if (gapExistCost < 0) gapExistCost = 7;
+            if (gapExtendCost < 0) gapExtendCost = 1;
+            if (minScoreGapped < 0) minScoreGapped = 40;
+        }
+        else {  // sequence quality scores will be used:
+            if (matchScore < 0) matchScore = 6;
+            if (mismatchCost < 0) mismatchCost = 18;
+            if (gapExistCost < 0) gapExistCost = 21;
+            if (gapExtendCost < 0) gapExtendCost = 9;
+            if (minScoreGapped < 0) minScoreGapped = 180;
+            // With this scoring scheme for DNA, gapless lambda ~= ln(10)/10,
+            // so these scores should be comparable to PHRED scores.
+            // Furthermore, since mismatchCost/matchScore = 3, the target
+            // distribution of paired bases ~= 99% identity.  Because the
+            // quality scores are unlikely to be perfect, it may be best to
+            // use a lower target %identity than we otherwise would.
+        }
 
-  if( isTranslated() && globality == 1 )
-    ERR( "can't combine option -F with option -T 1" );
+        if (insExistCost < 0) insExistCost = gapExistCost;
+        if (insExtendCost < 0) insExtendCost = gapExtendCost;
 
-  if( globality == 1 && outputType == 1 )
-    ERR( "can't combine option -T 1 with option -j 1" );
+        if (outputType < 2) minScoreGapless = minScoreGapped;
 
-  if(outFile == "-"){
-   ERR("Please specify the name of the output file using the -o flag");
-  }
+        if (maskLowercase < 0) {
+            if (isCaseSensitiveSeeds && inputFormat != sequenceFormat::pssm)
+                maskLowercase = 2;
+            else
+                maskLowercase = 0;
+        }
 
-  if( optionsOnly ) return;
-  if( optind >= argc )
-    ERR( "please give me a database name and sequence file(s)\n\n" + usage );
-  lastdbName = argv[optind++];
-  inputStart = optind;
+        if (batchSize == 0) {
+            // Without lastdb voluming, smaller batches can be faster,
+            // probably because of the sorts done for gapped alignment.  With
+            // voluming, we want the batches to be as large as will
+            // comfortably fit into memory, because each volume gets read from
+            // disk once per batch.
+            if (!isVolumes)
+                batchSize = 0x2000;  // 8 Kbytes (?)
+            else if (inputFormat != sequenceFormat::fasta)
+                batchSize = 0x100000;   // 1 Mbyte
+            else if (outputType == 0)
+                batchSize = 0x1000000;  // 16 Mbytes
+            else
+                batchSize = 0x8000000;  // 128 Mbytes
+            // (should we reduce the 128 Mbytes, for fewer out-of-memory errors?)
+        }
 
-	struct stat database;
-	// If the database exists, the outer prj will exist as well.
-	int e2 = stat( (lastdbName + ".prj").c_str(), &database);
-	if(e2 == -1){
-		ERR( "Given a path for the database that doesn't exist. Exiting");
-	}
+        if (minHitDepth == 0)
+            minHitDepth = (outputType == 0) ? 1 : -1;
 
-	struct stat inputName;
-	int e3 = stat(argv[inputStart], &inputName);
-	if(e3 == -1){
-		ERR( "Given a path for an input file that doesn't. Exiting");
-	}
-}
+        if (maxGaplessAlignmentsPerQueryPosition == 0)
+            maxGaplessAlignmentsPerQueryPosition =
+                    (oneHitMultiplicity > 0) ? oneHitMultiplicity : -1;
 
-void LastalArguments::fromLine( const std::string& line, bool optionsOnly ){
-  std::vector<char> args( line.begin(), line.end() );
-  args.push_back(0);  // don't forget the NUL terminator!
-  std::vector<char*> argv;
-  char* i = std::strtok( &args[0], " \t" );
-  argv.push_back(i);
-  while( i != NULL ){
-    i = std::strtok( NULL, " \t" );
-    argv.push_back(i);
-  }
-  fromArgs( argv.size()-1, &argv[0], optionsOnly );
-}
+        if (isTranslated() && frameshiftCost < gapExtendCost)
+            ERR("the frameshift cost must not be less than the gap extension cost");
 
-void LastalArguments::fromStream( std::istream& is, bool optionsOnly ){
-  std::string trigger = "#last";
-  for( std::string line; std::getline( is, line ); /* noop */ )
-    if( line.compare( 0, trigger.size(), trigger ) == 0 )
-      fromLine( line, optionsOnly );
-}
+        if (insExistCost != gapExistCost || insExtendCost != gapExtendCost) {
+            if (isTranslated())
+                ERR("can't combine option -F with option -A or -B");
+        }
+    }
 
-void LastalArguments::fromString( const std::string& s, bool optionsOnly ){
-  std::istringstream iss(s);
-  fromStream( iss, optionsOnly );
-}
+    void LastalArguments::setDefaultsFromMatrix(double lambda) {
+        if (temperature < 0) temperature = 1 / lambda;
 
-void LastalArguments::setDefaultsFromAlphabet( bool isDna, bool isProtein,
-                                               bool isCaseSensitiveSeeds,
-					       bool isVolumes ){
-  if( strand < 0 ) strand = (isDna || isTranslated()) ? 2 : 1;
+        if (maxDropGapless < 0) {  // should it depend on temperature or lambda?
+            if (temperature < 0) maxDropGapless = 0;  // shouldn't happen
+            else maxDropGapless = int(10.0 * temperature + 0.5);
+        }
 
-  if( outputType < 2 && minScoreGapped < 0 ) minScoreGapped = minScoreGapless;
+        if (maxDropGapped < 0) {
+            maxDropGapped = std::max(minScoreGapped - 1, maxDropGapless);
+        }
 
-  if( isProtein ){
-    // default match & mismatch scores: Blosum62 matrix
-    if( matchScore < 0 && mismatchCost >= 0 ) matchScore   = 1;  // idiot-proof
-    if( mismatchCost < 0 && matchScore >= 0 ) mismatchCost = 1;  // idiot-proof
-    if( gapExistCost   < 0 ) gapExistCost   =  11;
-    if( gapExtendCost  < 0 ) gapExtendCost  =   2;
-    if( minScoreGapped < 0 ) minScoreGapped = 100;
-  }
-  else if( !isQuality( inputFormat ) ){
-    if( matchScore     < 0 ) matchScore     =   1;
-    if( mismatchCost   < 0 ) mismatchCost   =   1;
-    if( gapExistCost   < 0 ) gapExistCost   =   7;
-    if( gapExtendCost  < 0 ) gapExtendCost  =   1;
-    if( minScoreGapped < 0 ) minScoreGapped =  40;
-  }
-  else{  // sequence quality scores will be used:
-    if( matchScore     < 0 ) matchScore     =   6;
-    if( mismatchCost   < 0 ) mismatchCost   =  18;
-    if( gapExistCost   < 0 ) gapExistCost   =  21;
-    if( gapExtendCost  < 0 ) gapExtendCost  =   9;
-    if( minScoreGapped < 0 ) minScoreGapped = 180;
-    // With this scoring scheme for DNA, gapless lambda ~= ln(10)/10,
-    // so these scores should be comparable to PHRED scores.
-    // Furthermore, since mismatchCost/matchScore = 3, the target
-    // distribution of paired bases ~= 99% identity.  Because the
-    // quality scores are unlikely to be perfect, it may be best to
-    // use a lower target %identity than we otherwise would.
-  }
+        if (maxDropFinal < 0) maxDropFinal = maxDropGapped;
+    }
 
-  if( insExistCost < 0 ) insExistCost = gapExistCost;
-  if( insExtendCost < 0 ) insExtendCost = gapExtendCost;
+    int LastalArguments::calcMinScoreGapless(double numLettersInReference,
+                                             double numOfIndexes) const {
+        if (minScoreGapless >= 0) return minScoreGapless;
 
-  if( outputType < 2 ) minScoreGapless = minScoreGapped;
+        // ***** Default setting for minScoreGapless *****
 
-  if( maskLowercase < 0 ){
-    if( isCaseSensitiveSeeds && inputFormat != sequenceFormat::pssm )
-      maskLowercase = 2;
-    else
-      maskLowercase = 0;
-  }
+        // This attempts to ensure that the gapped alignment phase will be
+        // reasonably fast relative to the gapless alignment phase.
 
-  if( batchSize == 0 ){
-    // Without lastdb voluming, smaller batches can be faster,
-    // probably because of the sorts done for gapped alignment.  With
-    // voluming, we want the batches to be as large as will
-    // comfortably fit into memory, because each volume gets read from
-    // disk once per batch.
-    if( !isVolumes )
-      batchSize = 0x2000;  // 8 Kbytes (?)
-    else if( inputFormat != sequenceFormat::fasta )
-      batchSize = 0x100000;   // 1 Mbyte
-    else if( outputType == 0 )
-      batchSize = 0x1000000;  // 16 Mbytes
-    else
-      batchSize = 0x8000000;  // 128 Mbytes
-    // (should we reduce the 128 Mbytes, for fewer out-of-memory errors?)
-  }
+        // The expected number of gapped extensions per query position is:
+        // kGapless * referenceSize * exp(-lambdaGapless * minScoreGapless).
 
-  if( minHitDepth == 0 )
-    minHitDepth = (outputType == 0) ? 1 : -1;
+        // The number of gapless extensions per query position is
+        // proportional to: maxGaplessAlignmentsPerQueryPosition * numOfIndexes.
 
-  if( maxGaplessAlignmentsPerQueryPosition == 0 )
-    maxGaplessAlignmentsPerQueryPosition =
-      (oneHitMultiplicity > 0) ? oneHitMultiplicity : -1;
+        // So we want exp(lambdaGapless * minScoreGapless) to be
+        // proportional to: kGapless * referenceSize / (n * numOfIndexes).
 
-  if( isTranslated() && frameshiftCost < gapExtendCost )
-    ERR( "the frameshift cost must not be less than the gap extension cost" );
+        // But we crudely ignore kGapless.
 
-  if( insExistCost != gapExistCost || insExtendCost != gapExtendCost ){
-    if( isTranslated() )
-      ERR( "can't combine option -F with option -A or -B" );
-  }
-}
+        // The proportionality constant was guesstimated by some limited
+        // trial-and-error.  It should depend on the relative speeds of
+        // gapless and gapped extensions.
 
-void LastalArguments::setDefaultsFromMatrix( double lambda ){
-  if( temperature < 0 ) temperature = 1 / lambda;
+        if (temperature < 0) return minScoreGapped;  // shouldn't happen
 
-  if( maxDropGapless < 0 ){  // should it depend on temperature or lambda?
-    if( temperature < 0 ) maxDropGapless = 0;  // shouldn't happen
-    else                  maxDropGapless = int( 10.0 * temperature + 0.5 );
-  }
+        double n = maxGaplessAlignmentsPerQueryPosition;
+        if (maxGaplessAlignmentsPerQueryPosition + 1 == 0) n = 10;  // ?
+        double x = 1000.0 * numLettersInReference / (n * numOfIndexes);
+        if (x < 1) x = 1;
+        int s = int(temperature * std::log(x) + 0.5);
+        return std::min(s, minScoreGapped);
+    }
 
-  if( maxDropGapped < 0 ){
-    maxDropGapped = std::max( minScoreGapped - 1, maxDropGapless );
-  }
+    void LastalArguments::writeCommented(std::ostream &stream) const {
+        stream << "# "
+        << "a=" << gapExistCost << ' '
+        << "b=" << gapExtendCost << ' '
+        << "A=" << insExistCost << ' '
+        << "B=" << insExtendCost << ' '
+        << "c=" << gapPairCost << ' '
+        << "F=" << frameshiftCost << ' '
+        << "e=" << minScoreGapped << ' '
+        << "d=" << minScoreGapless << ' '
+        << "x=" << maxDropGapped << ' '
+        << "y=" << maxDropGapless << ' '
+        << "z=" << maxDropFinal << '\n';
 
-  if( maxDropFinal < 0 ) maxDropFinal = maxDropGapped;
-}
+        stream << "# "
+        << "u=" << maskLowercase << ' '
+        << "s=" << strand << ' '
+        << "T=" << globality << ' '
+        << "m=" << oneHitMultiplicity << ' '
+        << "l=" << minHitDepth << ' '
+        << "n=" << maxGaplessAlignmentsPerQueryPosition << ' '
+        << "k=" << queryStep << ' '
+        << "i=" << batchSize << ' '
+        << "w=" << maxRepeatDistance << ' '
+        << "t=" << temperature << ' '
+        << "g=" << gamma << ' '
+        << "j=" << outputType << ' '
+        << "Q=" << inputFormat << '\n';
 
-int LastalArguments::calcMinScoreGapless( double numLettersInReference,
-					  double numOfIndexes ) const{
-  if( minScoreGapless >= 0 ) return minScoreGapless;
-
-  // ***** Default setting for minScoreGapless *****
-
-  // This attempts to ensure that the gapped alignment phase will be
-  // reasonably fast relative to the gapless alignment phase.
-
-  // The expected number of gapped extensions per query position is:
-  // kGapless * referenceSize * exp(-lambdaGapless * minScoreGapless).
-
-  // The number of gapless extensions per query position is
-  // proportional to: maxGaplessAlignmentsPerQueryPosition * numOfIndexes.
-
-  // So we want exp(lambdaGapless * minScoreGapless) to be
-  // proportional to: kGapless * referenceSize / (n * numOfIndexes).
-
-  // But we crudely ignore kGapless.
-
-  // The proportionality constant was guesstimated by some limited
-  // trial-and-error.  It should depend on the relative speeds of
-  // gapless and gapped extensions.
-
-  if( temperature < 0 ) return minScoreGapped;  // shouldn't happen
-
-  double n = maxGaplessAlignmentsPerQueryPosition;
-  if( maxGaplessAlignmentsPerQueryPosition + 1 == 0 ) n = 10;  // ?
-  double x = 1000.0 * numLettersInReference / (n * numOfIndexes);
-  if( x < 1 ) x = 1;
-  int s = int( temperature * std::log(x) + 0.5 );
-  return std::min( s, minScoreGapped );
-}
-
-void LastalArguments::writeCommented( std::ostream& stream ) const{
-  stream << "# "
-	 << "a=" << gapExistCost << ' '
-	 << "b=" << gapExtendCost << ' '
-	 << "A=" << insExistCost << ' '
-	 << "B=" << insExtendCost << ' '
-	 << "c=" << gapPairCost << ' '
-	 << "F=" << frameshiftCost << ' '
-	 << "e=" << minScoreGapped << ' '
-	 << "d=" << minScoreGapless << ' '
-	 << "x=" << maxDropGapped << ' '
-	 << "y=" << maxDropGapless << ' '
-	 << "z=" << maxDropFinal << '\n';
-
-  stream << "# "
-	 << "u=" << maskLowercase << ' '
-	 << "s=" << strand << ' '
-	 << "T=" << globality << ' '
-	 << "m=" << oneHitMultiplicity << ' '
-	 << "l=" << minHitDepth << ' '
-         << "n=" << maxGaplessAlignmentsPerQueryPosition << ' '
-	 << "k=" << queryStep << ' '
-	 << "i=" << batchSize << ' '
-	 << "w=" << maxRepeatDistance << ' '
-	 << "t=" << temperature << ' '
-	 << "g=" << gamma << ' '
-	 << "j=" << outputType << ' '
-	 << "Q=" << inputFormat << '\n';
-
-  stream << "# " << lastdbName << '\n';
-}
+        stream << "# " << lastdbName << '\n';
+    }
 
 }  // end namespace cbrc
