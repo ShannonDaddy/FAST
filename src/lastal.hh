@@ -54,7 +54,7 @@
 #define LOG(x) \
   if( args.verbosity > 0 ){ \
     std::stringstream stream; \
-    stream << "lastal: " << x << "\n"; \
+    stream << "fastal: " << x << "\n"; \
     std::cerr << stream.str(); \
   }
 

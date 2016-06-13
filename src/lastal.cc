@@ -1142,7 +1142,7 @@ int main(int argc, char **argv) {
         return EXIT_SUCCESS;
     } catch (const std::bad_alloc &e) {
         std::stringstream stream;
-        stream << "lastal: memory exception\n";
+        stream << "fastal: memory exception\n";
         stream << e.what() << "\n";
         std::cerr << stream.str();
         if (listptr != NULL) {
@@ -1152,7 +1152,7 @@ int main(int argc, char **argv) {
         return EXIT_FAILURE;
     } catch (const std::exception &e) {
         std::stringstream stream;
-        stream << "lastal: " << e.what() << '\n';
+        stream << "fastal: " << e.what() << '\n';
         std::cerr << stream.str();
         if (listptr != NULL) {
             listptr->clear();
@@ -1161,7 +1161,7 @@ int main(int argc, char **argv) {
         return EXIT_FAILURE;
     } catch (int i) {
         std::stringstream stream;
-        stream << "lastal: " << i << '\n';
+        stream << "fastal: " << i << '\n';
         std::cerr << stream.str();
         if (listptr != NULL) {
             listptr->clear();
