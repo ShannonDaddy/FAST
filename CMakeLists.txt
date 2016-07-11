@@ -1,16 +1,9 @@
 cmake_minimum_required(VERSION 2.6)
 project(FAST)
 
-set(DIRECTORIES
-        gumbel_params
-        gumbel_params/common
-        gumbel_params/corelib
-        )
-
 include_directories(${DIRECTORIES})
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -pthread")
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -pthread")
 
 set(LASTDB_SOURCE_FILES
         src/Alphabet.cc
@@ -98,8 +91,6 @@ set(LASTAL_SOURCE_FILES
         src/lastal.cc
         src/LastalArguments.cc
         src/LastalArguments.hh
-        src/LastEvaluer.cc
-        src/LastEvaluer.hh
         src/lastex.cc
         src/LastexArguments.cc
         src/LastexArguments.hh
@@ -143,18 +134,12 @@ set(LASTAL_SOURCE_FILES
         src/version.hh
         )
 
-file(GLOB ALP
-        "alp/*.h*"
-        "alp/*.c*"
-        )
-
 file(GLOB GUMBEL
         "gumbel_params/*.h*"
         "gumbel_params/*.c*"
         )
 
-include_directories(${CMAKE_SOURCE_DIR}/alp)
 include_directories(${CMAKE_SOURCE_DIR}/gumbel_params)
 
 add_executable(fastdb ${LASTDB_SOURCE_FILES})
-add_executable(fastal ${LASTAL_SOURCE_FILES} ${ALP} ${GUMBEL})
+add_executable(fastal ${LASTAL_SOURCE_FILES} ${GUMBEL})

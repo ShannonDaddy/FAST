@@ -6,6 +6,8 @@
 #include "Alphabet.hh"
 
 #include <iterator>  // ostream_iterator
+#include <cmath>
+#include <iomanip>
 
 #include "lastex.hh"
 
@@ -67,9 +69,7 @@ void Alignment::write(
         const MultiSequence &reference, const MultiSequence &query,
         char strand, bool isTranslated, const Alphabet &alph,
         int format,
-        //std::vector<std::string> *outputVector,
         std::list<std::string> *outputVector,
-        const LastEvaluer &evaluer,
         const AlignmentExtras &extras) const {
 
     assert(!blocks.empty());
@@ -78,8 +78,7 @@ void Alignment::write(
         writeTab(reference, query, strand, isTranslated, extras, outputVector);
     } else if (format == 2) {
         writeBlastOutput(scoreCutoff, evalueCutoff, reference, query, strand,
-                         isTranslated, alph, extras, outputVector,
-                         evaluer);
+                         isTranslated, alph, extras, outputVector);
     } else {
         writeMaf(reference, query, strand, isTranslated, alph, extras, outputVector);
     }
@@ -93,8 +92,7 @@ void Alignment::writeBlastOutput(
         const MultiSequence &query,
         char strand, bool isTranslated, const Alphabet &alph,
         const AlignmentExtras &extras,
-        std::list<std::string> *outputVector,
-        const LastEvaluer &evaluer) const {
+        std::list<std::string> *outputVector) const {
 
     size_t alnBeg1 = beg1();
     size_t alnEnd1 = end1();
@@ -166,26 +164,11 @@ void Alignment::writeBlastOutput(
         mismatches = alignLength - gaps - identityCount;
     }
 
-    double bitscore = 0;
-    double bit_evalue = 0;
-
-    // If we are dealing with DNA query and Amino Acid reference use the first.
-    // If we are dealing with Amino acid to Amino Acid go with the second.
-    if (isTranslated) {
-        size_t s2 = query.seqLen(w2);
-        double area = evaluer.area(score, s2);
-        double epa = evaluer.evaluePerArea(score);
-        bitscore = evaluer.bitScore(score);
-        bit_evalue = epa * area;
-        bitscore = round(bitscore);
-    } else {
-        double lambda = getLambda();
-        double k = getK();
-        double area = getArea();
-        bitscore = (lambda * score - log(k)) / LN2;
-        bit_evalue = area * pow(2, -bitscore);
-        bitscore = round(bitscore);
-    }
+    double lambda = getLambda();
+    double k = getK();
+    double area = getArea();
+    double bitscore = round ( ( lambda * score - log(k) ) / LN2 ) ;
+    double bit_evalue = area*pow(2,-bitscore);
 
     std::stringstream outputStream;
     outputStream.precision(5);

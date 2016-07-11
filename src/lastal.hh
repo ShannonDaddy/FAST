@@ -44,7 +44,6 @@
 #include "semaphores.hh"
 #include "externalsort.hh"
 #include "utilities.hh"
-#include "LastEvaluer.hh"
 #include <sstream>
 #include <list>
 
@@ -74,8 +73,6 @@ namespace {
     SubsetSuffixArray *suffixArrays;
     MultiSequence text;
     indexT minSeedLimit;
-
-    LastEvaluer evaluer;
 
     Alphabet alph;
     Alphabet queryAlph;  // for translated alignment

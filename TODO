@@ -29,3 +29,7 @@ Remove all the instances of stringstreams, they are pretty terribly slow with al
 
 The write functions are behemoths. They involve a lot of senseless copying as well, it could
 refactored and optimized.
+
+Rm translated alignment
+
+Rm ???
