@@ -9,21 +9,25 @@
 
 #include <climits>  // INT_MAX
 
-namespace cbrc{
+namespace cbrc {
 
 // The row size must be fixed to some value.  It is fixed to 64
 // because: this is big enough for all amino acids, including
 // ambiguous ones, in upper and lower case, and using a power-of-2
 // might be fast.
-enum { scoreMatrixRowSize = 64 };
+    enum {
+        scoreMatrixRowSize = 64
+    };
 
 //typedef int ScoreMatrixRow[scoreMatrixRowSize];
-typedef int *ScoreMatrixRow;
+    typedef int *ScoreMatrixRow;
 
 // An "infinite" score.  Delimiters at the ends of sequences get a
 // score of -INF.  We want it high enough to terminate alignments
 // immediately, but not so high that it causes overflow errors.
-enum { INF = INT_MAX / 2 };
+    enum {
+        INF = INT_MAX / 2
+    };
 
 }
 

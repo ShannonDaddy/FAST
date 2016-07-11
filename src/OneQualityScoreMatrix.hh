@@ -36,62 +36,64 @@
 
 namespace cbrc {
 
-typedef unsigned char uchar;
+    typedef unsigned char uchar;
 
-inline int oneQualityMatrixIndex(int letter1, int letter2, int quality2) {
-  return
-      quality2 * scoreMatrixRowSize * scoreMatrixRowSize +
-      letter2  * scoreMatrixRowSize +
-      letter1;
-}
+    inline int oneQualityMatrixIndex(int letter1, int letter2, int quality2) {
+        return
+                quality2 * scoreMatrixRowSize * scoreMatrixRowSize +
+                letter2 * scoreMatrixRowSize +
+                letter1;
+    }
 
-class OneQualityScoreMatrix {
- public:
-  void init(const ScoreMatrixRow *scoreMatrix,
-            int numNormalLetters,  // typically 4 (ACGT)
-            double lambda,  // scale factor for scoreMatrix
-            const double *letterProbs2,  // scoreMatrix probs for 2nd sequence
-            bool isPhred,  // phred or solexa qualities?
-            int qualityOffset,  // typically 33 or 64
-            const uchar *toUnmasked,  // maps letters to unmasked letters
-            bool isApplyMasking);
+    class OneQualityScoreMatrix {
+    public:
+        void init(const ScoreMatrixRow *scoreMatrix,
+                  int numNormalLetters,  // typically 4 (ACGT)
+                  double lambda,  // scale factor for scoreMatrix
+                  const double *letterProbs2,  // scoreMatrix probs for 2nd sequence
+                  bool isPhred,  // phred or solexa qualities?
+                  int qualityOffset,  // typically 33 or 64
+                  const uchar *toUnmasked,  // maps letters to unmasked letters
+                  bool isApplyMasking);
 
-  // Tests whether init has been called:
-  operator const void *() const { return data.empty() ? 0 : this; }
+        // Tests whether init has been called:
+        operator const void *() const { return data.empty() ? 0 : this; }
 
-  int operator()(int letter1, int letter2, int quality2) const
-  { return data[oneQualityMatrixIndex(letter1, letter2, quality2)]; }
+        int operator()(int letter1, int letter2, int quality2) const {
+            return data[oneQualityMatrixIndex(letter1, letter2, quality2)];
+        }
 
- private:
-  std::vector<int> data;
-};
+    private:
+        std::vector<int> data;
+    };
 
 // This class stores: exp(score(i, j, q) / temperature)
-class OneQualityExpMatrix {
- public:
-  void init(const OneQualityScoreMatrix &m, double temperature);
+    class OneQualityExpMatrix {
+    public:
+        void init(const OneQualityScoreMatrix &m, double temperature);
 
-  // Tests whether init has been called:
-  operator const void *() const { return data.empty() ? 0 : this; }
+        // Tests whether init has been called:
+        operator const void *() const { return data.empty() ? 0 : this; }
 
-  double operator()(int letter1, int letter2, int quality2) const
-  { return data[oneQualityMatrixIndex(letter1, letter2, quality2)]; }
+        double operator()(int letter1, int letter2, int quality2) const {
+            return data[oneQualityMatrixIndex(letter1, letter2, quality2)];
+        }
 
- private:
-  std::vector<double> data;
-};
+    private:
+        std::vector<double> data;
+    };
 
-void makePositionSpecificScoreMatrix(const OneQualityScoreMatrix &m,
-                                     const uchar *sequenceBeg,
-                                     const uchar *sequenceEnd,
-                                     const uchar *qualityBeg,
-                                     int *destinationBeg);
+    void makePositionSpecificScoreMatrix(const OneQualityScoreMatrix &m,
+                                         const uchar *sequenceBeg,
+                                         const uchar *sequenceEnd,
+                                         const uchar *qualityBeg,
+                                         int *destinationBeg);
 
-void makePositionSpecificExpMatrix(const OneQualityExpMatrix &m,
-                                   const uchar *sequenceBeg,
-                                   const uchar *sequenceEnd,
-                                   const uchar *qualityBeg,
-                                   double *destinationBeg);
+    void makePositionSpecificExpMatrix(const OneQualityExpMatrix &m,
+                                       const uchar *sequenceBeg,
+                                       const uchar *sequenceEnd,
+                                       const uchar *qualityBeg,
+                                       double *destinationBeg);
 
 }
 

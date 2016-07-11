@@ -13,32 +13,32 @@
 
 namespace cbrc {
 
-typedef unsigned char uchar;
+    typedef unsigned char uchar;
 
-int forwardGaplessPssmXdropScore(const uchar *seq,
-                                 const ScoreMatrixRow *pssm,
-                                 int maxScoreDrop);
+    int forwardGaplessPssmXdropScore(const uchar *seq,
+                                     const ScoreMatrixRow *pssm,
+                                     int maxScoreDrop);
 
-int reverseGaplessPssmXdropScore(const uchar *seq,
-                                 const ScoreMatrixRow *pssm,
-                                 int maxScoreDrop);
+    int reverseGaplessPssmXdropScore(const uchar *seq,
+                                     const ScoreMatrixRow *pssm,
+                                     int maxScoreDrop);
 
-const uchar *forwardGaplessPssmXdropEnd(const uchar *seq,
-                                        const ScoreMatrixRow *pssm,
-                                        int score);
+    const uchar *forwardGaplessPssmXdropEnd(const uchar *seq,
+                                            const ScoreMatrixRow *pssm,
+                                            int score);
 
-const uchar *reverseGaplessPssmXdropEnd(const uchar *seq,
-                                        const ScoreMatrixRow *pssm,
-                                        int score);
+    const uchar *reverseGaplessPssmXdropEnd(const uchar *seq,
+                                            const ScoreMatrixRow *pssm,
+                                            int score);
 
-bool isOptimalGaplessPssmXdrop(const uchar *seq,
-                               const uchar *seqEnd,
-                               const ScoreMatrixRow *pssm,
-                               int maxScoreDrop);
+    bool isOptimalGaplessPssmXdrop(const uchar *seq,
+                                   const uchar *seqEnd,
+                                   const ScoreMatrixRow *pssm,
+                                   int maxScoreDrop);
 
-int gaplessPssmAlignmentScore(const uchar *seq,
-                              const uchar *seqEnd,
-                              const ScoreMatrixRow *pssm);
+    int gaplessPssmAlignmentScore(const uchar *seq,
+                                  const uchar *seqEnd,
+                                  const ScoreMatrixRow *pssm);
 
 }
 

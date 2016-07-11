@@ -57,7 +57,6 @@ ALOBJ = src/lastal.o \
 				src/utilities.o \
 				src/heapsort.o \
 				src/tempfiles.o \
-				src/LastEvaluer.o \
 				src/ludcmp.o \
 				src/lubksb.o \
 				gumbel_params/mcf_local_alignment_evaluer.o \
@@ -75,36 +74,16 @@ ALOBJ = src/lastal.o \
 				gumbel_params/sls_alp_regression.o \
 				gumbel_params/sls_alp_sim.o \
 				gumbel_params/sls_pvalues.o \
-				alp/sls_alignment_evaluer.o \
-				alp/sls_pvalues.o \
-				alp/sls_alp_sim.o \
-				alp/sls_alp_regression.o \
-				alp/sls_alp_data.o \
-				alp/sls_alp.o \
-				alp/sls_basic.o \
-				alp/njn_localmaxstatmatrix.o \
-				alp/njn_localmaxstat.o \
-				alp/njn_localmaxstatutil.o \
-				alp/njn_dynprogprob.o \
-				alp/njn_dynprogprobproto.o \
-				alp/njn_dynprogproblim.o \
-				alp/njn_ioutil.o \
-				alp/njn_random.o \
-				alp/sls_falp_alignment_evaluer.o \
-				alp/sls_fsa1_pvalues.o \
-				alp/sls_fsa1_utils.o \
-				alp/sls_fsa1.o \
-				alp/sls_fsa1_parameters.o
 
 ALL=fastal fastdb
 
 VPATH=src:gumbel_params:alp
 
 %.o : %.cpp
-	$(CXX) $(CXXFLAGS) -Igumbel_params -Ialp -Isrc -c -o $@ $<
+	$(CXX) $(CXXFLAGS) -Igumbel_params -Isrc -c -o $@ $<
 
 %.o : %.cc
-	$(CXX) $(CXXFLAGS) -Igumbel_params -Ialp -Isrc -c -o $@ $<
+	$(CXX) $(CXXFLAGS) -Igumbel_params -Isrc -c -o $@ $<
 
 all: $(ALL)
 

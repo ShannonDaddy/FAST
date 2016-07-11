@@ -58,41 +58,41 @@ namespace cbrc {
 
 // Puts 7 "dummy" antidiagonals at the start, so that we can safely
 // look-back from subsequent antidiagonals.
-void GappedXdropAligner::init3() {
-  seq1starts.resize(0);
-  scoreEnds.resize(1);
+    void GappedXdropAligner::init3() {
+        seq1starts.resize(0);
+        scoreEnds.resize(1);
 
-  initAntidiagonal3(0, 0, 0);
-  initAntidiagonal3(0, 2, 0);
-  initAntidiagonal3(0, 4, 0);
-  initAntidiagonal3(0, 6, 0);
-  initAntidiagonal3(0, 8, 0);
-  initAntidiagonal3(0, 10, 0);
-  initAntidiagonal3(0, 12, 0);
+        initAntidiagonal3(0, 0, 0);
+        initAntidiagonal3(0, 2, 0);
+        initAntidiagonal3(0, 4, 0);
+        initAntidiagonal3(0, 6, 0);
+        initAntidiagonal3(0, 8, 0);
+        initAntidiagonal3(0, 10, 0);
+        initAntidiagonal3(0, 12, 0);
 
-  std::fill_n(xScores.begin(), 14, -INF);
-  std::fill_n(yScores.begin(), 14, -INF);
-  std::fill_n(zScores.begin(), 14, -INF);
+        std::fill_n(xScores.begin(), 14, -INF);
+        std::fill_n(yScores.begin(), 14, -INF);
+        std::fill_n(zScores.begin(), 14, -INF);
 
-  xScores[5] = 0;
+        xScores[5] = 0;
 
-  bestAntidiagonal = 8;
-}
+        bestAntidiagonal = 8;
+    }
 
-void GappedXdropAligner::initAntidiagonal3(std::size_t seq1beg,
-                                           std::size_t scoreEnd,
-                                           std::size_t numCells) {
-  std::size_t newEnd = scoreEnd + numCells + 2;  // + 2 pad cells
+    void GappedXdropAligner::initAntidiagonal3(std::size_t seq1beg,
+                                               std::size_t scoreEnd,
+                                               std::size_t numCells) {
+        std::size_t newEnd = scoreEnd + numCells + 2;  // + 2 pad cells
 
-  if (xScores.size() < newEnd) {
-    xScores.resize(newEnd);
-    yScores.resize(newEnd);
-    zScores.resize(newEnd);
-  }
+        if (xScores.size() < newEnd) {
+            xScores.resize(newEnd);
+            yScores.resize(newEnd);
+            zScores.resize(newEnd);
+        }
 
-  seq1starts.push_back(seq1beg);
-  scoreEnds.push_back(newEnd);
-}
+        seq1starts.push_back(seq1beg);
+        scoreEnds.push_back(newEnd);
+    }
 
 // If seq2beg is the DNA coordinate relative to the start:
 // seq1end = (antidiagonal - 8 - seq2beg) / 3 + 1
@@ -107,212 +107,245 @@ void GappedXdropAligner::initAntidiagonal3(std::size_t seq1beg,
 // deletion, insertion.  But it will find these equal-score
 // alignments: reverse frameshift, insertion, deletion.
 
-int GappedXdropAligner::align3(const uchar *reference,
-                               const uchar *query_frame0,
-                               const uchar *query_frame1,  // the +1 frame
-                               const uchar *query_frame2,  // the -1 frame
-                               bool isForward,
-                               const ScoreMatrixRow *scorer,
-                               int gapExistenceCost,
-                               int gapExtensionCost,
-                               int gapUnalignedCost,
-                               int frameshiftCost,
-                               int maxScoreDrop,
-                               int maxMatchScore) {
-  bool isAffine = gapUnalignedCost >= gapExistenceCost + 2 * gapExtensionCost;
+    int GappedXdropAligner::align3(const uchar *reference,
+                                   const uchar *query_frame0,
+                                   const uchar *query_frame1,  // the +1 frame
+                                   const uchar *query_frame2,  // the -1 frame
+                                   bool isForward,
+                                   const ScoreMatrixRow *scorer,
+                                   int gapExistenceCost,
+                                   int gapExtensionCost,
+                                   int gapUnalignedCost,
+                                   int frameshiftCost,
+                                   int maxScoreDrop,
+                                   int maxMatchScore) {
+        bool isAffine = gapUnalignedCost >= gapExistenceCost + 2 * gapExtensionCost;
 
-  std::size_t maxSeq1begs[] = { 9, 9, 0, 9, 9, 9, 9 };
-  std::size_t minSeq1ends[] = { 0, 0, 1, 0, 0, 0, 0 };
+        std::size_t maxSeq1begs[] = {9, 9, 0, 9, 9, 9, 9};
+        std::size_t minSeq1ends[] = {0, 0, 1, 0, 0, 0, 0};
 
-  int bestScore = 0;
+        int bestScore = 0;
 
-  init3();
+        init3();
 
-  for (std::size_t antidiagonal = 7; /* noop */; ++antidiagonal) {
-    std::size_t reference_beg = arrayMin(maxSeq1begs);
-    std::size_t reference_end = arrayMax(minSeq1ends);
+        for (std::size_t antidiagonal = 7; /* noop */; ++antidiagonal) {
+            std::size_t reference_beg = arrayMin(maxSeq1begs);
+            std::size_t reference_end = arrayMax(minSeq1ends);
 
-    if (reference_beg >= reference_end) break;
+            if (reference_beg >= reference_end) break;
 
-    std::size_t scoreEnd = scoreEnds.back();
-    std::size_t numCells = reference_end - reference_beg;
+            std::size_t scoreEnd = scoreEnds.back();
+            std::size_t numCells = reference_end - reference_beg;
 
-    initAntidiagonal3(reference_beg, scoreEnd, numCells);
+            initAntidiagonal3(reference_beg, scoreEnd, numCells);
 
-    const uchar *chosen_query_frame =
-        whichFrame(antidiagonal, query_frame0, query_frame1, query_frame2);
+            const uchar *chosen_query_frame =
+                    whichFrame(antidiagonal, query_frame0, query_frame1, query_frame2);
 
-    std::size_t chosen_query_framepos = (antidiagonal - 7) / 3 - reference_beg;
+            std::size_t chosen_query_framepos = (antidiagonal - 7) / 3 - reference_beg;
 
-    const uchar *reference_location; 
-    const uchar *query_location;
-    if(isForward){
-      reference_location = reference + reference_beg;
-      query_location = chosen_query_frame + chosen_query_framepos;
-    }else{
-      reference_location = reference - reference_beg - 1;
-      query_location = chosen_query_frame - chosen_query_framepos - 1;
+            const uchar *reference_location;
+            const uchar *query_location;
+            if (isForward) {
+                reference_location = reference + reference_beg;
+                query_location = chosen_query_frame + chosen_query_framepos;
+            } else {
+                reference_location = reference - reference_beg - 1;
+                query_location = chosen_query_frame - chosen_query_framepos - 1;
+            }
+
+            if (isDelimiter(*query_location, *scorer)) {
+                // prevent forward frameshifts from jumping over delimiters:
+                if (maxSeq1begs[1] == reference_beg) ++maxSeq1begs[1];
+                // Update maxScoreDrop in some clever way?
+                // But be careful if the -1 frame starts in an initial delimiter.
+            }
+
+            int minScore = bestScore - maxScoreDrop;
+
+            int *x0 = &xScores[scoreEnd];
+            int *y0 = &yScores[scoreEnd];
+            int *z0 = &zScores[scoreEnd];
+            const int *y3 = &yScores[hori3(antidiagonal, reference_beg)];
+            const int *z3 = &zScores[vert3(antidiagonal, reference_beg)];
+            const int *x6 = &xScores[diag3(antidiagonal, reference_beg)];
+            const int *x5 = &xScores[diag3(antidiagonal + 1, reference_beg)];
+            const int *x7 = &xScores[diag3(antidiagonal - 1, reference_beg)];
+
+            *x0++ = *y0++ = *z0++ = -INF;  // add one pad cell
+
+            const int *x0last = x0 + numCells;
+
+            *x0++ = *y0++ = *z0++ = -INF;  // add one pad cell
+
+            const int *x0base = x0 - reference_beg;
+
+            if (isAffine) {
+                if (isForward)
+                    while (1) {
+                        int s = maxValue(*x5, *x7);
+                        int x = maxValue(*x6, s - frameshiftCost);
+                        int y = *y3 - gapExtensionCost;
+                        int z = *z3 - gapExtensionCost;
+                        int b = maxValue(x, y, z);
+                        if (b >= minScore) {
+                            updateBest(bestScore, b, antidiagonal, x0, x0base);
+                            *x0 = b + scorer[*reference_location][*query_location];
+                            int g = b - gapExistenceCost;
+                            *y0 = maxValue(g, y);
+                            *z0 = maxValue(g, z);
+                        }
+                        else *x0 = *y0 = *z0 = -INF;
+                        if (x0 == x0last) break;
+                        ++reference_location;
+                        --query_location;
+                        ++x0;
+                        ++y0;
+                        ++z0;
+                        ++y3;
+                        ++z3;
+                        ++x5;
+                        ++x6;
+                        ++x7;
+                    }
+                else
+                    while (1) {
+                        int s = maxValue(*x5, *x7);
+                        int x = maxValue(*x6, s - frameshiftCost);
+                        int y = *y3 - gapExtensionCost;
+                        int z = *z3 - gapExtensionCost;
+                        int b = maxValue(x, y, z);
+                        if (b >= minScore) {
+                            updateBest(bestScore, b, antidiagonal, x0, x0base);
+                            *x0 = b + scorer[*reference_location][*query_location];
+                            int g = b - gapExistenceCost;
+                            *y0 = maxValue(g, y);
+                            *z0 = maxValue(g, z);
+                        }
+                        else *x0 = *y0 = *z0 = -INF;
+                        if (x0 == x0last) break;
+                        --reference_location;
+                        ++query_location;
+                        ++x0;
+                        ++y0;
+                        ++z0;
+                        ++y3;
+                        ++z3;
+                        ++x5;
+                        ++x6;
+                        ++x7;
+                    }
+            } else {
+                const int *y6 = &yScores[diag3(antidiagonal, reference_beg)];
+                const int *z6 = &zScores[diag3(antidiagonal, reference_beg)];
+                while (1) {
+                    int s = maxValue(*x5, *x7);
+                    int x = maxValue(*x6, s - frameshiftCost);
+                    int y = maxValue(*y3 - gapExtensionCost, *y6 - gapUnalignedCost);
+                    int z = maxValue(*z3 - gapExtensionCost, *z6 - gapUnalignedCost);
+                    int b = maxValue(x, y, z);
+                    if (b >= minScore) {
+                        updateBest(bestScore, b, antidiagonal, x0, x0base);
+                        *x0 = b + scorer[*reference_location][*query_location];
+                        int g = b - gapExistenceCost;
+                        *y0 = maxValue(g, y);
+                        *z0 = maxValue(g, z);
+                    }
+                    else *x0 = *y0 = *z0 = -INF;
+                    if (x0 == x0last) break;
+                    ++x0;
+                    ++y0;
+                    ++z0;
+                    ++y3;
+                    ++z3;
+                    ++x5;
+                    ++x6;
+                    ++x7;
+                    ++y6;
+                    ++z6;
+                    if (isForward) {
+                        ++reference_location;
+                        --query_location;
+                    }
+                    else {
+                        --reference_location;
+                        ++query_location;
+                    }
+                }
+            }
+            if (isDelimiter(*reference_location, *scorer))
+                updateMaxScoreDrop(maxScoreDrop, numCells, maxMatchScore);
+
+            updateFiniteEdges3(maxSeq1begs, minSeq1ends, x0base, x0 + 1, numCells);
+        }
+        return bestScore;
     }
 
-    if (isDelimiter(*query_location, *scorer)) {
-      // prevent forward frameshifts from jumping over delimiters:
-      if (maxSeq1begs[1] == reference_beg) ++maxSeq1begs[1];
-      // Update maxScoreDrop in some clever way?
-      // But be careful if the -1 frame starts in an initial delimiter.
-    }
+    bool GappedXdropAligner::getNextChunk3(std::size_t &end1,
+                                           std::size_t &end2,
+                                           std::size_t &length,
+                                           int gapExistenceCost,
+                                           int gapExtensionCost,
+                                           int gapUnalignedCost,
+                                           int frameshiftCost) {
+        if (bestAntidiagonal == 8) return false;
 
-    int minScore = bestScore - maxScoreDrop;
+        end1 = bestSeq1position;
+        end2 = bestAntidiagonal - 8 - bestSeq1position * 3;
+        length = 0;
 
-    int *x0 = &xScores[scoreEnd];
-    int *y0 = &yScores[scoreEnd];
-    int *z0 = &zScores[scoreEnd];
-    const int *y3 = &yScores[hori3(antidiagonal, reference_beg)];
-    const int *z3 = &zScores[vert3(antidiagonal, reference_beg)];
-    const int *x6 = &xScores[diag3(antidiagonal, reference_beg)];
-    const int *x5 = &xScores[diag3(antidiagonal + 1, reference_beg)];
-    const int *x7 = &xScores[diag3(antidiagonal - 1, reference_beg)];
+        int state = 0;
 
-    *x0++ = *y0++ = *z0++ = -INF;  // add one pad cell
-
-    const int *x0last = x0 + numCells;
-
-    *x0++ = *y0++ = *z0++ = -INF;  // add one pad cell
-
-    const int *x0base = x0 - reference_beg;
-
-    if (isAffine) {
-      if (isForward)
         while (1) {
-          int s = maxValue(*x5, *x7);
-          int x = maxValue(*x6, s - frameshiftCost);
-          int y = *y3 - gapExtensionCost;
-          int z = *z3 - gapExtensionCost;
-          int b = maxValue(x, y, z);
-          if (b >= minScore) {
-            updateBest(bestScore, b, antidiagonal, x0, x0base);
-            *x0 = b + scorer[*reference_location][*query_location];
-            int g = b - gapExistenceCost;
-            *y0 = maxValue(g, y);
-            *z0 = maxValue(g, z);
-          }
-          else *x0 = *y0 = *z0 = -INF;
-          if (x0 == x0last) break;
-          ++reference_location;  --query_location;  ++x0;  ++y0;  ++z0;  ++y3;  ++z3;  ++x5;  ++x6;  ++x7;
+            if (state < 1 || state > 2) bestAntidiagonal -= 6;
+            else bestAntidiagonal -= 3;
+
+            if (state != 2) bestSeq1position -= 1;
+
+            assert(bestAntidiagonal >= 7);
+            assert(bestSeq1position * 3 <= bestAntidiagonal - 7);
+
+            std::size_t h = hori3(bestAntidiagonal, bestSeq1position);
+            std::size_t v = vert3(bestAntidiagonal, bestSeq1position);
+            std::size_t d = diag3(bestAntidiagonal, bestSeq1position);
+            std::size_t r = diag3(bestAntidiagonal + 1, bestSeq1position);
+            std::size_t f = diag3(bestAntidiagonal - 1, bestSeq1position);
+
+            int x = xScores[d];
+            int y = yScores[h] - gapExtensionCost;
+            int z = zScores[v] - gapExtensionCost;
+            int a = yScores[d] - gapUnalignedCost;
+            int b = zScores[d] - gapUnalignedCost;
+            int i = xScores[r] - frameshiftCost;
+            int j = xScores[f] - frameshiftCost;
+
+            if (state == 1 || state == 5) {
+                y += gapExistenceCost;
+                a += gapExistenceCost;
+            }
+
+            if (state == 2 || state == 6) {
+                z += gapExistenceCost;
+                b += gapExistenceCost;
+            }
+
+            state = maxIndex(x, y, z, i, j, a, b);  // order?
+
+            if (length == 0 && (state > 0 || bestAntidiagonal == 8))
+                length = end1 - bestSeq1position;
+
+            if (state == 3) {
+                bestAntidiagonal += 1;
+                state = 0;
+            }
+
+            if (state == 4) {
+                bestAntidiagonal -= 1;
+                state = 0;
+            }
+
+            if (length > 0 && state == 0) return true;
         }
-      else
-        while (1) {
-          int s = maxValue(*x5, *x7);
-          int x = maxValue(*x6, s - frameshiftCost);
-          int y = *y3 - gapExtensionCost;
-          int z = *z3 - gapExtensionCost;
-          int b = maxValue(x, y, z);
-          if (b >= minScore) {
-            updateBest(bestScore, b, antidiagonal, x0, x0base);
-            *x0 = b + scorer[*reference_location][*query_location];
-            int g = b - gapExistenceCost;
-            *y0 = maxValue(g, y);
-            *z0 = maxValue(g, z);
-          }
-          else *x0 = *y0 = *z0 = -INF;
-          if (x0 == x0last) break;
-          --reference_location;  ++query_location;  ++x0;  ++y0;  ++z0;  ++y3;  ++z3;  ++x5;  ++x6;  ++x7;
-        }
-    } else {
-      const int *y6 = &yScores[diag3(antidiagonal, reference_beg)];
-      const int *z6 = &zScores[diag3(antidiagonal, reference_beg)];
-      while (1) {
-        int s = maxValue(*x5, *x7);
-        int x = maxValue(*x6, s - frameshiftCost);
-        int y = maxValue(*y3 - gapExtensionCost, *y6 - gapUnalignedCost);
-        int z = maxValue(*z3 - gapExtensionCost, *z6 - gapUnalignedCost);
-        int b = maxValue(x, y, z);
-        if (b >= minScore) {
-          updateBest(bestScore, b, antidiagonal, x0, x0base);
-          *x0 = b + scorer[*reference_location][*query_location];
-          int g = b - gapExistenceCost;
-          *y0 = maxValue(g, y);
-          *z0 = maxValue(g, z);
-        }
-        else *x0 = *y0 = *z0 = -INF;
-        if (x0 == x0last) break;
-        ++x0;  ++y0;  ++z0;  ++y3;  ++z3;  ++x5;  ++x6;  ++x7;  ++y6;  ++z6;
-        if (isForward) { ++reference_location;  --query_location; }
-        else           { --reference_location;  ++query_location; }
-      }
     }
-    if (isDelimiter(*reference_location, *scorer))
-      updateMaxScoreDrop(maxScoreDrop, numCells, maxMatchScore);
-
-    updateFiniteEdges3(maxSeq1begs, minSeq1ends, x0base, x0 + 1, numCells);
-  }
-  return bestScore;
-}
-
-bool GappedXdropAligner::getNextChunk3(std::size_t &end1,
-                                       std::size_t &end2,
-                                       std::size_t &length,
-                                       int gapExistenceCost,
-                                       int gapExtensionCost,
-                                       int gapUnalignedCost,
-                                       int frameshiftCost) {
-  if (bestAntidiagonal == 8) return false;
-
-  end1 = bestSeq1position;
-  end2 = bestAntidiagonal - 8 - bestSeq1position * 3;
-  length = 0;
-
-  int state = 0;
-
-  while (1) {
-    if (state < 1 || state > 2) bestAntidiagonal -= 6;
-    else                        bestAntidiagonal -= 3;
-
-    if (state != 2) bestSeq1position -= 1;
-
-    assert(bestAntidiagonal >= 7);
-    assert(bestSeq1position * 3 <= bestAntidiagonal - 7);
-
-    std::size_t h = hori3(bestAntidiagonal, bestSeq1position);
-    std::size_t v = vert3(bestAntidiagonal, bestSeq1position);
-    std::size_t d = diag3(bestAntidiagonal, bestSeq1position);
-    std::size_t r = diag3(bestAntidiagonal + 1, bestSeq1position);
-    std::size_t f = diag3(bestAntidiagonal - 1, bestSeq1position);
-
-    int x = xScores[d];
-    int y = yScores[h] - gapExtensionCost;
-    int z = zScores[v] - gapExtensionCost;
-    int a = yScores[d] - gapUnalignedCost;
-    int b = zScores[d] - gapUnalignedCost;
-    int i = xScores[r] - frameshiftCost;
-    int j = xScores[f] - frameshiftCost;
-
-    if (state == 1 || state == 5) {
-      y += gapExistenceCost;
-      a += gapExistenceCost;
-    }
-
-    if (state == 2 || state == 6) {
-      z += gapExistenceCost;
-      b += gapExistenceCost;
-    }
-
-    state = maxIndex(x, y, z, i, j, a, b);  // order?
-
-    if (length == 0 && (state > 0 || bestAntidiagonal == 8))
-      length = end1 - bestSeq1position;
-
-    if (state == 3) {
-      bestAntidiagonal += 1;
-      state = 0;
-    }
-
-    if (state == 4) {
-      bestAntidiagonal -= 1;
-      state = 0;
-    }
-
-    if (length > 0 && state == 0) return true;
-  }
-}
 
 }

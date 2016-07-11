@@ -7,37 +7,39 @@
 
 namespace cbrc {
 
-namespace sequenceFormat {
-enum Enum { fasta, fastqSanger, fastqSolexa, fastqIllumina, prb, pssm };
-}
+    namespace sequenceFormat {
+        enum Enum {
+            fasta, fastqSanger, fastqSolexa, fastqIllumina, prb, pssm
+        };
+    }
 
-inline std::istream &operator>>(std::istream &s, sequenceFormat::Enum &f) {
-  int i = 0;
-  s >> i;
-  if (i < 0 || i > sequenceFormat::pssm) s.setstate(std::ios::failbit);
-  if (s) f = static_cast<sequenceFormat::Enum>(i);
-  return s;
-}
+    inline std::istream &operator>>(std::istream &s, sequenceFormat::Enum &f) {
+        int i = 0;
+        s >> i;
+        if (i < 0 || i > sequenceFormat::pssm) s.setstate(std::ios::failbit);
+        if (s) f = static_cast<sequenceFormat::Enum>(i);
+        return s;
+    }
 
-inline bool isQuality(sequenceFormat::Enum f) {
-  return f != sequenceFormat::fasta && f != sequenceFormat::pssm;
-}
+    inline bool isQuality(sequenceFormat::Enum f) {
+        return f != sequenceFormat::fasta && f != sequenceFormat::pssm;
+    }
 
-inline bool isFastq(sequenceFormat::Enum f) {
-  return
-      f == sequenceFormat::fastqSanger ||
-      f == sequenceFormat::fastqSolexa ||
-      f == sequenceFormat::fastqIllumina;
-}
+    inline bool isFastq(sequenceFormat::Enum f) {
+        return
+                f == sequenceFormat::fastqSanger ||
+                f == sequenceFormat::fastqSolexa ||
+                f == sequenceFormat::fastqIllumina;
+    }
 
-inline int qualityOffset(sequenceFormat::Enum f) {
-  return (f == sequenceFormat::fastqSanger) ? 33 : 64;
-}  // The result is meaningless for non-quality formats.
+    inline int qualityOffset(sequenceFormat::Enum f) {
+        return (f == sequenceFormat::fastqSanger) ? 33 : 64;
+    }  // The result is meaningless for non-quality formats.
 
-inline bool isPhred(sequenceFormat::Enum f) {
-  return
-      f == sequenceFormat::fastqSanger || f == sequenceFormat::fastqIllumina;
-}
+    inline bool isPhred(sequenceFormat::Enum f) {
+        return
+                f == sequenceFormat::fastqSanger || f == sequenceFormat::fastqIllumina;
+    }
 
 }
 

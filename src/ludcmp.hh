@@ -3,6 +3,6 @@
 #ifndef __LUDCMP_
 #define __LUDCMP_
 
-void ludcmp(double **a,int n, int *indx,double *d);
+void ludcmp(double **a, int n, int *indx, double *d);
 
 #endif

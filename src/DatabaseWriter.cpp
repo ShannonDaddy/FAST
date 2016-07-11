@@ -5,38 +5,34 @@
 #include "DatabaseWriter.h"
 #include "prjFiles.hh"
 
-void* DatabaseWriter::threadEntry(void *args)
-{
-	((DatabaseWriter *) args)->threadFunction();
-	return NULL;
+void *DatabaseWriter::threadEntry(void *args) {
+    ((DatabaseWriter *) args)->threadFunction();
+    return NULL;
 }
 
-void DatabaseWriter::threadFunction()
-{
-	/*
-	while(true){
-		SEM_WAIT(output);
+void DatabaseWriter::threadFunction() {
+    /*
+    while(true){
+        SEM_WAIT(output);
 
-		// Copy out the prj
-		prjFiles prj;
-		prj.accumulatePrj();
+        // Copy out the prj
+        prjFiles prj;
+        prj.accumulatePrj();
 
-		// Copy out the Multisequence
+        // Copy out the Multisequence
 
-		// Copy out the SubsetSuffixArray
+        // Copy out the SubsetSuffixArray
 
-	}
-	 */
+    }
+     */
 }
 
-void DatabaseWriter::startThread()
-{
-	pthread_create(&thread, NULL, threadEntry, this);
+void DatabaseWriter::startThread() {
+    pthread_create(&thread, NULL, threadEntry, this);
 }
 
-void DatabaseWriter::joinThread()
-{
-	pthread_join(thread, NULL);
+void DatabaseWriter::joinThread() {
+    pthread_join(thread, NULL);
 }
 
-DatabaseWriter::DatabaseWriter(){}
+DatabaseWriter::DatabaseWriter() { }

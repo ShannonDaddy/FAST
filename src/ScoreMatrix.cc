@@ -10,11 +10,12 @@
 
 #define ERR(x) throw std::runtime_error(x)
 
-namespace cbrc{
+namespace cbrc {
 
-std::string ScoreMatrix::stringFromName( const std::string& name ){
+    std::string ScoreMatrix::stringFromName(const std::string &name) {
 
-  if( name == "DEFAULT" ) return "\
+        if (name == "DEFAULT")
+            return "\
    A  C  G  T\n\
 A  -5 -1 -1 -1\n\
 C 1  5 -1 -1\n\
@@ -22,7 +23,8 @@ G -1 -1  1 -1\n\
 T -1 -1 -1  1\n\
 ";  // from MC Frith (2011) NAR 39(4):e23.
 
-  if( name == "AT77" ) return "\
+        if (name == "AT77")
+            return "\
 #last -a15 -b2 -e100\n\
    A  C  G  T\n\
 A  2 -3 -2 -3\n\
@@ -31,7 +33,8 @@ G -2 -3  5 -3\n\
 T -3 -2 -3  2\n\
 ";  // from MC Frith (2011) NAR 39(4):e23.
 
-  if( name == "BISF" ) return "\
+        if (name == "BISF")
+            return "\
 #last -a21 -b9 -e180\n\
     A   C   G   T\n\
 A   6 -18 -18 -18\n\
@@ -40,7 +43,8 @@ G -18 -18   6 -18\n\
 T -18 -18 -18   3\n\
 ";
 
-  if( name == "BISR" ) return "\
+        if (name == "BISR")
+            return "\
 #last -a21 -b9 -e180\n\
     A   C   G   T\n\
 A   3 -18 -18 -18\n\
@@ -49,7 +53,8 @@ G   3 -18   6 -18\n\
 T -18 -18 -18   6\n\
 ";
 
-  if( name == "HOXD70" ) return "\
+        if (name == "HOXD70")
+            return "\
 #last -a 400 -b 30 -e 4500\n\
      A    C    G    T    N\n\
 A   91 -114  -31 -123 -100\n\
@@ -59,7 +64,8 @@ T -123  -31 -114   91 -100\n\
 N -100 -100 -100 -100 -100\n\
 ";
 
-  if( name == "BLOSUM62" || name == "BL62" ) return "\
+        if (name == "BLOSUM62" || name == "BL62")
+            return "\
    A  R  N  D  C  Q  E  G  H  I  L  K  M  F  P  S  T  W  Y  V  B  J  Z  X  *\n\
 A  4 -1 -2 -2  0 -1 -1  0 -2 -1 -1 -1 -1 -2 -1  1  0 -3 -2  0 -2 -1 -1 -1 -4\n\
 R -1  5  0 -2 -3  1  0 -2  0 -3 -2  2 -1 -3 -2 -1 -1 -3 -2 -3 -1 -2  0 -1 -4\n\
@@ -88,7 +94,8 @@ X -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -4\n\
 * -4 -4 -4 -4 -4 -4 -4 -4 -4 -4 -4 -4 -4 -4 -4 -4 -4 -4 -4 -4 -4 -4 -4 -4  1\n\
 ";  // copied from NCBI BLAST
 
-  if( name == "BLOSUM80" || name == "BL80" ) return "\
+        if (name == "BLOSUM80" || name == "BL80")
+            return "\
    A  R  N  D  C  Q  E  G  H  I  L  K  M  F  P  S  T  W  Y  V  B  J  Z  X  *\n\
 A  5 -2 -2 -2 -1 -1 -1  0 -2 -2 -2 -1 -1 -3 -1  1  0 -3 -2  0 -2 -2 -1 -1 -6\n\
 R -2  6 -1 -2 -4  1 -1 -3  0 -3 -3  2 -2 -4 -2 -1 -1 -4 -3 -3 -1 -3  0 -1 -6\n\
@@ -117,159 +124,159 @@ X -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -6\n\
 * -6 -6 -6 -6 -6 -6 -6 -6 -6 -6 -6 -6 -6 -6 -6 -6 -6 -6 -6 -6 -6 -6 -6 -6  1\n\
 ";
 
-  return slurp( name );
-}
-
-void ScoreMatrix::matchMismatch( int match, int mismatch,
-				 const std::string& letters ){
-  rows = letters;
-  cols = letters;
-  std::size_t size = letters.size();
-
-  cells.resize( size );
-
-  for( std::size_t i = 0; i < size; ++i ){
-    cells[i].assign( size, -mismatch );
-    cells[i][i] = match;
-  }
-}
-
-void ScoreMatrix::fromString( const std::string& matString ){
-  std::istringstream iss(matString);
-  iss >> *this;
-  assert(iss);
-}
-
-void ScoreMatrix::init( const uchar encode[] ){
-  assert( !rows.empty() && !cols.empty() );
-
-  for( std::string::iterator i = rows.begin(); i < rows.end(); ++i )
-    *i = std::toupper( *i );
-
-  for( std::string::iterator i = cols.begin(); i < cols.end(); ++i )
-    *i = std::toupper( *i );
-
-  minScore = cells[0][0];
-  maxScore = cells[0][0];
-
-  for( std::size_t i = 0; i < rows.size(); ++i ){
-    for( std::size_t j = 0; j < cols.size(); ++j ){
-      minScore = std::min( minScore, cells[i][j] );
-      maxScore = std::max( maxScore, cells[i][j] );
+        return slurp(name);
     }
-  }
 
-  // set default score = minScore:
-  for( unsigned i = 0; i < MAT; ++i ){
-    for( unsigned j = 0; j < MAT; ++j ){
-      caseSensitive[i][j] = minScore;
-      caseInsensitive[i][j] = minScore;
+    void ScoreMatrix::matchMismatch(int match, int mismatch,
+                                    const std::string &letters) {
+        rows = letters;
+        cols = letters;
+        std::size_t size = letters.size();
 
+        cells.resize(size);
+
+        for (std::size_t i = 0; i < size; ++i) {
+            cells[i].assign(size, -mismatch);
+            cells[i][i] = match;
+        }
     }
-  }
 
-  for( std::size_t i = 0; i < rows.size(); ++i ){
-    for( std::size_t j = 0; j < cols.size(); ++j ){
-      uchar x = encode[ uchar(rows[i]) ];
-      uchar y = encode[ uchar(cols[j]) ];
-      uchar a = encode[ std::tolower( rows[i] ) ];
-      uchar b = encode[ std::tolower( cols[j] ) ];
-      if( a >= MAT )
-        ERR( std::string("bad letter in score matrix: ") + rows[i] );
-      if( b >= MAT )
-        ERR( std::string("bad letter in score matrix: ") + cols[j] );
-      caseSensitive[x][b] = std::min( cells[i][j], 0 );
-      caseSensitive[a][y] = std::min( cells[i][j], 0 );
-      caseSensitive[a][b] = std::min( cells[i][j], 0 );
-      caseSensitive[x][y] = cells[i][j];  // careful: maybe a==x or b==y
-      caseInsensitive[x][y] = cells[i][j];
-      caseInsensitive[x][b] = cells[i][j];
-      caseInsensitive[a][y] = cells[i][j];
-      caseInsensitive[a][b] = cells[i][j];
+    void ScoreMatrix::fromString(const std::string &matString) {
+        std::istringstream iss(matString);
+        iss >> *this;
+        assert(iss);
     }
-  }
 
-  // set a hugely negative score for the delimiter symbol:
-  uchar z = encode[' '];
-  assert( z < MAT );
-  for( unsigned i = 0; i < MAT; ++i ){
-    caseSensitive[z][i] = -INF;
-    caseSensitive[i][z] = -INF;
-    caseInsensitive[z][i] = -INF;
-    caseInsensitive[i][z] = -INF;    
-  }
-}
+    void ScoreMatrix::init(const uchar encode[]) {
+        assert(!rows.empty() && !cols.empty());
 
-void ScoreMatrix::writeCommented( std::ostream& stream ) const{
-  stream << "# " << ' ';
-  for( std::size_t i = 0; i < cols.size(); ++i ){
-    stream << ' ' << std::setw(OUTPAD) << cols[i];
-  }
-  stream << '\n';
+        for (std::string::iterator i = rows.begin(); i < rows.end(); ++i)
+            *i = std::toupper(*i);
 
-  for( std::size_t i = 0; i < rows.size(); ++i ){
-    stream << "# " << rows[i];
-    for( std::size_t j = 0; j < cols.size(); ++j ){
-      stream << ' ' << std::setw(OUTPAD) << cells[i][j];
+        for (std::string::iterator i = cols.begin(); i < cols.end(); ++i)
+            *i = std::toupper(*i);
+
+        minScore = cells[0][0];
+        maxScore = cells[0][0];
+
+        for (std::size_t i = 0; i < rows.size(); ++i) {
+            for (std::size_t j = 0; j < cols.size(); ++j) {
+                minScore = std::min(minScore, cells[i][j]);
+                maxScore = std::max(maxScore, cells[i][j]);
+            }
+        }
+
+        // set default score = minScore:
+        for (unsigned i = 0; i < MAT; ++i) {
+            for (unsigned j = 0; j < MAT; ++j) {
+                caseSensitive[i][j] = minScore;
+                caseInsensitive[i][j] = minScore;
+
+            }
+        }
+
+        for (std::size_t i = 0; i < rows.size(); ++i) {
+            for (std::size_t j = 0; j < cols.size(); ++j) {
+                uchar x = encode[uchar(rows[i])];
+                uchar y = encode[uchar(cols[j])];
+                uchar a = encode[std::tolower(rows[i])];
+                uchar b = encode[std::tolower(cols[j])];
+                if (a >= MAT)
+                    ERR(std::string("bad letter in score matrix: ") + rows[i]);
+                if (b >= MAT)
+                    ERR(std::string("bad letter in score matrix: ") + cols[j]);
+                caseSensitive[x][b] = std::min(cells[i][j], 0);
+                caseSensitive[a][y] = std::min(cells[i][j], 0);
+                caseSensitive[a][b] = std::min(cells[i][j], 0);
+                caseSensitive[x][y] = cells[i][j];  // careful: maybe a==x or b==y
+                caseInsensitive[x][y] = cells[i][j];
+                caseInsensitive[x][b] = cells[i][j];
+                caseInsensitive[a][y] = cells[i][j];
+                caseInsensitive[a][b] = cells[i][j];
+            }
+        }
+
+        // set a hugely negative score for the delimiter symbol:
+        uchar z = encode[' '];
+        assert(z < MAT);
+        for (unsigned i = 0; i < MAT; ++i) {
+            caseSensitive[z][i] = -INF;
+            caseSensitive[i][z] = -INF;
+            caseInsensitive[z][i] = -INF;
+            caseInsensitive[i][z] = -INF;
+        }
     }
-    stream << '\n';
-  }
-}
 
-std::istream& operator>>( std::istream& stream, ScoreMatrix& m ){
-  std::string tmpRows;
-  std::string tmpCols;
-  std::vector< std::vector<int> > tmpCells;
-  std::string line;
-  int state = 0;
+    void ScoreMatrix::writeCommented(std::ostream &stream) const {
+        stream << "# " << ' ';
+        for (std::size_t i = 0; i < cols.size(); ++i) {
+            stream << ' ' << std::setw(OUTPAD) << cols[i];
+        }
+        stream << '\n';
 
-  while( std::getline( stream, line ) ){
-    std::istringstream iss(line);
-    char c;
-    if( !(iss >> c) ) continue;  // skip blank lines
-    if( state == 0 ){
-      if( c == '#' ) continue;  // skip comment lines at the top
-      do{
-	tmpCols.push_back(c);
-      }while( iss >> c );
-      state = 1;
+        for (std::size_t i = 0; i < rows.size(); ++i) {
+            stream << "# " << rows[i];
+            for (std::size_t j = 0; j < cols.size(); ++j) {
+                stream << ' ' << std::setw(OUTPAD) << cells[i][j];
+            }
+            stream << '\n';
+        }
     }
-    else{
-      tmpRows.push_back(c);
-      tmpCells.resize( tmpCells.size() + 1 );
-      int score;
-      while( iss >> score ){
-	tmpCells.back().push_back(score);
-      }
-      if( tmpCells.back().size() != tmpCols.size() ) ERR( "bad score matrix" );
+
+    std::istream &operator>>(std::istream &stream, ScoreMatrix &m) {
+        std::string tmpRows;
+        std::string tmpCols;
+        std::vector<std::vector<int> > tmpCells;
+        std::string line;
+        int state = 0;
+
+        while (std::getline(stream, line)) {
+            std::istringstream iss(line);
+            char c;
+            if (!(iss >> c)) continue;  // skip blank lines
+            if (state == 0) {
+                if (c == '#') continue;  // skip comment lines at the top
+                do {
+                    tmpCols.push_back(c);
+                } while (iss >> c);
+                state = 1;
+            }
+            else {
+                tmpRows.push_back(c);
+                tmpCells.resize(tmpCells.size() + 1);
+                int score;
+                while (iss >> score) {
+                    tmpCells.back().push_back(score);
+                }
+                if (tmpCells.back().size() != tmpCols.size()) ERR("bad score matrix");
+            }
+        }
+
+        if (stream.eof() && !stream.bad() && !tmpRows.empty()) {
+            stream.clear();
+            m.rows.swap(tmpRows);
+            m.cols.swap(tmpCols);
+            m.cells.swap(tmpCells);
+        }
+
+        return stream;
     }
-  }
 
-  if( stream.eof() && !stream.bad() && !tmpRows.empty() ){
-    stream.clear();
-    m.rows.swap(tmpRows);
-    m.cols.swap(tmpCols);
-    m.cells.swap(tmpCells);
-  }
+    std::ostream &operator<<(std::ostream &stream, const ScoreMatrix &m) {
+        for (std::size_t i = 0; i < m.cols.size(); ++i) {
+            stream << ' ' << std::setw(m.OUTPAD) << m.cols[i];
+        }
+        stream << '\n';
 
-  return stream;
-}
+        for (std::size_t i = 0; i < m.rows.size(); ++i) {
+            stream << m.rows[i];
+            for (std::size_t j = 0; j < m.cols.size(); ++j) {
+                stream << ' ' << std::setw(m.OUTPAD) << m.cells[i][j];
+            }
+            stream << '\n';
+        }
 
-std::ostream& operator<<( std::ostream& stream, const ScoreMatrix& m ){
-  for( std::size_t i = 0; i < m.cols.size(); ++i ){
-    stream << ' ' << std::setw(m.OUTPAD) << m.cols[i];
-  }
-  stream << '\n';
-
-  for( std::size_t i = 0; i < m.rows.size(); ++i ){
-    stream << m.rows[i];
-    for( std::size_t j = 0; j < m.cols.size(); ++j ){
-      stream << ' ' << std::setw(m.OUTPAD) << m.cells[i][j];
+        return stream;
     }
-    stream << '\n';
-  }
-
-  return stream;
-}
 
 }  // end namespace cbrc

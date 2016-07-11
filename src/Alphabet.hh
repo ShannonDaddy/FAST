@@ -14,59 +14,64 @@
 #include <string>
 #include <iosfwd>
 
-namespace cbrc{
+namespace cbrc {
 
-typedef unsigned char uchar;
+    typedef unsigned char uchar;
 
-struct Alphabet{
-  typedef unsigned long long countT;
+    struct Alphabet {
+        typedef unsigned long long countT;
 
-  /* STATIC */
-  static const char* dna;
-  static const char* protein;
+        /* STATIC */
+        static const char *dna;
+        static const char *protein;
 
-  static const unsigned capacity = 256;
+        static const unsigned capacity = 256;
 
-  /* FIELDS */
-  std::string letters;    // the "proper" letters, e.g. ACGT for DNA
-  unsigned size;          // same as letters.size(): excludes delimiters
+        /* FIELDS */
+        std::string letters;    // the "proper" letters, e.g. ACGT for DNA
+        unsigned size;          // same as letters.size(): excludes delimiters
 
-  uchar encode[capacity];  // translate ASCII letters to codes (small integers)
-  uchar decode[capacity];  // translate codes to ASCII letters
-  uchar canonical[capacity];   // translate lowercase codes to uppercase codes
-  uchar complement[capacity];  // translate DNA codes to their complements
+        uchar encode[capacity];  // translate ASCII letters to codes (small integers)
+        uchar decode[capacity];  // translate codes to ASCII letters
+        uchar canonical[capacity];   // translate lowercase codes to uppercase codes
+        uchar complement[capacity];  // translate DNA codes to their complements
 
-  /* METHODS */
-  // does this alphabet start with the standard protein alphabet?
-  bool isProtein() const{ return letters.find( protein ) == 0; }
+        /* METHODS */
+        // does this alphabet start with the standard protein alphabet?
+        bool isProtein() const { return letters.find(protein) == 0; }
 
-  // make an Alphabet from a string containing the "proper" letters
-  void fromString( const std::string& alphString );
+        // make an Alphabet from a string containing the "proper" letters
+        void fromString(const std::string &alphString);
 
-  // add counts of "proper" letters to "counts" (counting lowercase too)
-  void count( const uchar* beg, const uchar* end, countT* counts ) const;
+        // add counts of "proper" letters to "counts" (counting lowercase too)
+        void count(const uchar *beg, const uchar *end, countT *counts) const;
 
-  // translate (encode) a sequence of letters to numbers, in place
-  void tr( uchar* beg, uchar* end ) const;
+        // translate (encode) a sequence of letters to numbers, in place
+        void tr(uchar *beg, uchar *end) const;
 
-  // reverse-translate (decode) a sequence of numbers to letters
-  // return the position after the last written position in dest
-  char* rtCopy( const uchar* beg, const uchar* end, char* dest ) const;
+        // reverse-translate (decode) a sequence of numbers to letters
+        // return the position after the last written position in dest
+        char *rtCopy(const uchar *beg, const uchar *end, char *dest) const;
 
-  // reverse and complement a sequence of numbers, in place
-  void rc( uchar* beg, uchar* end ) const;
+        // reverse and complement a sequence of numbers, in place
+        void rc(uchar *beg, uchar *end) const;
 
-  void init();
-  void addLetters( const std::string& lettersToAdd, unsigned& code );
-  void makeComplement();
+        void init();
 
-  Alphabet& operator = (const Alphabet &rhs);
-  Alphabet( const Alphabet &rhs );
-  Alphabet( ) { }
-};
+        void addLetters(const std::string &lettersToAdd, unsigned &code);
 
-std::ostream& operator<<( std::ostream& s, const Alphabet& a );
-std::istream& operator>>( std::istream& s, Alphabet& a );
+        void makeComplement();
+
+        Alphabet &operator=(const Alphabet &rhs);
+
+        Alphabet(const Alphabet &rhs);
+
+        Alphabet() { }
+    };
+
+    std::ostream &operator<<(std::ostream &s, const Alphabet &a);
+
+    std::istream &operator>>(std::istream &s, Alphabet &a);
 
 }  // end namespace
 #endif
