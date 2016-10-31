@@ -13,6 +13,7 @@
 
 #include <string>
 #include <iosfwd>
+#include <stdexcept>
 
 namespace cbrc {
 
